@@ -3,6 +3,7 @@ import logging
 
 import async_timeout
 
+from homeassistant.util import dt as dt_util
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import (
@@ -76,7 +77,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     for uid,inv_data in inverters.items():
         _LOGGER.debug(f"Inverter {uid} {inv_data.get('channel_qty')}")
         # https://github.com/ksheumaker/homeassistant-apsystems_ecur/issues/110
-        if inv_data.get("channel_qty"):
+        if inv_data.get("channel_qty") != None:
             sensors.extend([
                     APSystemsECUInverterSensor(coordinator, ecu, uid, "temperature",
                         label="Temperature",
@@ -110,7 +111,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
             ])
             for i in range(0, inv_data.get("channel_qty", 0)):
                 sensors.append(
-                    APSystemsECUInverterSensor(coordinator, ecu, uid, "power", 
+                    APSystemsECUInverterSensor(coordinator, ecu, uid, f"power", 
                         index=i, label=f"Power Ch {i+1}",
                         unit=UnitOfPower.WATT,
                         devclass=SensorDeviceClass.POWER,
@@ -147,7 +148,7 @@ class APSystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
     @property
     def unique_id(self):
         field = self._field
-        if self._index:
+        if self._index != None:
             field = f"{field}_{self._index}"
         return f"{self._ecu.ecu.ecu_id}_{self._uid}_{field}"
 
