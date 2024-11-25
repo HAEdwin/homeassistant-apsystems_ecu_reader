@@ -1,3 +1,6 @@
+# config_flow.py module
+
+from .const import DOMAIN, KEYS
 import logging
 import voluptuous as vol
 from homeassistant.core import callback
@@ -5,8 +8,6 @@ from .APSystemsSocket import APSystemsSocket, APSystemsInvalidData
 from homeassistant import config_entries
 
 _LOGGER = logging.getLogger(__name__)
-
-from .const import DOMAIN, KEYS
 
 
 STEP_USER_DATA_SCHEMA = vol.Schema({
@@ -22,9 +23,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema({
 class FlowHandler(config_entries.ConfigFlow):
 
     VERSION = 1
-    
-#    def __init__(self):
-#        _LOGGER.debug("Starting config flow class...")
+
 
     async def async_step_user(self, user_input=None):
         errors = {}
@@ -37,7 +36,7 @@ class FlowHandler(config_entries.ConfigFlow):
         # User input is not empty, processing input.
         ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"])
         
-        if ecu_id is not None:
+        if ecu_id:
             return self.async_create_entry(title=f"ECU: {ecu_id}", data=user_input)
         else:
             errors["ecu_host"] = "no_ecu_found"
@@ -58,7 +57,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
-        """Second step: Altering the integration options."""
+        """Altering the integration configuration."""
         errors = {}
         current_options = (
             self.config_entry.data
@@ -79,10 +78,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             }
         )
 
-        if user_input is not None:
+        if user_input:
 
             ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"])
-            if ecu_id is not None:
+            if ecu_id:
                 self.hass.config_entries.async_update_entry(
                     self.config_entry, data=user_input
                 )
