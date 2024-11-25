@@ -1,11 +1,13 @@
 # config_flow.py module
 
-from .const import DOMAIN, KEYS
 import logging
 import voluptuous as vol
+
 from homeassistant.core import callback
-from .APSystemsSocket import APSystemsSocket, APSystemsInvalidData
 from homeassistant import config_entries
+
+from .const import DOMAIN, KEYS
+from .APSystemsSocket import APSystemsSocket, APSystemsInvalidData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,7 +45,8 @@ class FlowHandler(config_entries.ConfigFlow):
             return self.async_show_form(
                 step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
             )
-    
+
+    # Enable the integration to be reconfigured in the UI
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
