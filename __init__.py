@@ -1,4 +1,3 @@
-import aiohttp
 import logging
 import requests
 import traceback
@@ -16,6 +15,7 @@ PLATFORMS = ["sensor", "binary_sensor", "switch"]
 class ECUR:
     def __init__(self, ipaddr, ssid, wpa, cache, graphs):
         self.ecu = APsystemsSocket(ipaddr)
+        self.ipaddr = ipaddr
         self.cache_count = 0
         self.data_from_cache = False
         self.querying = True
@@ -29,19 +29,17 @@ class ECUR:
         self.querying = state
 
 
-    async def set_inverters(self, state: bool):
+    def toggle_all_inverters(self, turn_on: bool):
+        action = 'on' if turn_on else 'off'
         headers = {'X-Requested-With': 'XMLHttpRequest'}
-        state_str = 'on' if state else 'off'
-        url = f'http://{self.ecu.ipaddr}/index.php/configuration/set_switch_all_{state_str}'
-
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.post(url, headers=headers) as response:
-                    self.inverters_online = state
-                    _LOGGER.debug(f"Response from ECU on switching the inverters {state_str}: {response.status}")
-            except Exception as err:
-                _LOGGER.warning(f"Attempt to switch inverters {state_str} failed with error: {err}")
-
+        url = f'http://{self.ipaddr}/index.php/configuration/set_switch_all_{action}'
+        _LOGGER.debug("URL = %s", url)
+        try:
+            get_url = requests.post(url, headers=headers)
+            self.inverters_online = turn_on
+            _LOGGER.debug(f"Response from ECU on switching the inverters {action}: {str(get_url.status_code)}")
+        except Exception as err:
+            _LOGGER.warning(f"Attempt to switch inverters {action} failed with error: {err} (This switch is only compatible with ECU-R pro and ECU-C type ECU's)")
 
 
     async def update(self):
@@ -77,12 +75,14 @@ class ECUR:
             msg = f"Invalid data error: {err}. Using cached data."
             if str(err) != 'timed out':
                 _LOGGER.warning(msg)
-            data = self.cached_data(msg)
+            self.cached_data["error_message"] = msg
+            data = self.cached_data
 
         except Exception:
             msg = "General exception error. Using cached data."
             _LOGGER.warning(f"Exception error: {traceback.format_exc()}. Using cached data.")
-            data = self.cached_data(msg)
+            self.cached_data["error_message"] = msg
+            data = self.cached_data
 
         data["data_from_cache"] = self.data_from_cache
         data["querying"] = self.querying
