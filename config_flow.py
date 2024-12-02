@@ -7,7 +7,7 @@ from homeassistant.core import callback
 from homeassistant import config_entries
 
 from .const import DOMAIN, KEYS
-from .APSystemsSocket import APSystemsSocket, APSystemsInvalidData
+from .ecu_api import APsystemsSocket, APsystemsInvalidData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,8 +36,8 @@ class FlowHandler(config_entries.ConfigFlow):
             )
         
         # User input is not empty, processing input.
-        ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"])
-        
+        ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], 3)
+        _LOGGER.warning("ecu_id = %s",ecu_id)
         if ecu_id:
             return self.async_create_entry(title=f"ECU: {ecu_id}", data=user_input)
         else:
@@ -83,7 +83,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input:
 
-            ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"])
+            ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], 3)
             if ecu_id:
                 self.hass.config_entries.async_update_entry(
                     self.config_entry, data=user_input
@@ -101,16 +101,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             )
 
 
-async def test_ecu_connection(hass, ecu_host):
+async def test_ecu_connection(hass, ecu_host, retries):
     """Test the connection to the ECU and return the ECU ID if successful."""
     try:
-        ap_ecu = APSystemsSocket(ecu_host)
-        test_query = await hass.async_add_executor_job(ap_ecu.query_ecu)
+        ap_ecu = APsystemsSocket(ecu_host)
+        test_query = await ap_ecu.query_ecu(3)
         ecu_id = test_query.get("ecu_id", None)
         return ecu_id
 
-    except APSystemsInvalidData as err:
-        _LOGGER.debug(f"APSystemsInvalidData exception: {err}")
+    except APsystemsInvalidData as err:
+        _LOGGER.debug(f"APsystemsInvalidData exception: {err}")
         return None
     except Exception as err:
         _LOGGER.debug(f"Unknown error occurred during ECU query: {err}")
