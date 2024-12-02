@@ -1,0 +1,14 @@
+{
+  "domain": "apsystems_ecur",
+  "name": "APsystems ECU reader",
+  "version": "v2.0.0",
+  "documentation": "https://github.com/ksheumaker/homeassistant-apsystems_ecur",
+  "issue_tracker": "https://github.com/ksheumaker/homeassistant-apsystems_ecur/issues",
+  "codeowners": ["@ksheumaker"],
+  "config_flow": true,
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "loggers": ["custom_components.apsystems_ecur"],
+  "dependencies": [],
+  "requirements": []
+}
