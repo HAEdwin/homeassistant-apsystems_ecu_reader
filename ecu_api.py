@@ -1,11 +1,11 @@
+""" ecu_api.py """
+
 #!/usr/bin/env python3
 
 import asyncio
 import socket
 import binascii
 import logging
-import time
-import requests
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class APsystemsInvalidData(Exception):
 
 class APsystemsSocket:
     def __init__(self, ipaddr, raw_ecu=None, raw_inverter=None):
-        _LOGGER.warning("IPaddress = %s", ipaddr)
+        
         self.ipaddr = ipaddr
 
         # what do we expect socket data to end in
@@ -55,13 +55,13 @@ class APsystemsSocket:
         self.errors = []
 
 
-    async def open_socket(self, retries, delay=1):
+    async def open_socket(self, port_retries, delay=1):
         """Open a socket connection with retry logic."""
-        _LOGGER.debug("Configured retries in open_socket = %s", retries)
+        _LOGGER.debug("Port open retries being used = %s", port_retries)
         if self.socket_open:
             return  # Socket is already open
         attempt = 0
-        while attempt < retries:
+        while attempt <= port_retries:
             try:
                 # Create a new socket and set timeout
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -71,11 +71,11 @@ class APsystemsSocket:
                 return  # Successful connection, exit function
             except (socket.timeout, socket.gaierror, socket.error) as err:
                 attempt += 1
-                if attempt < retries:
+                if attempt < port_retries:
                     await asyncio.sleep(delay) # Wait before retrying
                     _LOGGER.warning("Attempt %s to open socket from ECU", attempt)
                 else:
-                    raise APsystemsInvalidData(f"Failed to open socket after {retries} attempts: {err}")
+                    raise APsystemsInvalidData(f"Failed to open socket after {port_retries} attempts: {err}")
 
 
     def close_socket(self):
@@ -119,9 +119,9 @@ class APsystemsSocket:
             self.close_socket()
 
 
-    async def query_ecu(self, retries):
+    async def query_ecu(self, port_retries):
         #read ECU data
-        await self.open_socket(retries)
+        await self.open_socket(port_retries)
         self.ecu_raw_data = await self.send_read_from_socket(self.ecu_query)
         try:
             self.process_ecu_data()
@@ -130,14 +130,14 @@ class APsystemsSocket:
         
         #read inverter data
         # Some ECUs like the socket to be closed and re-opened between commands
-        await self.open_socket(retries)
+        await self.open_socket(port_retries)
         cmd = self.inverter_query_prefix + self.ecu_id + "END\n"
         self.inverter_raw_data = await self.send_read_from_socket(cmd)
 
 
         #read signal data
         # Some ECUs like the socket to be closed and re-opened between commands
-        await self.open_socket(retries)
+        await self.open_socket(port_retries)
         cmd = self.inverter_signal_prefix + self.ecu_id + "END\n"
         self.inverter_raw_signal = await self.send_read_from_socket(cmd)
 
