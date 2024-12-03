@@ -1,3 +1,5 @@
+""" switch.py """
+
 import logging
 
 from homeassistant.components.switch import SwitchEntity
