@@ -1,3 +1,5 @@
+""" const.py """
+
 DOMAIN = 'apsystems_ecur'
 
 SOLAR_ICON = "mdi:solar-power"
