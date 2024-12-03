@@ -1,3 +1,5 @@
+""" __init__.py """
+
 import logging
 import requests
 import traceback
@@ -13,7 +15,7 @@ PLATFORMS = ["sensor", "binary_sensor", "switch"]
 
 
 class ECUR:
-    def __init__(self, ipaddr, ssid, wpa, cache, graphs):
+    def __init__(self, ipaddr, ssid, wpa, graphs):
         self.ecu = APsystemsSocket(ipaddr)
         self.ipaddr = ipaddr
         self.cache_count = 0
@@ -23,11 +25,9 @@ class ECUR:
         self.ecu_restarting = False
         self.cached_data = {}
 
-
     def set_querying_state(self, state: bool):
         """Set the querying state to either True or False."""
         self.querying = state
-
 
     def toggle_all_inverters(self, turn_on: bool):
         action = 'on' if turn_on else 'off'
@@ -41,8 +41,7 @@ class ECUR:
         except Exception as err:
             _LOGGER.warning(f"Attempt to switch inverters {action} failed with error: {err} (This switch is only compatible with ECU-R pro and ECU-C type ECU's)")
 
-
-    async def update(self):
+    async def update(self, port_retries):
         """Fetch data from ECU or use cached data."""
         data = {}
 
@@ -54,10 +53,9 @@ class ECUR:
             data["data_from_cache"] = self.data_from_cache
             data["querying"] = self.querying
             return self.cached_data
-
-        _LOGGER.debug("Querying ECU...")
         try:
-            data = await self.ecu.query_ecu(3)
+            # Fetch the latest port_retries value dynamically
+            data = await self.ecu.query_ecu(port_retries)
 
             if data.get("ecu_id"):
                 self.cached_data = data
@@ -93,33 +91,28 @@ class ECUR:
             raise UpdateFailed("Data doesn't contain a valid ecu_id")
         return data
 
+
 async def update_listener(hass, config):
     # Handle options update being triggered by config entry options updates
     _LOGGER.warning(f"Configuration updated: {config.as_dict()}")
-    ecu = ECUR(config.data["ecu_host"],
-               config.data["wifi_ssid"],
-               config.data["wifi_password"],
-               config.data["port_retries"],
-               config.data["show_graphs"]
-              )
 
 
 async def async_setup_entry(hass, config):
     # Setup the APsystems platform
     hass.data.setdefault(DOMAIN, {})
-    host = config.data["ecu_host"]
+#   host = config.data["ecu_host"]
     interval = timedelta(seconds=config.data["scan_interval"])
 
     ecu = ECUR(config.data["ecu_host"],
                config.data["wifi_ssid"],
                config.data["wifi_password"],
-               config.data["port_retries"],
                config.data["show_graphs"]
               )
 
+
     async def do_ecu_update():
-        # Directly await ecu.update() since it's asynchronous
-        return await ecu.update()
+        # Pass the current port_retries value dynamically
+        return await ecu.update(config.data["port_retries"])
 
     coordinator = DataUpdateCoordinator(
             hass,
@@ -140,6 +133,7 @@ async def async_setup_entry(hass, config):
     # Ensure that data is updated before getting it
     await coordinator.async_refresh()
 
+    # Register devices
     device_registry = dr.async_get(hass)
     device_registry.async_get_or_create(
         config_entry_id=config.entry_id,
