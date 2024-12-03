@@ -1,3 +1,5 @@
+""" binary_sensor.py """
+
 from datetime import timedelta
 import logging
 
