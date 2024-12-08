@@ -20,15 +20,17 @@ class ECUR:
         self.ipaddr = ipaddr
         self.cache_count = 0
         self.data_from_cache = False
-        self.querying = True
+        self.is_querying = True
         self.inverters_online = True
         self.ecu_restarting = False
         self.cached_data = {}
 
+    # called from switch.py
     def set_querying_state(self, state: bool):
         """Set the querying state to either True or False."""
-        self.querying = state
+        self.is_querying = state
 
+    # called from switch.py
     def toggle_all_inverters(self, turn_on: bool):
         action = 'on' if turn_on else 'off'
         headers = {'X-Requested-With': 'XMLHttpRequest'}
@@ -46,12 +48,12 @@ class ECUR:
         data = {}
 
         # If querying is stopped, return cached data
-        if not self.querying:
+        if not self.is_querying:
             _LOGGER.debug("Not querying ECU due to query=False")
             data = self.cached_data
             self.data_from_cache = True
             data["data_from_cache"] = self.data_from_cache
-            data["querying"] = self.querying
+            data["querying"] = self.is_querying
             return self.cached_data
         try:
             # Fetch the latest port_retries value dynamically
@@ -83,7 +85,7 @@ class ECUR:
             data = self.cached_data
 
         data["data_from_cache"] = self.data_from_cache
-        data["querying"] = self.querying
+        data["querying"] = self.is_querying
         data["restart_ecu"] = self.ecu_restarting
         _LOGGER.debug(f"Returning data: {data}")
         
