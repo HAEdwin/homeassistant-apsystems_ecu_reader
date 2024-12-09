@@ -35,8 +35,10 @@ class FlowHandler(config_entries.ConfigFlow):
 
         # User input is not empty, processing input.
         retries = user_input.get(KEYS[2], 5)  # Get port_retries from user input, default to 5
-        ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], retries)
-        _LOGGER.warning("ecu_id = %s", ecu_id)
+        show_graphs = user_input.get(KEYS[5], False) # Get show_graphs from user input, default to False
+        _LOGGER.warning("1. show_graphs = %s", show_graphs)
+        ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], retries, show_graphs)
+        _LOGGER.debug("ecu_id = %s", ecu_id)
 
         if ecu_id:
             return self.async_create_entry(title=f"ECU: {ecu_id}", data=user_input)
@@ -50,14 +52,15 @@ class FlowHandler(config_entries.ConfigFlow):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return OptionsFlowHandler(config_entry)
+        return OptionsFlowHandler()
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Regular change of integration configuration."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Init options handler."""
-        self.config_entry = config_entry
+   #def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    def __init__(self) -> None:
+        """Init options flow."""
+   #    self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Altering the integration configuration."""
@@ -83,7 +86,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input:
             retries = user_input.get(KEYS[2], 5)  # Get port_retries from user input, default to 5
-            ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], retries)
+            show_graphs = user_input.get(KEYS[5], False) # Get show_graphs from user input, default is False
+            _LOGGER.warning("2. show_graphs = %s", show_graphs)
+            ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], retries, show_graphs)
             if ecu_id:
                 self.hass.config_entries.async_update_entry(
                     self.config_entry, data=user_input
@@ -101,12 +106,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             )
 
 
-async def test_ecu_connection(hass, ecu_host, retries):
+async def test_ecu_connection(hass, ecu_host, retries, show_graphs):
     """Test the connection to the ECU and return the ECU ID if successful."""
     try:
-        ap_ecu = APsystemsSocket(ecu_host)
+        _LOGGER.warning("3. show_graphs = %s", show_graphs)
+        ap_ecu = APsystemsSocket(ecu_host, show_graphs)
         # Pass the retries parameter dynamically
-        test_query = await ap_ecu.query_ecu(retries)
+        _LOGGER.warning("4. show_graphs = %s", show_graphs)
+        test_query = await ap_ecu.query_ecu(retries, show_graphs)
         ecu_id = test_query.get("ecu_id", None)
         return ecu_id
 
