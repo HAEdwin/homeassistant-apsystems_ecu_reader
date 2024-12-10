@@ -36,7 +36,6 @@ class FlowHandler(config_entries.ConfigFlow):
         # User input is not empty, processing input.
         retries = user_input.get(KEYS[2], 5)  # Get port_retries from user input, default to 5
         show_graphs = user_input.get(KEYS[5], False) # Get show_graphs from user input, default to False
-        _LOGGER.warning("1. show_graphs = %s", show_graphs)
         ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], retries, show_graphs)
         _LOGGER.debug("ecu_id = %s", ecu_id)
 
@@ -87,7 +86,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input:
             retries = user_input.get(KEYS[2], 5)  # Get port_retries from user input, default to 5
             show_graphs = user_input.get(KEYS[5], False) # Get show_graphs from user input, default is False
-            _LOGGER.warning("2. show_graphs = %s", show_graphs)
             ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], retries, show_graphs)
             if ecu_id:
                 self.hass.config_entries.async_update_entry(
@@ -109,10 +107,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 async def test_ecu_connection(hass, ecu_host, retries, show_graphs):
     """Test the connection to the ECU and return the ECU ID if successful."""
     try:
-        _LOGGER.warning("3. show_graphs = %s", show_graphs)
         ap_ecu = APsystemsSocket(ecu_host, show_graphs)
         # Pass the retries parameter dynamically
-        _LOGGER.warning("4. show_graphs = %s", show_graphs)
         test_query = await ap_ecu.query_ecu(retries, show_graphs)
         ecu_id = test_query.get("ecu_id", None)
         return ecu_id
