@@ -18,7 +18,7 @@ class APsystemsSocket:
         
         self.ipaddr = ipaddr
         self.show_graphs = show_graphs
-        _LOGGER.warning("11. show_graphs = %s", show_graphs)
+        _LOGGER.warning("11. self.show_graphs = %s", self.show_graphs)
         # what do we expect socket data to end in
         self.recv_suffix = b'END\n'
 
@@ -121,8 +121,7 @@ class APsystemsSocket:
 
 
     async def query_ecu(self, port_retries, show_graphs):
-        #read ECU data
-        _LOGGER.warning("5. show_graphs = %s", show_graphs)
+        # Read ECU data
         await self.open_socket(port_retries)
         self.ecu_raw_data = await self.send_read_from_socket(self.ecu_query)
         try:
@@ -142,7 +141,6 @@ class APsystemsSocket:
         await self.open_socket(port_retries)
         cmd = self.inverter_signal_prefix + self.ecu_id + "END\n"
         self.inverter_raw_signal = await self.send_read_from_socket(cmd)
-        _LOGGER.warning("5a. show_graphs = %s", show_graphs)
         data = self.process_inverter_data(show_graphs)
         data["ecu_id"] = self.ecu_id
         if self.lifetime_energy != 0:
@@ -244,7 +242,6 @@ class APsystemsSocket:
 
 
     def process_inverter_data(self, show_graphs, data=None):
-        _LOGGER.warning("6. show_graphs = %s", show_graphs)
         output = {}
         if self.inverter_raw_data != '' and (self.aps_str(self.inverter_raw_data,9,4)) == '0002':
             data = self.inverter_raw_data
@@ -271,10 +268,9 @@ class APsystemsSocket:
                         istr = self.aps_str(data, cnt2 + 7, 2)
 
                         # Should graphs be updated?
-                        _LOGGER.warning("7. show_graphs = %s", show_graphs)
-                        
+
                         inv["signal"] = (
-                            None if not inv["online"] and self.show_graphs
+                            None if not inv["online"] and show_graphs
                             else signal.get(inverter_uid, 0)
                         )
 
@@ -285,11 +281,10 @@ class APsystemsSocket:
                             voltages = []
 
                             # Should graphs be updated?
-                            _LOGGER.warning("8. show_graphs = %s", show_graphs)
 
                             if inv["online"]:
                                 inv["temperature"] = self.aps_int_from_bytes(data, cnt2 + 11, 2) - 100
-                            if not inv["online"] and self.show_graphs:
+                            if not inv["online"] and show_graphs:
                                 inv["frequency"] = None
                                 power.append(None)
                                 voltages.append(None)
@@ -315,11 +310,10 @@ class APsystemsSocket:
                             voltages = []
 
                             # Should graphs be updated? 
-                            _LOGGER.warning("9. show_graphs = %s", show_graphs)
 
                             if inv["online"]:
                                 inv["temperature"] = self.aps_int_from_bytes(data, cnt2 + 11, 2) - 100
-                            if not inv["online"] and self.show_graphs:
+                            if not inv["online"] and show_graphs:
                                 inv["frequency"] = None
                                 power.append(None)
                                 voltages.append(None)
@@ -351,10 +345,11 @@ class APsystemsSocket:
                             voltages = []
 
                             # Should graphs be updated? 
-                            _LOGGER.warning("10. show_graphs = %s", show_graphs)
+                            _LOGGER.warning("10-1. show_graphs = %s", show_graphs)
+                            _LOGGER.warning("10-2. self.show_graph = %s", self.show_graphs)
                             if inv["online"]:
                                 inv["temperature"] = self.aps_int_from_bytes(data, cnt2 + 11, 2) - 100
-                            if not inv["online"] and self.show_graphs:
+                            if not inv["online"] and show_graphs:
                                 inv["frequency"] = None
                                 power.append(None)
                                 voltages.append(None)
