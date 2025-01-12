@@ -2,15 +2,20 @@
 
 
 # Standard library imports
+import traceback
 import logging
 from datetime import timedelta
+import asyncio
 
 # Third-party imports
 import requests
 from homeassistant.helpers import device_registry as dr
-from homeassistant.components.persistent_notification import create as create_persistent_notification
+from homeassistant.components.persistent_notification import (
+    create as create_persistent_notification
+)
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
+
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,7 +24,9 @@ PLATFORMS = ["sensor", "binary_sensor", "switch"]
 
 
 class ECUR:
-    def __init__(self, ipaddr, ssid, wpa, show_graphs):
+    """ Class to handle the ECU data and actions. """
+    def __init__(self, ipaddr, show_graphs):
+    #def __init__(self, ipaddr, ssid, wpa, show_graphs):
         self.ipaddr = ipaddr
         self.show_graphs = show_graphs
         self.cache_count = 0
@@ -27,39 +34,41 @@ class ECUR:
         self.is_querying = True
         self.inverters_online = True
         self.ecu_restarting = False
+        self.error_message = ""
         self.cached_data = {}
         self.ecu = APsystemsSocket(ipaddr, self.show_graphs)
 
 
     # called from switch.py
     def set_querying_state(self, state: bool):
-        """Set the querying state to either True or False."""
+        """ Set the querying state to either True or False. """
         self.is_querying = state
 
     # called from switch.py
     def toggle_all_inverters(self, turn_on: bool):
+        """ Switch all inverters on or off. """
         action = 'on' if turn_on else 'off'
         headers = {'X-Requested-With': 'XMLHttpRequest'}
         url = f'http://{self.ipaddr}/index.php/configuration/set_switch_all_{action}'
         _LOGGER.debug("URL = %s", url)
         try:
-            get_url = requests.post(url, headers=headers)
+            get_url = requests.post(url, headers=headers, timeout=10)
             self.inverters_online = turn_on
+            status_message = "Ok" if get_url.status_code == 200 else str(get_url.status_code)
             _LOGGER.debug(
-                "Response from ECU on switching the inverters \n\t%s: %s",
-                action, str(get_url.status_code)
+                "Response from ECU on switching the inverters %s: %s",
+                action, status_message
             )
-        except Exception as err:
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as err:
             _LOGGER.warning(
-                "Attempt to switch inverters %s failed with error: \n\t%s\n\t"
+                "Attempt to switch inverters %s failed with error: %s\n\t"
                 "This switch is only compatible with ECU-R pro and ECU-C models",
                 action, err
             )
 
     async def update(self, port_retries, show_graphs):
-        # Fetch ECU data or use cached data.
+        """ Fetch ECU data or use cached data if querying is stopped. """
         data = {}
-        
         # If querying is stopped, use cached data.
         if not self.is_querying:
             _LOGGER.debug("Not querying ECU, using cached data.")
@@ -77,55 +86,41 @@ class ECUR:
                 self.cache_count = 0
                 self.data_from_cache = False
                 self.ecu_restarting = False
-                self.error_message = ""
             else:
                 msg = "Using cached data. No ecu_id returned."
                 _LOGGER.warning(msg)
                 self.cached_data["error_message"] = msg
                 data = self.cached_data
-
         except APsystemsInvalidData as err:
-            msg = f"Invalid data error: {err}. Using cached data."
-            if str(err) != 'timed out':
-                _LOGGER.warning(msg)
-            self.cached_data["error_message"] = msg
-            data = self.cached_data
-
-        except Exception as err:
-            msg = "General exception error. Using cached data."
-            _LOGGER.warning("Exception error: %s. Using cached data.", err)
-            self.cached_data["error_message"] = msg
-            data = self.cached_data
+            _LOGGER.warning(err)
+            return self.cached_data
 
         data["data_from_cache"] = self.data_from_cache
         data["querying"] = self.is_querying
         data["restart_ecu"] = self.ecu_restarting
-        _LOGGER.debug(f"Returning data: {data}")
-        
+        _LOGGER.debug("Returning data: %s", data)
+
         if not data.get("ecu_id"):
             raise UpdateFailed("Data doesn't contain a valid ecu_id")
         return data
 
 
-async def update_listener(hass, config):
-    # Handle options update being triggered by config entry options updates.
-    _LOGGER.warning(f"Configuration updated: {config.as_dict()}")
+async def update_listener(_, config):
+# async def update_listener(hass, config):
+    """ Handle options update being triggered by config entry options updates """
+    _LOGGER.warning("Configuration updated: %s",config.as_dict())
 
 
 async def async_setup_entry(hass, config):
-    # Setup APsystems platform
+    """ Setup APsystems platform """
     hass.data.setdefault(DOMAIN, {})
     interval = timedelta(seconds=config.data["scan_interval"])
 
-    ecu = ECUR(config.data["ecu_host"],
-               config.data["wifi_ssid"],
-               config.data["wifi_password"],
-               config.data["show_graphs"]
-              )
+    ecu = ECUR(config.data["ecu_host"], config.data["show_graphs"])
 
 
     async def do_ecu_update():
-        # Pass current port_retries value dynamically.
+        """ Pass current port_retries value dynamically. """
         return await ecu.update(config.data["port_retries"], config.data["show_graphs"])
 
     coordinator = DataUpdateCoordinator(
@@ -178,7 +173,7 @@ async def async_setup_entry(hass, config):
 
 
 async def async_remove_config_entry_device(hass, config, device_entry) -> bool:
-    # Handle device removal.
+    """ Handle device removal """	
     if device_entry:
         # Notify the user that the device has been removed
         create_persistent_notification(
@@ -189,10 +184,13 @@ async def async_remove_config_entry_device(hass, config, device_entry) -> bool:
         return True
     return False
 
-async def async_unload_entry(hass, config):
-    unload_ok = await hass.config_entries.async_unload_platforms(config, PLATFORMS)
+async def async_unload_config_entry(hass, config):
+    """ Unload APsystems platform """
     ecu = hass.data[DOMAIN].get("ecu")
-    ecu.stop_query()
+    unload_ok, _ = await asyncio.gather(
+        hass.config_entries.async_unload_platforms(config, PLATFORMS),
+        ecu.set_querying_state(False)
+    )
     if unload_ok:
         hass.data[DOMAIN].pop(config.entry_id)
     return unload_ok
