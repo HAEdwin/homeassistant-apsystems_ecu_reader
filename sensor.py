@@ -13,13 +13,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 
-from .const import (
-    DOMAIN,
-    SOLAR_ICON,
-    FREQ_ICON,
-    SIGNAL_ICON
-)
-
 from homeassistant.const import (
     UnitOfPower,
     UnitOfEnergy,
@@ -29,42 +22,50 @@ from homeassistant.const import (
     PERCENTAGE
 )
 
+from .const import (
+    DOMAIN,
+    SOLAR_ICON,
+    FREQ_ICON,
+    SIGNAL_ICON
+)
+
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
+    """ sensor.py async_setup_entry """
 
     ecu = hass.data[DOMAIN].get("ecu")
     coordinator = hass.data[DOMAIN].get("coordinator")
 
     sensors = [
-        APSystemsECUSensor(coordinator, ecu, "current_power", 
+        APSystemsECUSensor(coordinator, ecu, "current_power",
             label="Current Power",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=SOLAR_ICON,
             stateclass=SensorStateClass.MEASUREMENT
         ),
-        APSystemsECUSensor(coordinator, ecu, "today_energy", 
+        APSystemsECUSensor(coordinator, ecu, "today_energy",
             label="Today Energy",
             unit=UnitOfEnergy.KILO_WATT_HOUR,
             devclass=SensorDeviceClass.ENERGY,
             icon=SOLAR_ICON,
             stateclass=SensorStateClass.TOTAL_INCREASING
         ),
-        APSystemsECUSensor(coordinator, ecu, "lifetime_energy", 
+        APSystemsECUSensor(coordinator, ecu, "lifetime_energy",
             label="Lifetime Energy",
             unit=UnitOfEnergy.KILO_WATT_HOUR,
             devclass=SensorDeviceClass.ENERGY,
             icon=SOLAR_ICON,
             stateclass=SensorStateClass.TOTAL_INCREASING
         ),
-        APSystemsECUSensor(coordinator, ecu, "qty_of_inverters", 
+        APSystemsECUSensor(coordinator, ecu, "qty_of_inverters",
             label="Inverters",
             icon=SOLAR_ICON,
             entity_category=EntityCategory.DIAGNOSTIC
         ),
-        APSystemsECUSensor(coordinator, ecu, "qty_of_online_inverters", 
+        APSystemsECUSensor(coordinator, ecu, "qty_of_online_inverters",
             label="Inverters Online",
             icon=SOLAR_ICON,
             entity_category=EntityCategory.DIAGNOSTIC
@@ -73,7 +74,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 
     inverters = coordinator.data.get("inverters", {})
     for uid,inv_data in inverters.items():
-        _LOGGER.debug(f"Inverter {uid} {inv_data.get('channel_qty')}")
+        _LOGGER.debug("Inverter %s %s", uid, inv_data.get('channel_qty'))
         # https://github.com/ksheumaker/homeassistant-apsystems_ecur/issues/110
         if inv_data.get("channel_qty"):
             sensors.extend([
@@ -109,7 +110,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
             ])
             for i in range(0, inv_data.get("channel_qty", 0)):
                 sensors.append(
-                    APSystemsECUInverterSensor(coordinator, ecu, uid, "power", 
+                    APSystemsECUInverterSensor(coordinator, ecu, uid, "power",
                         index=i, label=f"Power Ch {i+1}",
                         unit=UnitOfPower.WATT,
                         devclass=SensorDeviceClass.POWER,
@@ -121,6 +122,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 
 
 class APSystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
+    """ sensor.py APSystemsECUInverterSensor """
     def __init__(self, coordinator, ecu, uid, field, index=0, label=None, icon=None, unit=None, devclass=None, stateclass=None, entity_category=None):
 
         super().__init__(coordinator)
@@ -160,11 +162,11 @@ class APSystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def state(self):
-        _LOGGER.debug(f"State called for {self._field}")
+        _LOGGER.debug("State called for %s", self._field)
         if self._field == "voltage":
             return self.coordinator.data.get("inverters", {}).get(self._uid, {}).get("voltage", [])[0]
         elif self._field == "power":
-            _LOGGER.debug(f"POWER  {self._uid} {self._index}")
+            _LOGGER.debug("POWER  %s %s", self._uid, self._index)
             return self.coordinator.data.get("inverters", {}).get(self._uid, {}).get("power", [])[self._index]
         else:
             return self.coordinator.data.get("inverters", {}).get(self._uid, {}).get(self._field)
@@ -189,7 +191,7 @@ class APSystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def state_class(self):
-        _LOGGER.debug(f"State class {self._stateclass} - {self._field}")
+        _LOGGER.debug("State class %s - %s", self._stateclass, self._field)
         return self._stateclass
 
     @property
@@ -206,6 +208,7 @@ class APSystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
         return self._entity_category
 
 class APSystemsECUSensor(CoordinatorEntity, SensorEntity):
+    """ sensor.py APSystemsECUSensor """
 
     def __init__(self, coordinator, ecu, field, label=None, icon=None, unit=None, devclass=None, stateclass=None, entity_category=None):
 
@@ -241,7 +244,7 @@ class APSystemsECUSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def state(self):
-        _LOGGER.debug(f"State called for {self._field}")
+        _LOGGER.debug("State called for %s", self._field)
         return self.coordinator.data.get(self._field)
 
     @property
@@ -265,7 +268,7 @@ class APSystemsECUSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def state_class(self):
-        _LOGGER.debug(f"State class {self._stateclass} - {self._field}")
+        _LOGGER.debug("State class %s - %s", self._stateclass, self._field)
         return self._stateclass
 
     @property
@@ -276,7 +279,7 @@ class APSystemsECUSensor(CoordinatorEntity, SensorEntity):
                 (DOMAIN, parent),
             }
         }
-     
+
     @property
     def entity_category(self):
         return self._entity_category
