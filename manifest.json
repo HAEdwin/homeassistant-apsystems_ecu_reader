@@ -4,10 +4,10 @@
   "version": "v2.0.0",
   "documentation": "https://github.com/ksheumaker/homeassistant-apsystems_ecur",
   "issue_tracker": "https://github.com/ksheumaker/homeassistant-apsystems_ecur/issues",
-  "codeowners": ["@ksheumaker"],
+  "codeowners": ["@ksheumaker", "@haedwin"],
   "config_flow": true,
   "integration_type": "hub",
-  "iot_class": "local_polling",
+  "iot_class": "local_pull",
   "loggers": ["custom_components.apsystems_ecur"],
   "dependencies": [],
   "requirements": []
