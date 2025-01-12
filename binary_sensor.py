@@ -1,6 +1,5 @@
 """ binary_sensor.py """
 
-from datetime import timedelta
 import logging
 
 from homeassistant.components.binary_sensor import (
@@ -13,7 +12,6 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import (
     DOMAIN,
-    RELOAD_ICON,
     CACHE_ICON,
     RESTART_ICON
 )
@@ -21,6 +19,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
+    """ Set up the binary sensors for the APsystems ECU """
 
     ecu = hass.data[DOMAIN].get("ecu")
     coordinator = hass.data[DOMAIN].get("coordinator")
@@ -35,6 +34,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 
 
 class APSystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
+    """ Representation of a binary sensor for APsystems ECU """
 
     def __init__(self, coordinator, ecu, field, label=None, devclass=None, icon=None):
 
