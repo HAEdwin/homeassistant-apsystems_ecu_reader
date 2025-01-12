@@ -1,0 +1,42 @@
+{
+    "options": {
+      "step": {
+        "init": {
+          "data": {
+            "ecu_host": "Dirección IP de la ECU (siga la tabla de método de conexión en el README)",
+            "scan_interval": "Intervalo de consulta de la ECU en segundos (se recomienda un mínimo de 300)",
+            "port_retries": "Reintentos cuando la ECU no responda (rango entre 1 y 5 recomendado)",
+            "wifi_ssid": "Especificar SSID (solo para modelos ECU-R 2162... y ECU-C)",
+            "wifi_password": "Especificar contraseña (solo para modelos ECU-R 2162... y ECU-C)",
+            "show_graphs": "Actualizar gráficos cuando los inversores estén fuera de línea"
+          },
+          "title": "Configuración de la ECU de APsystems"
+        }
+      },
+      "error": {
+        "cannot_connect": "No se puede encontrar la ECU en esta dirección IP o la energía de vida útil es cero",
+        "no_ecu_found": "No se encontró la ECU en esta dirección IP",
+        "unknown": "Error desconocido, consulte el registro para más detalles"
+      },
+      "abort": {
+        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      }
+    },
+    "config": {
+      "step": {
+        "user": {
+          "data": {
+            "ecu_host": "Dirección IP de la ECU (siga la tabla de método de conexión en el README)",
+            "scan_interval": "Intervalo de consulta de la ECU en segundos (se recomienda un mínimo de 300)",
+            "port_retries": "Reintentos cuando la ECU no responda (rango entre 1 y 5 recomendado)",
+            "wifi_ssid": "Especificar SSID (solo para modelos ECU-R 2162... y ECU-C)",
+            "wifi_password": "Especificar contraseña (solo para modelos ECU-R 2162... y ECU-C)",
+            "show_graphs": "Actualizar gráficos cuando los inversores estén fuera de línea"
+          },
+          "title": "Configuración de la ECU de APsystems"
+        }
+      },
+      "error": {
+        "cannot_connect": "No se puede encontrar la ECU en esta dirección IP o la energía de vida útil es cero",
+        "no_ecu_found": "No se e
+  
