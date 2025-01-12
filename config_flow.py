@@ -1,10 +1,10 @@
 """ config_flow.py """
 
 import logging
-import voluptuous as vol
+import voluptuous as vol # type: ignore
 
-from homeassistant.core import callback
-from homeassistant import config_entries
+from homeassistant.core import callback # type: ignore
+from homeassistant import config_entries # type: ignore
 
 from .const import DOMAIN, KEYS
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
@@ -20,8 +20,10 @@ STEP_USER_DATA_SCHEMA = vol.Schema({
     vol.Optional(KEYS[5], default= False): bool,
 })
 
+
 @config_entries.HANDLERS.register(DOMAIN)
 class FlowHandler(config_entries.ConfigFlow):
+    """Handle a config flow."""
 
     VERSION = 1
 
@@ -34,9 +36,9 @@ class FlowHandler(config_entries.ConfigFlow):
             )
 
         # User input is not empty, processing input.
-        retries = user_input.get(KEYS[2], 5)  # Get port_retries from user input, default to 5
-        show_graphs = user_input.get(KEYS[5], False) # Get show_graphs from user input, default to False
-        ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], retries, show_graphs)
+        retries = user_input.get(KEYS[2], 5)  # port_retries, default = 5
+        show_graphs = user_input.get(KEYS[5], False) # show_graphs, default = False
+        ecu_id = await test_ecu_connection(user_input["ecu_host"], retries, show_graphs)
         _LOGGER.debug("ecu_id = %s", ecu_id)
 
         if ecu_id:
@@ -51,15 +53,14 @@ class FlowHandler(config_entries.ConfigFlow):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return OptionsFlowHandler()
+        return OptionsFlowHandler(config_entry)
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Regular change of integration configuration."""
 
-   #def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-    def __init__(self) -> None:
+    def __init__(self, config_entry) -> None:
         """Init options flow."""
-   #    self.config_entry = config_entry
+        self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Altering the integration configuration."""
@@ -74,29 +75,27 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         schema = vol.Schema(
             {
-                vol.Required(KEYS[0], default=current_options.get(KEYS[0])): str,
-                vol.Required(KEYS[1], default=current_options.get(KEYS[1])): int,
-                vol.Optional(KEYS[2], default=current_options.get(KEYS[2])): int,  # Port retries
-                vol.Optional(KEYS[3], default=current_options.get(KEYS[3])): str,
-                vol.Optional(KEYS[4], default=current_options.get(KEYS[4])): str,
-                vol.Optional(KEYS[5], default=current_options.get(KEYS[5])): bool,
+                vol.Required(KEYS[0], default=current_options.get(KEYS[0])): str, # ECU Host
+                vol.Required(KEYS[1], default=current_options.get(KEYS[1])): int, # Scan interval
+                vol.Optional(KEYS[2], default=current_options.get(KEYS[2])): int, # Port retries
+                vol.Optional(KEYS[3], default=current_options.get(KEYS[3])): str, # ECU model
+                vol.Optional(KEYS[4], default=current_options.get(KEYS[4])): str, # ECU firmware
+                vol.Optional(KEYS[5], default=current_options.get(KEYS[5])): bool,# Show graphs
             }
         )
 
         if user_input:
-            retries = user_input.get(KEYS[2], 5)  # Get port_retries from user input, default to 5
-            show_graphs = user_input.get(KEYS[5], False) # Get show_graphs from user input, default is False
-            ecu_id = await test_ecu_connection(self.hass, user_input["ecu_host"], retries, show_graphs)
+            retries = user_input.get(KEYS[2], 5)  # port_retries, default to 5
+            show_graphs = user_input.get(KEYS[5], False) # show_graphs, default is False
+            ecu_id = await test_ecu_connection(user_input["ecu_host"], retries, show_graphs)
             if ecu_id:
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry, data=user_input
-                )
+                self.hass.config_entries.async_update_entry(self.config_entry, data=user_input)
                 return self.async_create_entry(title="", data={})
-            else:
-                errors["ecu_host"] = "no_ecu_found"
-                return self.async_show_form(
-                    step_id="init", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
-                )
+
+            errors["ecu_host"] = "no_ecu_found"
+            return self.async_show_form(
+                step_id="init", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            )
         else:
             errors = {}
             return self.async_show_form(
@@ -104,7 +103,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             )
 
 
-async def test_ecu_connection(hass, ecu_host, retries, show_graphs):
+async def test_ecu_connection(ecu_host, retries, show_graphs):
     """Test the connection to the ECU and return the ECU ID if successful."""
     try:
         ap_ecu = APsystemsSocket(ecu_host, show_graphs)
@@ -114,8 +113,5 @@ async def test_ecu_connection(hass, ecu_host, retries, show_graphs):
         return ecu_id
 
     except APsystemsInvalidData as err:
-        _LOGGER.debug(f"APsystemsInvalidData exception: {err}")
-        return None
-    except Exception as err:
-        _LOGGER.debug(f"Unknown error occurred during ECU query: {err}")
+        _LOGGER.debug("APsystemsInvalidData exception: %s", err)
         return None
