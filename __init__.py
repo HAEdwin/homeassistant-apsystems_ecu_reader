@@ -62,9 +62,31 @@ class ECUR:
         except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as err:
             _LOGGER.warning(
                 "Attempt to switch inverters %s failed with error: %s\n\t"
-                "This switch is only compatible with ECU-R pro and ECU-C models",
+                "This switch is only compatible with ECU-ID 2162... series and ECU-C models",
                 action, err
             )
+
+    # called from switch.py
+    def set_inverter_state(self, inverter_id, state):
+        """Set the on/off state of an inverter."""
+        action = '1' if state else '2'
+        headers = {'X-Requested-With': 'XMLHttpRequest'}
+        url = f'http://{self.ipaddr}/index.php/configuration/set_switch_state?ids[]={inverter_id}{action}'
+        _LOGGER.warning("URL = %s", url)
+        try:
+            get_url = requests.post(url, headers=headers, timeout=10)
+            status_message = "Ok" if get_url.status_code == 200 else str(get_url.status_code)
+            _LOGGER.warning(
+                "Response from ECU on switching the inverter %s %s: %s",
+                inverter_id, "On" if state == 1 else "Off", status_message
+            )
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as err:
+            _LOGGER.warning(
+                "Attempt to switch inverter %s %s: Failed with error: %s\n\t"
+                "This switch is only compatible with ECU-ID 2162... series and ECU-C models",
+                inverter_id, "On" if state == 1 else "Off", err
+            )
+
 
     async def update(self, port_retries, show_graphs):
         """ Fetch ECU data or use cached data if querying is stopped. """
