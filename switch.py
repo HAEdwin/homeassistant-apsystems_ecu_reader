@@ -1,6 +1,6 @@
+""" switch.py """
 import logging
 
-#from homeassistant.util import dt as dt_util
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import (
@@ -26,6 +26,10 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
         APSystemsECUInvertersSwitch(coordinator, ecu, "inverters_online",
             label="Inverters Online", icon=POWER_ICON),
     ]
+    inverters = coordinator.data.get("inverters", {})
+    for uid, inv_data in inverters.items():
+        switches.append(APSystemsECUInverterSwitch(coordinator, ecu, uid, inv_data))
+    
     add_entities(switches)
 
 class APSystemsECUQuerySwitch(CoordinatorEntity, SwitchEntity):
@@ -147,5 +151,64 @@ class APSystemsECUInvertersSwitch(CoordinatorEntity, SwitchEntity):
     def turn_on(self, *args, **kwargs):
         """Turn on the switch."""
         self._ecu.toggle_all_inverters(True)
+        self._state = True
+        self.schedule_update_ha_state()
+
+
+class APSystemsECUInverterSwitch(CoordinatorEntity, SwitchEntity):
+    """Representation of a switch for an individual inverter."""
+    def __init__(self, coordinator, ecu, uid, inv_data):
+        super().__init__(coordinator)
+        self.coordinator = coordinator
+        self._ecu = ecu
+        self._uid = uid
+        self._inv_data = inv_data
+        self._name = f"Inverter {uid}"
+        self._state = inv_data.get("online", True)
+
+    @property
+    def unique_id(self):
+        """Return the unique id of the switch."""
+        return f"{self._ecu.ecu.ecu_id}_inverter_{self._uid}"
+
+    @property
+    def name(self):
+        """Return the name of the switch."""
+        return self._name
+
+    @property
+    def icon(self):
+        """Return the icon to use in the frontend, if any."""
+        return "mdi:solar-power"
+
+    @property
+    def device_info(self):
+        """Return the device info."""
+        parent = f"ecu_{self._ecu.ecu.ecu_id}"
+        return {
+            "identifiers": {
+                (DOMAIN, parent),
+            }
+        }
+
+    @property
+    def entity_category(self):
+        """Return the category of the entity."""
+        return EntityCategory.DIAGNOSTIC
+
+    @property
+    def is_on(self):
+        """Return the state of the switch."""
+        return self._state
+
+    def turn_off(self, *args, **kwargs):
+        """Turn off the switch."""
+        self._ecu.set_inverter_state(self._uid, False)
+        self._state = False
+        self.schedule_update_ha_state()
+
+    def turn_on(self, *args, **kwargs):
+        """Turn on the switch."""
+        self._ecu.set_inverter_state(self._uid, True)
         self._state = True
         self.schedule_update_ha_state()
