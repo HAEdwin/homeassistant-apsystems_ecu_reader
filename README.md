@@ -12,3 +12,4 @@ This custom integration for Home Assistant sends commands to the ECU to read dat
 - More efficient handling of queries that fail
 - Caching based on individual queries
 - Removed the need for retries
+- Added L2 and L3 voltages for three-phased inverters
