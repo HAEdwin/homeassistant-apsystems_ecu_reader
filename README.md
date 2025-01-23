@@ -14,3 +14,4 @@ This custom integration for Home Assistant sends commands to the ECU to read dat
 - Removed the need for retries
 - Added L2 and L3 voltages for three-phased inverters
 - Added support for multiple ECU hubs
+- Added individual inverter online sensors for automations
