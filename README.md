@@ -16,5 +16,5 @@ This custom integration for Home Assistant sends commands to the ECU to read dat
 - Added support for multiple ECU hubs
 - Added individual inverter online sensors for automations
 
-#Difference in totals EMA and integration
+# Difference in totals EMA and integration
 Data produced by the ECU represents the data over the past five minutes. That's why the statistics on the EMA site are five minutes behind. For example: at 09:05 new data arrives, but this represents data from 09:00
