@@ -3,18 +3,18 @@
       "step": {
         "init": {
           "data": {
-            "ecu_host": "ECU-IP-Adresse (folgen Sie der Verbindungsmethode in der README)",
+            "ecu_host": "ECU IP-Adresse (siehe Verbindungsmethode in der Anleitung)",
             "scan_interval": "ECU-Abfrageintervall in Sekunden (mindestens 300 empfohlen)",
-            "port_retries": "Wiederholungen, wenn die ECU nicht antwortet (Bereich zwischen 1 und 5 empfohlen)",
-            "wifi_ssid": "SSID angeben (nur für ECU-R 2162... und ECU-C Modelle)",
+            "port_retries": "Wiederholungen, wenn die ECU nicht reagiert (Bereich zwischen 1 - 5 empfohlen)",
+            "wifi_ssid": "SSID angeben (nur für ECU-R UID 2162... und ECU-C Modelle)",
             "wifi_password": "Passwort angeben (nur für ECU-R 2162... und ECU-C Modelle)",
-            "show_graphs": "Diagramme aktualisieren, wenn die Wechselrichter offline sind"
+            "show_graphs": "Aktualisiere Diagramme, wenn Wechselrichter offline sind"
           },
-          "title": "APsystems ECU-Konfiguration"
+          "title": "APsystems ECU Konfiguration"
         }
       },
       "error": {
-        "cannot_connect": "ECU konnte unter dieser IP-Adresse nicht gefunden werden oder die Lebensenergie ist null",
+        "cannot_connect": "Kann ECU unter dieser IP-Adresse nicht finden oder Lebensdauerenergie ist null",
         "no_ecu_found": "Keine ECU unter dieser IP-Adresse gefunden",
         "unknown": "Unbekannter Fehler, siehe Protokoll für Details"
       },
@@ -26,20 +26,20 @@
       "step": {
         "user": {
           "data": {
-            "ecu_host": "ECU-IP-Adresse (folgen Sie der Verbindungsmethode in der README)",
+            "ecu_host": "ECU IP-Adresse (siehe Verbindungsmethode in der Anleitung)",
             "scan_interval": "ECU-Abfrageintervall in Sekunden (mindestens 300 empfohlen)",
-            "port_retries": "Wiederholungen, wenn die ECU nicht antwortet (Bereich zwischen 1 und 5 empfohlen)",
+            "port_retries": "Wiederholungen, wenn die ECU nicht reagiert (Bereich zwischen 1 - 5 empfohlen)",
             "wifi_ssid": "SSID angeben (nur für ECU-R 2162... und ECU-C Modelle)",
             "wifi_password": "Passwort angeben (nur für ECU-R 2162... und ECU-C Modelle)",
-            "show_graphs": "Diagramme aktualisieren, wenn die Wechselrichter offline sind"
+            "show_graphs": "Aktualisiere Diagramme, wenn Wechselrichter offline sind"
           },
-          "title": "APsystems ECU Configuration"
+          "title": "APsystems ECU Konfiguration"
         }
       },
       "error": {
-        "cannot_connect": "Can't find ECU at this IP-Address or life-time energy is zero",
-        "no_ecu_found": "No ECU found at this IP-address",
-        "unknown": "Unknown error, see log for details"
+        "cannot_connect": "Kann ECU unter dieser IP-Adresse nicht finden oder Lebensdauerenergie ist null",
+        "no_ecu_found": "Keine ECU unter dieser IP-Adresse gefunden",
+        "unknown": "Unbekannter Fehler, siehe Protokoll für Details"
       },
       "abort": {
         "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
