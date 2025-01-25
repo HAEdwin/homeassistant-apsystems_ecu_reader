@@ -4,6 +4,7 @@
 # Standard library imports
 import traceback
 import logging
+import re
 from datetime import timedelta
 import asyncio
 
@@ -15,7 +16,6 @@ from homeassistant.components.persistent_notification import (
 )
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
-
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,10 +26,8 @@ PLATFORMS = ["sensor", "binary_sensor", "switch"]
 class ECUR:
     """ Class to handle the ECU data and actions. """
     def __init__(self, ipaddr, show_graphs):
-    #def __init__(self, ipaddr, ssid, wpa, show_graphs):
         self.ipaddr = ipaddr
         self.show_graphs = show_graphs
-        self.cache_count = 0
         self.data_from_cache = False
         self.is_querying = True
         self.inverters_online = True
@@ -45,46 +43,25 @@ class ECUR:
         self.is_querying = state
 
     # called from switch.py
-    def toggle_all_inverters(self, turn_on: bool):
-        """ Switch all inverters on or off. """
-        action = 'on' if turn_on else 'off'
-        headers = {'X-Requested-With': 'XMLHttpRequest'}
-        url = f'http://{self.ipaddr}/index.php/configuration/set_switch_all_{action}'
-        _LOGGER.debug("URL = %s", url)
+    def set_inverter_state(self, inverter_id, state):
+        """Set the on/off state of an inverter. 1=on, 2=off"""
+        action = {"ids[]": f'{inverter_id}1' if state else f'{inverter_id}2'}
+        headers = {'X-Requested-With': 'XMLHttpRequest', "Connection": "keep-alive"}
+        url = f'http://{self.ipaddr}/index.php/configuration/set_switch_state'
+
         try:
-            get_url = requests.post(url, headers=headers, timeout=10)
-            self.inverters_online = turn_on
-            status_message = "Ok" if get_url.status_code == 200 else str(get_url.status_code)
-            _LOGGER.debug(
-                "Response from ECU on switching the inverters %s: %s",
-                action, status_message
-            )
-        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as err:
+            response = requests.post(url, headers=headers, data=action, timeout=15)
             _LOGGER.warning(
-                "Attempt to switch inverters %s failed with error: %s\n\t"
-                "This switch is only compatible with ECU-ID 2162... series and ECU-C models",
-                action, err
+                "Response from ECU on switching the inverter %s to state %s: %s",
+                inverter_id, 'on' if state else 'off',
+                re.search(r'"message":"([^"]+)"', response.text).group(1)
             )
 
-    # called from switch.py
-    def set_inverter_state(self, inverter_id, state):
-        """Set the on/off state of an inverter."""
-        action = '1' if state else '2'
-        headers = {'X-Requested-With': 'XMLHttpRequest'}
-        url = f'http://{self.ipaddr}/index.php/configuration/set_switch_state?ids[]={inverter_id}{action}'
-        _LOGGER.warning("URL = %s", url)
-        try:
-            get_url = requests.post(url, headers=headers, timeout=10)
-            status_message = "Ok" if get_url.status_code == 200 else str(get_url.status_code)
-            _LOGGER.warning(
-                "Response from ECU on switching the inverter %s %s: %s",
-                inverter_id, "On" if state == 1 else "Off", status_message
-            )
         except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as err:
             _LOGGER.warning(
-                "Attempt to switch inverter %s %s: Failed with error: %s\n\t"
+                "Attempt to switch inverter %s failed with error: %s\n\t"
                 "This switch is only compatible with ECU-ID 2162... series and ECU-C models",
-                inverter_id, "On" if state == 1 else "Off", err
+                state, err
             )
 
 
@@ -105,7 +82,6 @@ class ECUR:
 
             if data.get("ecu_id"):
                 self.cached_data = data
-                self.cache_count = 0
                 self.data_from_cache = False
                 self.ecu_restarting = False
             else:
@@ -128,7 +104,6 @@ class ECUR:
 
 
 async def update_listener(_, config):
-# async def update_listener(hass, config):
     """ Handle options update being triggered by config entry options updates """
     _LOGGER.warning("Configuration updated: %s",config.as_dict())
 
@@ -139,7 +114,6 @@ async def async_setup_entry(hass, config):
     interval = timedelta(seconds=config.data["scan_interval"])
 
     ecu = ECUR(config.data["ecu_host"], config.data["show_graphs"])
-
 
     async def do_ecu_update():
         """ Pass current port_retries value dynamically. """
@@ -169,7 +143,7 @@ async def async_setup_entry(hass, config):
     device_registry.async_get_or_create(
         config_entry_id=config.entry_id,
         identifiers={(DOMAIN, f"ecu_{ecu.ecu.ecu_id}")},
-        manufacturer="APSystems",
+        manufacturer="APsystems",
         suggested_area="Roof",
         name=f"ECU {ecu.ecu.ecu_id}",
         model=ecu.ecu.firmware,
@@ -182,7 +156,7 @@ async def async_setup_entry(hass, config):
         device_registry.async_get_or_create(
             config_entry_id=config.entry_id,
             identifiers={(DOMAIN, f"inverter_{uid}")},
-            manufacturer="APSystems",
+            manufacturer="APsystems",
             suggested_area="Roof",
             name=f"Inverter {uid}",
             model=inv_data.get("model")
