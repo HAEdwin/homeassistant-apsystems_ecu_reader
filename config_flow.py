@@ -3,8 +3,8 @@
 import logging
 import voluptuous as vol # type: ignore
 
-from homeassistant.core import callback # type: ignore
-from homeassistant import config_entries # type: ignore
+from homeassistant import config_entries
+from homeassistant.core import callback
 
 from .const import DOMAIN, KEYS
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
@@ -12,12 +12,10 @@ from .ecu_api import APsystemsSocket, APsystemsInvalidData
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema({
-    vol.Required(KEYS[0], default= ''): str,
-    vol.Required(KEYS[1], default= 300): int,
-    vol.Optional(KEYS[2], default= 5): int,  # Port retries
-    vol.Optional(KEYS[3], default= "ECU-WIFI_local"): str,
-    vol.Optional(KEYS[4], default= "default"): str,
-    vol.Optional(KEYS[5], default= False): bool,
+    vol.Required(KEYS[0], default= ''): str,                # ECU Host
+    vol.Required(KEYS[1], default= 300): int,               # Scan interval
+    vol.Optional(KEYS[2], default= 5): int,                 # Port retries
+    vol.Optional(KEYS[5], default= True): bool,             # Show graphs
 })
 
 
@@ -78,8 +76,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Required(KEYS[0], default=current_options.get(KEYS[0])): str, # ECU Host
                 vol.Required(KEYS[1], default=current_options.get(KEYS[1])): int, # Scan interval
                 vol.Optional(KEYS[2], default=current_options.get(KEYS[2])): int, # Port retries
-                vol.Optional(KEYS[3], default=current_options.get(KEYS[3])): str, # ECU model
-                vol.Optional(KEYS[4], default=current_options.get(KEYS[4])): str, # ECU firmware
                 vol.Optional(KEYS[5], default=current_options.get(KEYS[5])): bool,# Show graphs
             }
         )
