@@ -21,7 +21,8 @@ This custom integration for Home Assistant sends commands to the ECU to read dat
 
 # Update version v2.1.0 (work in progress)
 - Moved the Inverter On/Off switch to the inverter instead of being a part of the ECU for better overview
-- Removed the ECU Query Switch, because it was being forgotten to turn on when the cache was used intensively, triggering the Switch Off.
+- Same goes for the Inverter Online sensor
+- Removed the ECU Query Switch, because it was being forgotten to turn on when the cache was used intensively, triggering the Switch Off
 You can build an automation and put an action on it if the ECU Using Cache sensor is On for a certain amount of time
 
 # Difference in totals EMA and integration
