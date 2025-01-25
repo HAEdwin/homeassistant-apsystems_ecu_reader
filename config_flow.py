@@ -15,7 +15,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema({
     vol.Required(KEYS[0], default= ''): str,                # ECU Host
     vol.Required(KEYS[1], default= 300): int,               # Scan interval
     vol.Optional(KEYS[2], default= 5): int,                 # Port retries
-    vol.Optional(KEYS[5], default= True): bool,             # Show graphs
+    vol.Optional(KEYS[3], default= True): bool,             # Show graphs
 })
 
 
@@ -35,7 +35,7 @@ class FlowHandler(config_entries.ConfigFlow):
 
         # User input is not empty, processing input.
         retries = user_input.get(KEYS[2], 5)  # port_retries, default = 5
-        show_graphs = user_input.get(KEYS[5], False) # show_graphs, default = False
+        show_graphs = user_input.get(KEYS[3], False) # show_graphs, default = False
         ecu_id = await test_ecu_connection(user_input["ecu_host"], retries, show_graphs)
         _LOGGER.debug("ecu_id = %s", ecu_id)
 
@@ -76,13 +76,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 vol.Required(KEYS[0], default=current_options.get(KEYS[0])): str, # ECU Host
                 vol.Required(KEYS[1], default=current_options.get(KEYS[1])): int, # Scan interval
                 vol.Optional(KEYS[2], default=current_options.get(KEYS[2])): int, # Port retries
-                vol.Optional(KEYS[5], default=current_options.get(KEYS[5])): bool,# Show graphs
+                vol.Optional(KEYS[3], default=current_options.get(KEYS[3])): bool,# Show graphs
             }
         )
 
         if user_input:
             retries = user_input.get(KEYS[2], 5)  # port_retries, default to 5
-            show_graphs = user_input.get(KEYS[5], False) # show_graphs, default is False
+            show_graphs = user_input.get(KEYS[3], False) # show_graphs, default is False
             ecu_id = await test_ecu_connection(user_input["ecu_host"], retries, show_graphs)
             if ecu_id:
                 self.hass.config_entries.async_update_entry(self.config_entry, data=user_input)
