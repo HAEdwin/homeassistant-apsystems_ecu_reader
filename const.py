@@ -1,6 +1,6 @@
 """ const.py """
 
-DOMAIN = 'apsystems_ecur'
+DOMAIN = 'apsystems_ecu_reader'
 
 SOLAR_ICON = "mdi:solar-power"
 FREQ_ICON = "mdi:sine-wave"
@@ -9,6 +9,7 @@ RELOAD_ICON = "mdi:reload"
 CACHE_ICON = "mdi:cached"
 RESTART_ICON = "mdi:restart"
 POWER_ICON = "mdi:power"
+SOLAR_PANEL_ICON = "mdi:solar-panel"
 
 
 # Config flow schema. These are also translated through associated json translations
@@ -16,7 +17,5 @@ KEYS = [
     "ecu_host",
     "scan_interval",
     "port_retries",
-    "wifi_ssid",
-    "wifi_password",
     "show_graphs",
 ]
