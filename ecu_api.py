@@ -22,11 +22,9 @@ class APsystemsInvalidData(Exception):
 class APsystemsSocket:
     ''' Class to handle the socket connection to the APsystems ECU '''
     def __init__(self, ipaddr, raw_ecu=None, raw_inverter=None, timeout=10):
-    # def __init__(self, ipaddr, show_graphs, raw_ecu=None, raw_inverter=None, timeout=10):
+
         self.ipaddr = ipaddr
         self.data = {}
-        # what do we expect socket data to end in
-        self.recv_suffix = b'END\n'
 
         # how long to wait on socket commands until we get our recv_suffix
         self.timeout = timeout
@@ -34,12 +32,10 @@ class APsystemsSocket:
         # how big of a buffer to read at a time from the socket
         self.recv_size = 1024
 
-        # how long to wait between socket open/closes
-        self.socket_sleep_time = 5
-
         self.ecu_cmd = "APS1100160001END\n"
         self.inverter_query_prefix = "APS1100280002"
         self.signal_query_prefix = "APS1100280030"
+        self.recv_suffix = b'END\n'
         self.ecu_id = None
         self.qty_of_inverters = 0
         self.qty_of_online_inverters = 0
@@ -47,6 +43,7 @@ class APsystemsSocket:
         self.current_power = 0
         self.today_energy = 0
         self.inverters = {}
+        self.data = {}
         self.firmware = None
         self.timezone = None
         self.last_update = None
@@ -56,7 +53,6 @@ class APsystemsSocket:
         self.inverter_raw_data = raw_inverter
         self.inverter_raw_signal = None
         self.read_buffer = b''
-        #self.socket = None
         self.sock = None
         self.socket_open = False
 
@@ -80,7 +76,9 @@ class APsystemsSocket:
                 if self.sock is not None:
                     await self.close_socket()
                 raise APsystemsInvalidData(str(err)) from err
-        raise APsystemsInvalidData(f"Failed to claim socket after {port_retries} attempts")
+        raise APsystemsInvalidData(
+            f"Failed to claim socket after {port_retries} attempts, using cached data"
+            )
 
 
     async def send_read_from_socket(self, cmd):
@@ -155,6 +153,7 @@ class APsystemsSocket:
         if self.inverter_raw_data:
             self.data = self.process_inverter_data(show_graphs)
             # Finalize and bugfix the data into a single dict to return
+
         self.data["ecu_id"] = self.ecu_id
         self.data["last_update"] = self.last_update
         if self.lifetime_energy != 0:
@@ -238,7 +237,7 @@ class APsystemsSocket:
                         inverter_uid = aps_uid(data, cnt2)
                         inv["uid"] = inverter_uid
                         inv["online"] = bool(aps_int_from_bytes(data, cnt2 + 6, 1))
-                        istr = aps_str(data, cnt2 + 7, 2)
+                        istr = aps_str(data, cnt2 + 7, 2) #inverter type
 
                         # Should graphs be updated?
 
@@ -249,26 +248,23 @@ class APsystemsSocket:
 
 
                         # Distinguishes the different inverters from this point down
-                        if istr in [ '01', '04', '05']:
+                        if istr in [ '01', '04', '05']: #01 (=YC600/DS3) 04 (=DS3D-L) 05 (=DS3-H)
                             power = []
                             voltages = []
 
                             # Should graphs be updated?
-
                             if inv["online"]:
                                 inv["temperature"] = aps_int_from_bytes(data, cnt2 + 11, 2) - 100
+
                             if not inv["online"] and not show_graphs:
                                 inv["frequency"] = None
-                                power.append(None)
-                                voltages.append(None)
-                                power.append(None)
-                                voltages.append(None)
+                                power.extend([None, None])
+                                voltages.extend([None, None])
                             else:
                                 inv["frequency"] = aps_int_from_bytes(data, cnt2 + 9, 2) / 10
                                 power.append(aps_int_from_bytes(data, cnt2 + 13, 2))
                                 voltages.append(aps_int_from_bytes(data, cnt2 + 15, 2))
                                 power.append(aps_int_from_bytes(data, cnt2 + 17, 2))
-                                voltages.append(aps_int_from_bytes(data, cnt2 + 19, 2))
 
                             inv_details = {
                             "model" : "YC600/DS3 series",
@@ -278,23 +274,18 @@ class APsystemsSocket:
                             }
                             inv.update(inv_details)
                             cnt2 = cnt2 + 21
-                        elif istr == '02':
+                        elif istr == '02': #YC1000/QT2 3 phase inverters
                             power = []
                             voltages = []
 
                             # Should graphs be updated?
-
                             if inv["online"]:
                                 inv["temperature"] = aps_int_from_bytes(data, cnt2 + 11, 2) - 100
+
                             if not inv["online"] and not show_graphs:
                                 inv["frequency"] = None
-                                power.append(None)
-                                voltages.append(None)
-                                power.append(None)
-                                voltages.append(None)
-                                power.append(None)
-                                voltages.append(None)
-                                power.append(None)
+                                power.extend([None, None, None, None])
+                                voltages.extend([None, None, None])
                             else:
                                 inv["frequency"] = aps_int_from_bytes(data, cnt2 + 9, 2) / 10
                                 power.append(aps_int_from_bytes(data, cnt2 + 13, 2))
@@ -322,11 +313,8 @@ class APsystemsSocket:
                                 inv["temperature"] = aps_int_from_bytes(data, cnt2 + 11, 2) - 100
                             if not inv["online"] and not show_graphs:
                                 inv["frequency"] = None
-                                power.append(None)
                                 voltages.append(None)
-                                power.append(None)
-                                power.append(None)
-                                power.append(None)
+                                power.extend([None, None, None, None])
                             else:
                                 inv["frequency"] = aps_int_from_bytes(data, cnt2 + 9, 2) / 10
                                 power.append(aps_int_from_bytes(data, cnt2 + 13, 2))
