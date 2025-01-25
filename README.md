@@ -23,6 +23,7 @@ This custom integration for Home Assistant sends commands to the ECU to read dat
 Data produced by the ECU represents the data over the past five minutes. That's why the statistics on the EMA site are five minutes behind.
 
 # To be discussed
-- Is there still a need for the ECU QUERY SWITCH?
+- The ECU QUERY SWITCH was often forgotten, it was triggered when the ECU Using Cache sensor was at about a certain count
+Better option is to use an automation where for example ECU Using Cache is On for x minutes then it will trigger an action.
 - Add a cache count sensor for automations to react on?
 
