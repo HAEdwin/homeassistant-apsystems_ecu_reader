@@ -26,3 +26,4 @@ Data produced by the ECU represents the data over the past five minutes. That's 
 
 # To be discussed
 - Is there still a need for the ECU QUERY SWITCH?
+- Add a cache count sensor for automations to react on?
