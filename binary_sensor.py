@@ -18,37 +18,35 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup_entry(hass, config, add_entities, discovery_info=None):
+async def async_setup_entry(hass, _, add_entities):
     """ Set up the binary sensors for the APsystems ECU """
 
     ecu = hass.data[DOMAIN].get("ecu")
     coordinator = hass.data[DOMAIN].get("coordinator")
 
     sensors = [
-        APSystemsECUBinarySensor(coordinator, ecu, "data_from_cache", 
-            label="Using Cached Data", icon=CACHE_ICON),
-        APSystemsECUBinarySensor(coordinator, ecu, "restart_ecu",
-            label="Restart", icon=RESTART_ICON)
+        APsystemsECUBinarySensor(coordinator, ecu, "data_from_cache",
+        label=f"{ecu.ecu.ecu_id} Using Cached Data", icon=CACHE_ICON),
+        APsystemsECUBinarySensor(coordinator, ecu, "restart_ecu",
+        label=f"{ecu.ecu.ecu_id} Restart", icon=RESTART_ICON)
     ]
     add_entities(sensors)
 
 
-class APSystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
+class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """ Representation of a binary sensor for APsystems ECU """
 
-    def __init__(self, coordinator, ecu, field, label=None, devclass=None, icon=None):
+    def __init__(self, coordinator, ecu, field, label=None, icon=None):
 
         super().__init__(coordinator)
 
         self.coordinator = coordinator
-
         self._ecu = ecu
         self._field = field
         self._label = label
         if not label:
             self._label = field
         self._icon = icon
-
         self._name = f"ECU {self._label}"
         self._state = None
 
