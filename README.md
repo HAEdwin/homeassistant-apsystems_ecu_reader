@@ -10,7 +10,7 @@ This custom integration for Home Assistant sends commands to the ECU to read dat
 - Extensive data integrity checking
 - Extensive control on communication with the ECU
 - Hardened error handling
-- Ability to switch individual inverters on/off
+- Ability to switch individual inverters on/off (ECU-R-Pro 2162 and ECU-C only)
 - Better handling of communication errors
 - More efficient handling of queries that fail
 - Caching based on individual queries
