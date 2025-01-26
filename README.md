@@ -1,5 +1,5 @@
 # Reader for APsystems ECU's ##
-This custom integration for Home Assistant sends commands to the ECU to retreive data and an extension/further development of the ksheumaker integration.
+This custom integration for Home Assistant sends commands to the ECU to retreive data and is an extension/further development of the ksheumaker integration.
 
 
 
