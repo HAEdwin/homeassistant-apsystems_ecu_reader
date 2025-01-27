@@ -29,6 +29,7 @@ Data produced by the ECU represents the data over the past five minutes. That's 
 
 # FAQ
 - Why is my inverter going offline sometimes during the day?
-This will not effect the power returned to the grid. there may be poor reception of the Zigbee signal, causing the inverter to appear to be offline. Move the ECU to a better position or point the Zigbee antenna towards the inverter. Sometimes reception is temporarily poor due to weather conditions, among other things.
+
+This will not effect the power returned to the grid. There may be poor reception of the Zigbee signal, causing the inverter to appear to be offline. Move the ECU to a better position or point the Zigbee antenna towards the inverter. Sometimes reception is temporarily poor due to weather conditions, among other things.
 
 
