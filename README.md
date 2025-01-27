@@ -22,6 +22,7 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - Same goes for the Inverter Online sensor
 - Removed the ECU Query Switch, because it was being forgotten to turn on when the cache was used intensively, triggering the Switch Off.
 You can build an automation and put an action on it if the ECU Using Cache sensor is On for a certain amount of time
+- Cleaned up some code
 
 # Difference in totals EMA and integration
 Data produced by the ECU represents the data over the past five minutes. That's why the statistics on the EMA site are five minutes behind.
