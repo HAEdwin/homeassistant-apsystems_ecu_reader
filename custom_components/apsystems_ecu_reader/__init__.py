@@ -23,24 +23,15 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["sensor", "binary_sensor", "switch"]
 
 
-class ECUR:
+class ECUREADER:
     """ Class to handle the ECU data and actions. """
     def __init__(self, ipaddr, show_graphs):
         self.ipaddr = ipaddr
         self.show_graphs = show_graphs
-        self.data_from_cache = False
-        self.is_querying = True
-        self.inverters_online = True
-        self.ecu_restarting = False
-        self.error_message = ""
-        self.cached_data = {}
         self.ecu = APsystemsSocket(ipaddr, self.show_graphs)
+        self.data_from_cache = False
+        self.cached_data = {}
 
-
-    # called from switch.py
-    def set_querying_state(self, state: bool):
-        """ Set the querying state to either True or False. """
-        self.is_querying = state
 
     # called from switch.py
     def set_inverter_state(self, inverter_id, state):
@@ -66,41 +57,20 @@ class ECUR:
 
 
     async def update(self, port_retries, show_graphs):
-        """ Fetch ECU data or use cached data if querying is stopped. """
-        data = {}
-        # If querying is stopped, use cached data.
-        if not self.is_querying:
-            _LOGGER.debug("Not querying ECU, using cached data.")
-            data = self.cached_data
-            self.data_from_cache = True
-            data["data_from_cache"] = self.data_from_cache
-            data["querying"] = self.is_querying
-            return self.cached_data
+        """ Fetch ECU data or use cached data if querying failed. """
+        self.data_from_cache = True
         try:
             # Fetch the latest port_retries value dynamically.
             data = await self.ecu.query_ecu(port_retries, show_graphs)
-
             if data.get("ecu_id"):
                 self.cached_data = data
-                self.data_from_cache = False
-                self.ecu_restarting = False
-            else:
-                msg = "Using cached data. No ecu_id returned."
-                _LOGGER.warning(msg)
-                self.cached_data["error_message"] = msg
-                data = self.cached_data
+                self.data_from_cache = False # Set cache sensor
         except APsystemsInvalidData as err:
-            _LOGGER.warning(err)
-            return self.cached_data
+            _LOGGER.warning("Update failure caused by %s", err)
 
-        data["data_from_cache"] = self.data_from_cache
-        data["querying"] = self.is_querying
-        data["restart_ecu"] = self.ecu_restarting
-        _LOGGER.debug("Returning data: %s", data)
-
-        if not data.get("ecu_id"):
-            raise UpdateFailed("Data doesn't contain a valid ecu_id")
-        return data
+        data["data_from_cache"] = self.data_from_cache # Set cache sensor
+        _LOGGER.debug("Returning data: %s", self.cached_data)
+        return self.cached_data
 
 
 async def update_listener(_, config):
@@ -113,11 +83,12 @@ async def async_setup_entry(hass, config):
     hass.data.setdefault(DOMAIN, {})
     interval = timedelta(seconds=config.data["scan_interval"])
 
-    ecu = ECUR(config.data["ecu_host"], config.data["show_graphs"])
+    ecu = ECUREADER(config.data["ecu_host"], config.data["show_graphs"])
 
     async def do_ecu_update():
         """ Pass current port_retries value dynamically. """
         return await ecu.update(config.data["port_retries"], config.data["show_graphs"])
+
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -168,7 +139,7 @@ async def async_setup_entry(hass, config):
     return True
 
 
-async def async_remove_config_entry_device(hass, config, device_entry) -> bool:
+async def async_remove_config_entry_device(hass, _, device_entry) -> bool:
     """ Handle device removal """	
     if device_entry:
         # Notify the user that the device has been removed
