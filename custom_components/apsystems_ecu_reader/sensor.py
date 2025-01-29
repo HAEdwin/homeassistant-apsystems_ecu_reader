@@ -152,7 +152,7 @@ async def async_setup_entry(hass, _, add_entities):
 
 
 class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
-    """Representation of a binary sensor for an individual inverter."""
+    """Representation of a binary sensor for an individual inverter being Online/Offline."""
     def __init__(self, coordinator, ecu, uid, inv_data):
         super().__init__(coordinator)
         self.coordinator = coordinator
@@ -187,11 +187,15 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
     @property
     def device_info(self):
         """Return the device info."""
-        parent = f"ecu_{self._ecu.ecu.ecu_id}"
+        parent = f"inverter_{self._uid}"
         return {
             "identifiers": {
                 (DOMAIN, parent),
-            }
+            },
+            "name": f"Inverter {self._uid}",
+            "manufacturer": "APsystems",
+            "model": self._inv_data.get("model", "Unknown"),
+            "via_device": (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
         }
 
     @property
@@ -209,7 +213,7 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
         """Return the extra state attributes."""
         return {
             "ecu_id": self._ecu.ecu.ecu_id,
-            "inverter_uid" : self._uid,
+            "inverter_uid": self._uid,
             "last_update": self._ecu.ecu.last_update,
         }
 
@@ -238,8 +242,7 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
         self._field = field
         self._devclass = devclass
         self._label = label
-        if not label:
-            self._label = field
+        self._label = label or field
         self._icon = icon
         self._unit = unit
         self._stateclass = stateclass
@@ -264,25 +267,40 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
         return self._name
 
     @property
-    def state(self):
-        _LOGGER.debug("State called for %s", self._field)
+    def native_value(self):
+        """Return the state of the sensor."""
+        #_LOGGER.debug("State called for %s", self._field)
         if self._field == "voltage":
-            _LOGGER.debug("VOLTAGE  %s %s", self._uid, self._index)
-            return self.coordinator.data.get("inverters", {}).get(self._uid, {}).get("voltage", [])[self._index]
+            #_LOGGER.debug("VOLTAGE  %s %s", self._uid, self._index)
+            return (
+                self.coordinator.data
+                .get("inverters", {})
+                .get(self._uid, {})
+                .get("voltage", [])[self._index]
+            )
         elif self._field == "power":
-            _LOGGER.debug("POWER  %s %s", self._uid, self._index)
-            return self.coordinator.data.get("inverters", {}).get(self._uid, {}).get("power", [])[self._index]
+            #_LOGGER.debug("POWER  %s %s", self._uid, self._index)
+            return (
+                self.coordinator.data
+                .get("inverters", {})
+                .get(self._uid, {})
+                .get("power", [])[self._index]
+            )
         else:
-            return self.coordinator.data.get("inverters", {}).get(self._uid, {}).get(self._field)
+            return (
+                self.coordinator.data
+                .get("inverters", {})
+                .get(self._uid, {})
+                .get(self._field)
+            )
 
     @property
     def icon(self):
         return self._icon
 
     @property
-    def unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         return self._unit
-
 
     @property
     def extra_state_attributes(self):
@@ -295,7 +313,7 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def state_class(self):
-        _LOGGER.debug("State class %s - %s", self._stateclass, self._field)
+        #_LOGGER.debug("State class %s - %s", self._stateclass, self._field)
         return self._stateclass
 
     @property
@@ -351,16 +369,18 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity):
         return self._devclass
 
     @property
-    def state(self):
-        _LOGGER.debug("State called for %s", self._field)
+    def native_value(self):
+        """Return the state of the sensor."""
+        #_LOGGER.debug("State called for %s", self._field)
         return self.coordinator.data.get(self._field)
 
     @property
     def icon(self):
         return self._icon
 
+    #def unit_of_measurement(self):
     @property
-    def unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         return self._unit
 
     @property
@@ -376,7 +396,7 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def state_class(self):
-        _LOGGER.debug("State class %s - %s", self._stateclass, self._field)
+        #_LOGGER.debug("State class %s - %s", self._stateclass, self._field)
         return self._stateclass
 
     @property
