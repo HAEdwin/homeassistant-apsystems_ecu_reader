@@ -11,7 +11,7 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - Added L2 and L3 voltages for three-phased inverters
 - Added support for multiple ECU hubs
 - Added individual inverter online sensors for automations
-- dBM expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -70dBm (worst signal)
+- dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -70dBm (worst signal)
 
 # FAQ
 - Why is my inverter going offline sometimes during the day?
