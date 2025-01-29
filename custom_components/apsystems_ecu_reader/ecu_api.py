@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-""" Module to handle the socket connection to the APsystems ECU """
+
+""" Module to handle the socket connection to the APsystems ECU. """
 
 import asyncio
 import socket
-import binascii
 import logging
 
 from .helper import (
@@ -17,55 +17,51 @@ from .helper import (
 _LOGGER = logging.getLogger(__name__)
 
 class APsystemsInvalidData(Exception):
-    ''' Exception for invalid data from the APsystems ECU '''
+    """ Exception for invalid data from the APsystems ECU."""
 
 class APsystemsSocket:
-    ''' Class to handle the socket connection to the APsystems ECU '''
-    def __init__(self, ipaddr, raw_ecu=None, raw_inverter=None, timeout=10):
+    """ Class to handle the socket connection to the APsystems ECU. """
+    def __init__(self, ipaddr, raw_ecu=None, raw_inverter=None, timeout=5):
 
         self.ipaddr = ipaddr
         self.data = {}
 
-        # how long to wait on socket commands until we get our recv_suffix
+        # how long to wait for response on socket commands
         self.timeout = timeout
-
         # how big of a buffer to read at a time from the socket
         self.recv_size = 1024
 
         self.ecu_cmd = "APS1100160001END\n"
         self.inverter_query_prefix = "APS1100280002"
         self.signal_query_prefix = "APS1100280030"
-        self.recv_suffix = b'END\n'
-        self.ecu_id = None
+        self.ecu_raw_data = raw_ecu
+        self.inverter_raw_data = raw_inverter
         self.qty_of_inverters = 0
         self.qty_of_online_inverters = 0
         self.lifetime_energy = 0
         self.current_power = 0
         self.today_energy = 0
+        self.vsl = 0
+        self.tsl = 0
         self.inverters = {}
         self.data = {}
+        self.ecu_id = None
         self.firmware = None
         self.timezone = None
         self.last_update = None
-        self.vsl = 0
-        self.tsl = 0
-        self.ecu_raw_data = raw_ecu
-        self.inverter_raw_data = raw_inverter
         self.inverter_raw_signal = None
-        self.read_buffer = b''
+        self.read_buffer = None
         self.sock = None
-        self.socket_open = False
 
 
     async def open_socket(self, port_retries, delay=1):
-        ''' Open a socket to the ECU '''
+        """ Open a socket to the ECU. """
         for attempt in range(1, port_retries + 1):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(self.timeout)
             try:
                 sock.connect((self.ipaddr, 8899))
                 self.sock = sock  # Assign the successfully opened socket
-                self.socket_open = True
                 _LOGGER.debug("Socket successfully claimed")
                 return
             except (socket.timeout, socket.gaierror, socket.error) as err:
@@ -82,7 +78,7 @@ class APsystemsSocket:
 
 
     async def send_read_from_socket(self, cmd):
-        ''' Send command to the socket and read the response '''
+        """ Send command to the socket and read the response. """
         try:
             self.sock.settimeout(self.timeout)  # Set timeout once
             self.sock.sendall(cmd.encode('utf-8'))  # Send command
@@ -96,12 +92,11 @@ class APsystemsSocket:
             return None, "Timeout occurred while reading from socket\n"
 
     async def close_socket(self):
-        ''' Ensure created and allocated resources are properly cleaned up '''
+        """ Ensure created and allocated resources are properly cleaned up. """
         if self.sock is not None:
             try:
                 self.sock.shutdown(socket.SHUT_RDWR)
                 self.sock.close()
-                self.socket_open = False
                 self.sock = None
                 _LOGGER.debug("Socket resources released")
             except (OSError, socket.error) as err:
@@ -109,11 +104,12 @@ class APsystemsSocket:
 
 
     async def query_ecu(self, port_retries, show_graphs):
-        ''' Query the ECU for data and return it
+        """ 
+        Query the ECU for data and return it.
         In contrast to ECU 2160 models, the 2162 models require an
-        open and close of the port between the individual  queries.
+        open and close on the port between the individual  queries.
         The best generic solution is to now do this for all models.
-        '''
+        """
         # ECU base query
         await self.open_socket(port_retries)
         self.ecu_raw_data, status = await self.send_read_from_socket(self.ecu_cmd)
@@ -149,7 +145,10 @@ class APsystemsSocket:
         return self.finalize_data(show_graphs)
 
     def finalize_data(self, show_graphs):
-        ''' Finalize the data and return it '''
+        """ Finalize the data and return it. """
+        if self.data is None:
+            self.data = {}
+
         if self.inverter_raw_data:
             self.data = self.process_inverter_data(show_graphs)
             # Finalize and bugfix the data into a single dict to return
@@ -165,16 +164,16 @@ class APsystemsSocket:
             self.data["qty_of_inverters"] = self.qty_of_inverters
             self.data["today_energy"] = self.today_energy
         self.data["qty_of_online_inverters"] = self.qty_of_online_inverters
-        _LOGGER.debug("data: %s\n\n", self.data)
         return self.data
 
 
     def process_ecu_data(self, data=None):
-        '''  interpret raw ecu data and return it '''
+        """  interpret raw ecu data and return it. """
         if self.ecu_raw_data and (aps_str(self.ecu_raw_data, 9, 4)) == '0001':
             data = self.ecu_raw_data
-            _LOGGER.debug(binascii.b2a_hex(data))
-            validate_ecu_data(data, "ECU Query")
+            error = validate_ecu_data(data, "ECU Query")
+            if error:
+                raise APsystemsInvalidData(error)
             self.ecu_id = aps_str(data, 13, 12)
             self.lifetime_energy = aps_int_from_bytes(data, 27, 4) / 10
             self.current_power = aps_int_from_bytes(data, 31, 4)
@@ -193,12 +192,13 @@ class APsystemsSocket:
                 self.firmware = aps_str(data, 52, self.vsl)
 
     def process_signal_data(self, data=None):
-        ''' interpret raw signal data and return it '''
+        """ interpret raw signal data and return it. """	
         signal_data = {}
         if self.inverter_raw_signal and (aps_str(self.inverter_raw_signal,9,4)) == '0030':
             data = self.inverter_raw_signal
-            _LOGGER.debug(binascii.b2a_hex(data))
-            validate_ecu_data(data, "Signal Query")
+            error = validate_ecu_data(data, "Signal Query")
+            if error:
+                raise APsystemsInvalidData(error)
             if not self.qty_of_inverters:
                 return signal_data
             location = 15
@@ -213,12 +213,13 @@ class APsystemsSocket:
 
 
     def process_inverter_data(self, show_graphs, data=None):
-        ''' interpret raw inverter data and return it '''
+        """ interpret raw inverter data and return it. """
         output = {}
         if self.inverter_raw_data != '' and (aps_str(self.inverter_raw_data,9,4)) == '0002':
             data = self.inverter_raw_data
-            _LOGGER.debug(binascii.b2a_hex(data))
-            validate_ecu_data(data, "Inverter data")
+            error = validate_ecu_data(data, "Inverter Query")
+            if error:
+                raise APsystemsInvalidData(error)
             istr = ''
             cnt1 = 0
             cnt2 = 26
@@ -239,13 +240,11 @@ class APsystemsSocket:
                         inv["online"] = bool(aps_int_from_bytes(data, cnt2 + 6, 1))
                         istr = aps_str(data, cnt2 + 7, 2) #inverter type
 
-                        # Should graphs be updated?
-
+                        # Should the signal graphs be updated?
                         inv["signal"] = (
-                            None if not inv["online"] and not show_graphs
+                            None if not inv["online"]
                             else signal.get(inverter_uid, 0)
                         )
-
 
                         # Distinguishes the different inverters from this point down
                         if istr in [ '01', '04', '05']: #01 (=YC600/DS3) 04 (=DS3D-L) 05 (=DS3-H)
