@@ -20,8 +20,9 @@ from homeassistant.const import (
     UnitOfTemperature,
     UnitOfElectricPotential,
     UnitOfFrequency,
-    PERCENTAGE
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT as dBm
 )
+
 
 from homeassistant.core import callback
 
@@ -106,8 +107,7 @@ async def async_setup_entry(hass, _, add_entities):
                         entity_category=EntityCategory.DIAGNOSTIC
                     ),
                     APsystemsECUInverterSensor(coordinator, ecu, uid, "signal",
-                        label="Signal",
-                        unit=PERCENTAGE,
+                        unit=dBm,
                         stateclass=SensorStateClass.MEASUREMENT,
                         devclass=SensorDeviceClass.SIGNAL_STRENGTH,
                         icon=SIGNAL_ICON,
