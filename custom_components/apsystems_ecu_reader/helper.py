@@ -1,24 +1,41 @@
 """ helper.py """
 
+import logging
+
 import binascii
 
+_LOGGER = logging.getLogger(__name__)
 
 class APsystemsInvalidData(Exception):
     """ Exception for invalid data """
 
 
-def aps_str(codec, start, amount):
+def aps_str(codec: bytes, start: int, amount: int) -> str:
     """ Extract a string from a binary string """
-    return codec[start:(start+amount)].decode('utf-8')
+    try:
+        return codec[start:(start+amount)].decode('utf-8')
+    except IndexError as e:
+        error = (
+            f"Invalid slice: start={start}, amount={amount}, "
+            f"codec_length={len(codec)}"
+        )
+        raise APsystemsInvalidData(error) from e
 
 
-def aps_datetimestamp(codec, start, amount):
+def aps_datetimestamp(codec: bytes, start: int, amount: int) -> str:
     """ Extract a date and time from a binary string """	
-    timestr = codec[start:start+amount].hex()
-    return (
-        f"{timestr[0:4]}-{timestr[4:6]}-{timestr[6:8]} "
-        f"{timestr[8:10]}:{timestr[10:12]}:{timestr[12:14]}"
-    )
+    try:
+        timestr = codec[start:start+amount].hex()
+        return (
+            f"{timestr[0:4]}-{timestr[4:6]}-{timestr[6:8]} "
+            f"{timestr[8:10]}:{timestr[10:12]}:{timestr[12:14]}"
+        )
+    except IndexError as e:
+        error = (
+            f"Invalid slice: start={start}, amount={amount}, "
+            f"codec_length={len(codec)}"
+        )
+        raise APsystemsInvalidData(error) from e
 
 
 def aps_int_from_bytes(codec: bytes, start: int, length: int) -> int:
@@ -45,34 +62,27 @@ def aps_uid(codec: bytes, start: int, length: int = 12) -> str:
         raise APsystemsInvalidData(error) from e
 
 
-def validate_ecu_data(data, cmd):
+def validate_ecu_data(data: bytes, cmd: str) -> str:
     """ Validate the data received from the ECU """
-    # Checksum is the length of the data minus 1
     datalen = len(data) - 1
+    debugdata = binascii.b2a_hex(data).decode('ascii')
+
+    # Validate checksum extraction
     try:
+        if len(data) < 9:
+            return f"insufficient data to extract checksum from '{cmd}': data={debugdata}"
         checksum = int(data[5:9])
-    except ValueError as e:
-        debugdata = binascii.b2a_hex(data).decode('ascii')
-        error = f"Could not extract checksum int from '{cmd}' data={debugdata}"
-        raise APsystemsInvalidData(error) from e
+    except ValueError:
+        return f"extracting checksum from '{cmd}': data={debugdata}"
 
+    # Validate checksum
     if datalen != checksum:
-        debugdata = binascii.b2a_hex(data).decode('ascii')
-        error = f"Checksum on '{cmd}' failed checksum={checksum} datalen={datalen} data={debugdata}"
-        raise APsystemsInvalidData(error)
+        return f"checksum error on '{cmd}': checksum={checksum} datalen={datalen} data={debugdata}"
 
-    # Check start and end signature
+    # Validate start and end signature
     start_str = aps_str(data, 0, 3)
     end_str = aps_str(data, len(data) - 4, 3)
+    if start_str != 'APS' or end_str != 'END':
+        return f"signature error on '{cmd}': start='{start_str}', end='{end_str}' data={debugdata}"
 
-    if start_str != 'APS':
-        debugdata = binascii.b2a_hex(data).decode('ascii')
-        error = f"Result on '{cmd}' incorrect start signature '{start_str}' != APS data={debugdata}"
-        raise APsystemsInvalidData(error)
-
-    if end_str != 'END':
-        debugdata = binascii.b2a_hex(data)
-        error = f"Result on '{cmd}' incorrect end signature '{end_str}' != END data={debugdata}"
-        raise APsystemsInvalidData(error)
-
-    return True
+    return ""
