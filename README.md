@@ -8,12 +8,9 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 You can build an automation and put an action on it if the ECU Using Cache sensor is On for a certain amount of time
 - Cleaned up some code
 
-# Difference in totals EMA and integration
-Data produced by the ECU represents the data over the past five minutes. That's why the statistics on the EMA site are five minutes behind.
-
 # FAQ
 - Why is my inverter going offline sometimes during the day?
 
-This will not effect the power returned to the grid. There may be poor reception of the Zigbee signal, causing the inverter to appear to be offline. Move the ECU to a better position or point the Zigbee antenna towards the inverter. Sometimes reception is temporarily poor due to weather conditions, among other things.
+This is due to a lost Zigbee connection between the ECU and inverter and will not effect the power returned to the grid. There may be poor reception of the Zigbee signal, causing the inverter to appear to be offline. Move the ECU to a better position or point the Zigbee antenna towards the inverter. Sometimes reception is temporarily poor due to weather conditions.
 
 
