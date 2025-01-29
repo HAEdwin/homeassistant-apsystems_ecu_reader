@@ -207,7 +207,7 @@ class APsystemsSocket:
                 location += 6
                 signal_strength = data[location]
                 location += 1
-                signal_strength = int((signal_strength / 255) * 100)
+                signal_strength = int(-100 + (signal_strength / 255) * 100)
                 signal_data[inverter_uid] = signal_strength
         return signal_data
 
