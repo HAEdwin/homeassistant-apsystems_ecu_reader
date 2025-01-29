@@ -12,29 +12,27 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import (
     DOMAIN,
-    CACHE_ICON,
-    RESTART_ICON
+    CACHE_ICON
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, _, add_entities):
-    """ Set up the binary sensors for the APsystems ECU """
+    """Set up the binary sensor for the APsystems ECU data cache"""
 
     ecu = hass.data[DOMAIN].get("ecu")
     coordinator = hass.data[DOMAIN].get("coordinator")
 
-    sensors = [
-        APsystemsECUBinarySensor(coordinator, ecu, "data_from_cache",
-        label=f"{ecu.ecu.ecu_id} Using Cached Data", icon=CACHE_ICON),
-        APsystemsECUBinarySensor(coordinator, ecu, "restart_ecu",
-        label=f"{ecu.ecu.ecu_id} Restart", icon=RESTART_ICON)
-    ]
-    add_entities(sensors)
+    add_entities([
+        APsystemsECUBinarySensor(
+            coordinator, ecu, "data_from_cache",
+            label=f"{ecu.ecu.ecu_id} Using Cached Data", icon=CACHE_ICON
+        )
+    ])
 
 
 class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
-    """ Representation of a binary sensor for APsystems ECU """
+    """Representation of a binary sensor for APsystems ECU"""
 
     def __init__(self, coordinator, ecu, field, label=None, icon=None):
 
@@ -89,4 +87,3 @@ class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
                 (DOMAIN, parent),
             }
         }
-    
