@@ -38,4 +38,4 @@ This is due to a lost Zigbee connection between the ECU and inverter and will no
 
 - Why do the ECU values ​​differ from the EMA values?
 
-EMA does it's own calculations based on data received from the ECU. Sometimes data cannot be posted at EMA and data will be corrected in the evening (ECU maintenance period). If you want to help solve this issue and do some data analyses, feel free to contact me.
+EMA performs its own calculations based on data received from the ECU. Sometimes data cannot be posted to the EMA and the data is corrected in the evening (ECU maintenance period). If you would like to help solve this problem and do data analysis, please feel free to contact me.
