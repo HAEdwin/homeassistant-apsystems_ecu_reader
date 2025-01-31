@@ -68,7 +68,7 @@ class ECUREADER:
         except APsystemsInvalidData as err:
             _LOGGER.warning("Update failure caused by %s", err)
 
-        data["data_from_cache"] = self.data_from_cache # Set cache sensor
+        self.cached_data["data_from_cache"] = self.data_from_cache # Set cache sensor
         _LOGGER.debug("Returning data: %s", self.cached_data)
         return self.cached_data
 
