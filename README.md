@@ -14,16 +14,25 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -70dBm (worst signal)
 
 # Installation
-APsystems ECU reader is an Integration not an Add-on. To install the integration if you use HACS select it from the left pane and then select the Overflow Menu at the top right in HACS. From the pull-down select Custom repositories.
+APsystems ECU reader is an Integration not an Add-on.
 
-Repository: https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader 
+The installation of custom integrations is done in three steps (assuming HACS is already installed):
 
-Type: Integration and press [+Add]-button. Then wait a while, it will pop-up in the list, Available for download. Select Download from the Overflow menu on the right of the available integration. You then will be asked to restart HA. After restart go to Settings in the left pane then choose Integrations > Devices & Services and on the down right select Add integration > Type "aps" and the apsystems integration named APsystems ECU Reader should pop-up. Select it and you will be asked to enter parameters.
+1. Downloading the custom integration
 
-Steps taken:
-- Pointed and downloaded the integration from the https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader git
-- By restarting HA it was detected by HA and became available for selection in the Integrations section
-- Configured and started the integration
+Navigate to HACS and choose the overflow menu in the top right corner of the Home Assistant Community Store.
+Choose Custom repositories and paste the url: https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader in the Repository field.
+Choose Type > Integration and select the [Add]-button. From this point it might allready have been added to the personal store repository.
+In HACS search for APsystems and the APsystems ECU Reader will be listed in de Available for download section.
+From the overflow menu on the right select [Download] and automatically the latest version will be listed for download so choose [Download].
+HA Settings will now show the repair action that a Restart is required, submit the action and HA will restart.
+After HA's restart the downloaded custom integration will be detected by HA. The integration will need to be configured in order to fully integrate it in HA and make it work.
+
+2. Integrating the custom integration into Home Assistant
+
+Navigate to [Settings] > [Devices & services] and choose the button [+ ADD INTEGRATION].
+In Search for a brand name, choose APsystems and the APsystems ECY Reader will be listed.
+Select it and the Configuration diaglog will show, enter the IP-Address of your ECU other settings are fine right now so choose [SUBMIT].
 
 # To Do
 - Add logos to the integration
