@@ -1,6 +1,6 @@
 {
   "domain": "apsystems_ecu_reader",
-  "name": "APsystems ECU reader",
+  "name": "APsystems ECU Reader",
   "version": "2.1.2",
   "documentation": "https://github.com/haedwin/homeassistant-apsystems_ecu_reader",
   "issue_tracker": "https://github.com/haedwin/homeassistant-apsystems_ecu_reader/issues",
