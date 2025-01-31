@@ -73,7 +73,7 @@ class APsystemsSocket:
                     await self.close_socket()
                 raise APsystemsInvalidData(str(err)) from err
         raise APsystemsInvalidData(
-            f"Failed to claim socket after {port_retries} attempts, using cached data"
+            f"failure to claim socket after {port_retries} attempts, using cached data"
             )
 
 
@@ -84,7 +84,7 @@ class APsystemsSocket:
             self.sock.sendall(cmd.encode('utf-8'))  # Send command
             # Read the response asynchronously to prevent blocking
             self.read_buffer = await asyncio.to_thread(self.sock.recv, self.recv_size)
-            return self.read_buffer, "Ok"
+            return self.read_buffer, None
         except socket.timeout:
             # Handle timeout specifically
             await self.close_socket()
@@ -113,7 +113,7 @@ class APsystemsSocket:
         # ECU base query
         await self.open_socket(port_retries)
         self.ecu_raw_data, status = await self.send_read_from_socket(self.ecu_cmd)
-        if status != "Ok" or not self.ecu_raw_data:
+        if status or not self.ecu_raw_data:
             raise APsystemsInvalidData(f"Error occurred while querying ECU: {status}")
         _LOGGER.debug("ECU raw data: %s", self.ecu_raw_data.hex())
         self.process_ecu_data() # extract ECU-ID for other queries
@@ -124,7 +124,7 @@ class APsystemsSocket:
         inverter_cmd = self.inverter_query_prefix + self.ecu_id + "END\n"
         self.inverter_raw_data, status = await self.send_read_from_socket(inverter_cmd)
         _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
-        if status != "Ok" or not self.inverter_raw_data:
+        if status or not self.inverter_raw_data:
             _LOGGER.warning("Error occurred while querying inverter: %s", status)
             # return valid datapart (ecu data)
             return self.finalize_data(show_graphs)
@@ -134,7 +134,7 @@ class APsystemsSocket:
         await self.open_socket(port_retries)
         signal_cmd = self.signal_query_prefix + self.ecu_id + "END\n"
         self.inverter_raw_signal, status = await self.send_read_from_socket(signal_cmd)
-        if status != "Ok" or not self.inverter_raw_signal:
+        if status or not self.inverter_raw_signal:
             _LOGGER.warning("Error occurred while querying signal: %s", status)
             # return valid datapart (ecu data + inverter data)
             return self.finalize_data(show_graphs)
