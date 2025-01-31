@@ -31,6 +31,10 @@ Steps taken:
 - Still some code cleanup/checks to do
 - Debugging
 
+# Happy with this software?
+<a href="https://www.buymeacoffee.com/haedwin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
+
 # FAQ
 - Why is my inverter going offline sometimes during the day?
 
