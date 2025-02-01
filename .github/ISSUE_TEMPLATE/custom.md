@@ -1,40 +1,44 @@
 ---
-name: Custom issue template
-about: Issue tracker is **ONLY** used for reporting bugs. New features should be discussed
-  in the discussion section.
-title: ''
-labels: ''
-assignees: ''
-
+about: Issue tracker is **ONLY** used for reporting bugs. 
+  New features, discussions or questions should be posted in the discussion section.
 ---
 
-<!--- Provide a general summary of the issue in the Title above -->
+## Prerequisites for submitting a bug
+Help us by sharing us the relevant home-assistant.log part. 
+```
+If relevant, paste the log in here
+```
 
 ## Expected Behavior
-<!--- Tell us what should happen -->
+Tell us what should happen
 
 ## Current Behavior
-<!--- Tell us what happens instead of the expected behavior -->
+Tell us what happens instead of the expected behavior.
 
 ## Possible Solution
-<!--- Not obligatory, but suggest a fix/reason for the bug, -->
+Not obligatory, but suggest a fix/reason for the bug
 
 ## Steps to Reproduce
-<!--- Provide a link to a live example, or an unambiguous set of steps to -->
-<!--- reproduce this bug. Include code to reproduce, if relevant -->
+Provide an unambiguous set of steps to reproduce this bug. 
+  Include code or logging to reproduce, enable debug logging if relevant.
+```
+If relevant when reproducing the bug, paste the log in here
+```
+
 1.
 2.
 3.
 4.
 
-## Context (Environment)
-<!--- How has this issue affected you? What are you trying to accomplish? -->
-<!--- Providing context helps us come up with a solution that is most useful in the real world -->
+## PV-hardware (Environment)
+Providing context helps us come up with a solution that is most useful in the real world
 
-<!--- Provide a general summary of the issue in the Title above -->
+- [ ] ECU-B
+- [ ] ECU-R (2160 series)
+- [ ] ECU-R-Pro (2161 series)
+- [ ] ECU-C
 
-## Detailed Description
-<!--- Provide a detailed description of the change or addition you are proposing -->
-
-## Possible Implementation
-<!--- Not obligatory, but suggest an idea for implementing addition or change -->
+- [ ] DS3 series
+- [ ] QS series
+- [ ] QT series
+- [ ] YC series
