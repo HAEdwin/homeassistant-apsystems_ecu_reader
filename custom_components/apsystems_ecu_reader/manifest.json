@@ -7,7 +7,7 @@
   "codeowners": ["@haedwin"],
   "config_flow": true,
   "integration_type": "hub",
-  "iot_class": "local_pull",
+  "iot_class": "local_polling",
   "loggers": ["custom_components.apsystems_ecu_reader"],
   "dependencies": []
 }
