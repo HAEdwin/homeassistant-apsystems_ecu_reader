@@ -109,6 +109,16 @@ async def async_setup_entry(hass, config):
     # Ensure data is updated before getting it
     await coordinator.async_refresh()
 
+    # When first install was successful, an ECU ID should be available when HA restarts.
+    # If not, the user should be notified and devices should not be created.
+    if not ecu.ecu.ecu_id:
+        _LOGGER.error(
+            "Not able to establish a connection with the ECU @ %s. "
+            "Check the ECU status and/or IP-Address.",
+            config.data["ecu_host"]
+        )
+        return False
+
     # Register the ECU device.
     device_registry = dr.async_get(hass)
     device_registry.async_get_or_create(
