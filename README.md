@@ -1,6 +1,8 @@
 [![hacs_badge](https://img.shields.io/maintenance/yes/2025)](https://github.com/haedwin/homeassistant-apsystems_ecu_reader)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![hacs_badge](https://img.shields.io/github/v/release/haedwin/homeassistant-apsystems_ecu_reader)](https://github.com/haedwin/homeassistant-apsystems_ecu_reader)
+[![Validate with Hassfest](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/validate%20with%20Hassfest.yml/badge.svg)](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/validate%20with%20Hassfest.yml)
+
 
 # APsystems ECU Reader
 This custom integration for Home Assistant sends commands to the ECU to retreive data and is an extension/further development of ksheumaker's "homeassistant-apsystems_ecur" integration. It supports the following features:
