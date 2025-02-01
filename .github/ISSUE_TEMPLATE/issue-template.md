@@ -1,6 +1,11 @@
 ---
-about: Issue tracker is **ONLY** used for reporting bugs. 
-  New features, discussions or questions should be posted in the discussion section.
+name: Issue template
+about: Issue tracker is **ONLY** used for reporting bugs. New features, discussions
+  or questions should be posted in the discussion section.
+title: ''
+labels: ''
+assignees: ''
+
 ---
 
 ## Prerequisites for submitting a bug
