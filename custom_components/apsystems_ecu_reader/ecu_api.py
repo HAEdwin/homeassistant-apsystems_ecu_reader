@@ -127,10 +127,9 @@ class APsystemsSocket:
         await self.open_socket(port_retries)
         self.ecu_raw_data, status = await self.send_read_from_socket(self.ecu_cmd)
         await self.close_socket()
-
+        _LOGGER.debug("ECU raw data: %s", self.ecu_raw_data.hex())
         if status or not self.ecu_raw_data:
             raise APsystemsInvalidData(f"Error occurred while querying ECU: {status}")
-        _LOGGER.debug("ECU raw data: %s", self.ecu_raw_data.hex())
         self.process_ecu_data() # extract ECU-ID needed for other queries
 
         # Inverter query
@@ -138,7 +137,6 @@ class APsystemsSocket:
         inverter_cmd = self.inverter_query_prefix + self.ecu_id + "END\n"
         self.inverter_raw_data, status = await self.send_read_from_socket(inverter_cmd)
         await self.close_socket()
-
         _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
         if status or not self.inverter_raw_data:
             _LOGGER.warning("Error occurred while querying inverter: %s", status)
@@ -150,12 +148,11 @@ class APsystemsSocket:
         signal_cmd = self.signal_query_prefix + self.ecu_id + "END\n"
         self.inverter_raw_signal, status = await self.send_read_from_socket(signal_cmd)
         await self.close_socket()
-
+        _LOGGER.debug("Signal raw data: %s", self.inverter_raw_signal.hex())
         if status or not self.inverter_raw_signal:
             _LOGGER.warning("Error occurred while querying signal: %s", status)
             # return valid datapart (ecu data + inverter data)
             return self.finalize_data(show_graphs)
-        _LOGGER.debug("Signal raw data: %s", self.inverter_raw_signal.hex())
 
         # Finally all went right so call finalize and return it
         return self.finalize_data(show_graphs)
