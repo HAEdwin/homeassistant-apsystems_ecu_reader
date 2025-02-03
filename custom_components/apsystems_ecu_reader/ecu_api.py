@@ -24,7 +24,6 @@ class APsystemsSocket:
     def __init__(self, ipaddr, raw_ecu=None, raw_inverter=None, timeout=5):
 
         self.ipaddr = ipaddr
-        self.data = {}
 
         # how long to wait for response on socket commands
         self.timeout = timeout
@@ -65,12 +64,11 @@ class APsystemsSocket:
                 _LOGGER.debug("Socket successfully claimed")
                 return
             except (socket.timeout, socket.gaierror, socket.error) as err:
-                _LOGGER.warning("Attempt %s/%s failed: %s", attempt, port_retries, err)
+                _LOGGER.warning("Socket claim attempt %s/%s failed: %s", attempt, port_retries, err)
                 await asyncio.sleep(delay)  # Wait before retrying
             except Exception as err:
                 _LOGGER.error("An unexpected error occurred: %s", err, exc_info=True)
-                if self.sock is not None:
-                    await self.close_socket()
+                await self.close_socket()
                 raise APsystemsInvalidData(str(err)) from err
         raise APsystemsInvalidData(
             f"failure to claim socket after {port_retries} attempts, using cached data"
@@ -88,8 +86,23 @@ class APsystemsSocket:
         except socket.timeout:
             # Handle timeout specifically
             await self.close_socket()
-            # Raise APsystemsInvalidData("Timeout occurred while reading from socket\n")
-            return None, "Timeout occurred while reading from socket\n"
+            return None, "timeout occurred while reading from socket\n"
+        except ConnectionResetError:
+            # Handle connection reset error
+            await self.close_socket()
+            return None, "Connection reset by peer\n"
+        except BrokenPipeError:
+            # Handle broken pipe (connection closed by peer)
+            await self.close_socket()
+            return None, "Connection closed by peer\n"
+        except asyncio.CancelledError:
+            # Handle the case when the task is cancelled
+            await self.close_socket()
+            return None, "Operation was cancelled\n"
+        except OSError as err:
+            # Handle general socket errors
+            await self.close_socket()
+            return None, f"General OS error occurred: {err}\n"
 
     async def close_socket(self):
         """ Ensure created and allocated resources are properly cleaned up. """
@@ -146,8 +159,6 @@ class APsystemsSocket:
 
     def finalize_data(self, show_graphs):
         """ Finalize the data and return it. """
-        if self.data is None:
-            self.data = {}
 
         if self.inverter_raw_data:
             self.data = self.process_inverter_data(show_graphs)
