@@ -154,28 +154,30 @@ class APsystemsSocket:
         _LOGGER.debug("Signal raw data: %s", self.inverter_raw_signal.hex())
         await self.close_socket()
 
-        # call the method to finalize the data and return it
+        # Finally all went right so call finalize and return it
         return self.finalize_data(show_graphs)
 
     def finalize_data(self, show_graphs):
         """ Finalize the data and return it. """
+        try:
+            self.data["ecu_id"] = self.ecu_id
+            self.data["last_update"] = self.last_update
+            if self.lifetime_energy != 0:
+                self.data["lifetime_energy"] = self.lifetime_energy
+            self.data["current_power"] = self.current_power
 
-        if self.inverter_raw_data:
-            self.data = self.process_inverter_data(show_graphs)
-            # Finalize and bugfix the data into a single dict to return
+            # apply filter for ECU-R-pro firmware bug where both are zero
+            if self.qty_of_inverters > 0:
+                self.data["qty_of_inverters"] = self.qty_of_inverters
+                self.data["today_energy"] = self.today_energy
+            self.data["qty_of_online_inverters"] = self.qty_of_online_inverters
+            # Add inverter and signal data to the dictionary
+            self.data.update(self.process_inverter_data(show_graphs))
 
-        self.data["ecu_id"] = self.ecu_id
-        self.data["last_update"] = self.last_update
-        if self.lifetime_energy != 0:
-            self.data["lifetime_energy"] = self.lifetime_energy
-        self.data["current_power"] = self.current_power
-
-        # apply filter for ECU-R-pro firmware bug where both are zero
-        if self.qty_of_inverters > 0:
-            self.data["qty_of_inverters"] = self.qty_of_inverters
-            self.data["today_energy"] = self.today_energy
-        self.data["qty_of_online_inverters"] = self.qty_of_online_inverters
-        return self.data
+            return self.data
+        except APsystemsInvalidData as err:
+            _LOGGER.warning("Finalization failure caused by %s", err)
+            return self.data
 
 
     def process_ecu_data(self, data=None):
