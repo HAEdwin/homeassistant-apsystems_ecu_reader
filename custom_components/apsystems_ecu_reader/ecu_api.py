@@ -175,9 +175,8 @@ class APsystemsSocket:
             self.data.update(self.process_inverter_data(show_graphs))
 
             return self.data
-        except APsystemsInvalidData as err:
-            _LOGGER.warning("Finalization failure caused by %s", err)
-            return self.data
+        except Exception as err:
+            raise APsystemsInvalidData(f"Finalization failure caused by: {err}") from err
 
 
     def process_ecu_data(self, data=None):
