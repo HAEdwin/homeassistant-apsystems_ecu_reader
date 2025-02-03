@@ -38,7 +38,6 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, _, add_entities):
-#async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """ sensor.py async_setup_entry """
 
     ecu = hass.data[DOMAIN].get("ecu")
@@ -88,7 +87,7 @@ async def async_setup_entry(hass, _, add_entities):
     inverters = coordinator.data.get("inverters", {})
     for uid,inv_data in inverters.items():
 
-        # https://github.com/ksheumaker/homeassistant-apsystems_ecur/issues/110
+        # if statement for configured but not yet connected inverters
         if inv_data.get("channel_qty"):
             sensors.extend([
                     APsystemsECUInverterSensor(coordinator, ecu, uid, "temperature",
