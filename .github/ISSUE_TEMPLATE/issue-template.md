@@ -8,7 +8,7 @@ assignees: ''
 
 ---
 
-## Prerequisites for submitting a bug
+## Requirements for submitting a bug
 Help us by sharing us the relevant home-assistant.log part. 
 ```
 If relevant, paste the log in here
