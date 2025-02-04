@@ -45,7 +45,8 @@ The integration will need to be configured in order to fully integrate it in HA 
 - Select it and the Configuration dialog will show, enter IP-Address of the ECU, rest of the defaults are fine so choose [SUBMIT].
 
 # To Do
-- Add logos to the integration
+- Add logos to the integration (pull request made)
+- Reintroduce the cache count sensor and automatic reboot
 - Expand readme
 - Still some code cleanup/checks to do
 - Debugging
