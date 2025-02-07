@@ -31,7 +31,8 @@ from .const import (
     SOLAR_ICON,
     FREQ_ICON,
     SIGNAL_ICON,
-    SOLAR_PANEL_ICON
+    SOLAR_PANEL_ICON,
+    CACHE_COUNTER_ICON
 )
 
 
@@ -41,7 +42,6 @@ async def async_setup_entry(hass, _, add_entities):
     """ sensor.py async_setup_entry """
 
     ecu = hass.data[DOMAIN].get("ecu")
-
     coordinator = hass.data[DOMAIN].get("coordinator")
 
     # Add ECU sensors
@@ -73,6 +73,11 @@ async def async_setup_entry(hass, _, add_entities):
         APsystemsECUSensor(coordinator, ecu, "qty_of_online_inverters",
             label=f"{ecu.ecu.ecu_id} Inverters Online",
             icon=SOLAR_ICON,
+            entity_category=EntityCategory.DIAGNOSTIC
+        ),
+        APsystemsECUSensor(coordinator, ecu, "data_from_cache_count",
+            label=f"{ecu.ecu.ecu_id} Using Cache Counter",
+            icon=CACHE_COUNTER_ICON,
             entity_category=EntityCategory.DIAGNOSTIC
         ),
     ]
@@ -115,7 +120,7 @@ async def async_setup_entry(hass, _, add_entities):
             ])
 
             # 3-phase inverters
-            if inv_data.get("uid")[:3] in ["501", "502", "503", "504"]:
+            if inv_data.get("uid")[:3] in ["501", "502", "503", "504", "901"]:
                 for i, label in enumerate(["Voltage L1", "Voltage L2", "Voltage L3"]):
                     sensors.append(
                         APsystemsECUInverterSensor(
@@ -153,6 +158,7 @@ async def async_setup_entry(hass, _, add_entities):
 class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """Representation of a binary sensor for an individual inverter being Online/Offline."""
     def __init__(self, coordinator, ecu, uid, inv_data):
+
         super().__init__(coordinator)
         self.coordinator = coordinator
         self._ecu = ecu
@@ -340,7 +346,6 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
 
         self.coordinator = coordinator
-
         self._ecu = ecu
         self._field = field
         self._label = label
