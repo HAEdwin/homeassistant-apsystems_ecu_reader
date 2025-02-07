@@ -1,22 +1,26 @@
 """ __init__.py """
 
-
-# Standard library imports
-import traceback
+import asyncio
 import logging
 import re
+import traceback
 from datetime import timedelta
-import asyncio
 
-# Third-party imports
+import aiohttp
+import async_timeout
 import requests
-from homeassistant.helpers import device_registry as dr
+
 from homeassistant.components.persistent_notification import (
     create as create_persistent_notification
 )
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from .ecu_api import APsystemsSocket, APsystemsInvalidData
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.update_coordinator import (
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
+
 from .const import DOMAIN
+from .ecu_api import APsystemsSocket, APsystemsInvalidData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,14 +28,24 @@ PLATFORMS = ["sensor", "binary_sensor", "switch"]
 
 
 class ECUREADER:
-    """ Class to handle the ECU data and actions. """
-    def __init__(self, ipaddr, show_graphs):
+    """ECU Reader"""
+    def __init__(self, ipaddr, show_graphs, config_entry):
         self.ipaddr = ipaddr
         self.show_graphs = show_graphs
+        self._cache_reboot_limit = config_entry.data.get("cache_reboot", 4)
         self.ecu = APsystemsSocket(ipaddr, self.show_graphs)
         self.data_from_cache = False
+        self.data_from_cache_count = 0
         self.cached_data = {}
 
+        # Register callback for options update
+        config_entry.add_update_listener(self.async_options_updated)
+
+
+    async def async_options_updated(self, _, config_entry):
+        """Handle options update."""
+        _LOGGER.warning("Options updated: %s", config_entry.data)
+        self._cache_reboot_limit = config_entry.data.get("cache_reboot", 4)
 
     # called from switch.py
     def set_inverter_state(self, inverter_id, state):
@@ -55,39 +69,81 @@ class ECUREADER:
                 state, err
             )
 
+    async def reboot_ecu(self):
+        """ Reboot the ECU (compatible with ECU-ID 2162... series and ECU-C models) """
+        action = {"command" : "reboot"}
+        headers = {'X-Requested-With': 'XMLHttpRequest', "Connection": "keep-alive"}
+        url = f'http://{self.ipaddr}/index.php/hidden/exec_command'
+
+        try:
+            async with (
+                aiohttp.ClientSession() as session,
+                async_timeout.timeout(15),
+                session.post(url, headers=headers, data=action) as response
+            ):
+                response_text = await response.text()
+                if (match := re.search(r'"value":(\d+)', response_text)):
+                    return "Ok" if match.group(1) == "0" else "Error"
+                return "Error regex don't match"
+        except (
+            aiohttp.ClientError,
+            aiohttp.ClientConnectionError,
+            asyncio.TimeoutError,
+        ) as err:
+            return f"Attempt to reboot the ECU failed with error: {err}"
+
 
     async def update(self, port_retries, show_graphs):
         """ Fetch ECU data or use cached data if querying failed. """
-        self.data_from_cache = True
-        try:
-            # Fetch the latest port_retries value dynamically.
-            data = await self.ecu.query_ecu(port_retries, show_graphs)
-            if data.get("ecu_id"):
-                self.cached_data = data
-                self.data_from_cache = False # Set cache sensor
-        except APsystemsInvalidData as err:
-            _LOGGER.warning("Update failure caused by %s", err)
 
-        self.cached_data["data_from_cache"] = self.data_from_cache # Set cache sensor
+        self.data_from_cache = True
+        self.data_from_cache_count += 1
+
+        # Reboot the ECU when the cache counter reaches the cache limit
+        # This is a workaround for the ECU not responding to queries after a while
+        if self.data_from_cache_count > self._cache_reboot_limit:
+            response = await self.reboot_ecu()
+            _LOGGER.warning("Response from ECU on reboot: %s", response)
+        else:
+            try:
+                # Fetch the latest port_retries value dynamically.
+                data = await self.ecu.query_ecu(port_retries, show_graphs)
+                if data.get("ecu_id"):
+                    self.cached_data = data
+                    self.data_from_cache = False
+                    self.data_from_cache_count = 0
+            except APsystemsInvalidData as err:
+                _LOGGER.warning("Update failure caused by %s", err)
+
+        # Set cache sensors
+        self.cached_data["data_from_cache"] = self.data_from_cache
+        self.cached_data["data_from_cache_count"] = self.data_from_cache_count
+
         _LOGGER.debug("Returning data: %s", self.cached_data)
         return self.cached_data
 
 
 async def update_listener(_, config):
     """ Handle options update being triggered by config entry options updates """
-    _LOGGER.warning("Configuration updated: %s",config.as_dict())
+    _LOGGER.debug("Configuration updated: %s",config.as_dict())
 
 
 async def async_setup_entry(hass, config):
     """ Setup APsystems platform """
     hass.data.setdefault(DOMAIN, {})
     interval = timedelta(seconds=config.data["scan_interval"])
-
-    ecu = ECUREADER(config.data["ecu_host"], config.data["show_graphs"])
+    ecu = ECUREADER(
+        config.data["ecu_host"],
+        config.data["show_graphs"],
+        config  # Pass the config_entry to ECUREADER
+    )
 
     async def do_ecu_update():
         """ Pass current port_retries value dynamically. """
-        return await ecu.update(config.data["port_retries"], config.data["show_graphs"])
+        return await ecu.update(
+            config.data["port_retries"],
+            config.data["show_graphs"]
+        )
 
 
     coordinator = DataUpdateCoordinator(
