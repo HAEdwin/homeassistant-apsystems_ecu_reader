@@ -45,17 +45,43 @@ The integration will need to be configured in order to fully integrate it in HA 
 - In "Search for a brand name", choose APsystems and the APsystems ECU Reader will be listed.
 - Select it and the Configuration dialog will show, enter IP-Address of the ECU, rest of the defaults are fine so choose [SUBMIT].
 
-# To Do
-- Reintroduce the cache count sensor and automatic reboot
+### Test your connection and find your ECU on the LAN
+Final step to the prerequisites is testing the connection between HomeAssistant and the ECU. Sometimes it is difficult to find the ECU among all the other nodes, especially if you have many IOT devices. In any case, look for **Espressif Inc. or ESP** because the ECU's WiFi interface is from this brand. Testing the connection can be done from the terminal using the Netcat command, follow the example below but use the correct (fixed) IP address of your ECU. If connected you'll see line 2, then type in the command APS1100160001END if you get a response (line 4) you are ready to install the integration. If not, power cycle your ECU wait for it to get started and try again. **It is highly recommended to assign a fixed IP-Address to the ECU**.
+```
+[core-ssh .storage]$ nc -v 172.16.0.4 8899 <┘
+172.16.0.4 (172.16.0.4:8899) open
+APS1100160001END <┘
+APS11009400012160000xxxxxxxz%10012ECU_R_1.2.22009Etc/GMT-8
+```
+Sometimes you might see the "Unknown error occurred" message. Installation can best be done in the daytime when inverters are running.
+
+### APsystems ECU Configuration
+- ECU-IP address
+The address you have assigned to the ECU must be entered here
+
+- ECU query interval in seconds
+I strongly recommend keeping this value set to 300 since data in the ECU is only refreshed every 5 minutes. 
+
+- Using Cache Counter (UCC) sensor
+When the ECU fails to respond to connection requests for the number of retries you specified, the UCC value will increase until the number you specified at "Cache count before ECU reboot". 
+
+- Cache countbefore ECU reboot
+If you own an ECU-R-Pro (2162xxxxx) or an ECU-C the integration will reboot the ECU and set the UCC to zero.
+If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU firmware does not provide this option on these models. Instead you can use an automation where you use the UCC sensor to trigger a smartplug to turn Off and On again after a 10 seconds wait. If you don't restart the ECU, the UCC will increase until there was a succesfull connection with the ECU again.
+
+- Update graphs when inverters are offline
+You can turn this on or off. In the On state most entities will be set to zero when the inverters are offline. The temperature and zigbee sensors will never be plotted when the inverters are offline.
+
+## To Do
 - Expand readme
 - Still some code cleanup/checks to do
 - Debugging
 
-# Happy with this software?
+## Happy with this software?
 <a href="https://buymeacoffee.com/haedwin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
 
-# FAQ
+## FAQ
 - Why is my inverter going offline sometimes during the day?
 
 This is due to a lost Zigbee connection between the ECU and inverter and will not effect the power returned to the grid. There may be poor reception of the Zigbee signal (< -70dBm), causing the inverter to appear to be offline. Move the ECU to a better position or point the Zigbee antenna towards the inverter and keep a close eye on the Signal Strength sensors. Strength should be between -10dBm (best) and -70dBm (worst). Sometimes reception is temporarily poor due to weather conditions.
