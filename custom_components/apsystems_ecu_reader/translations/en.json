@@ -6,8 +6,7 @@
             "ecu_host": "ECU IP address (follow connection method table in readme)",
             "scan_interval": "ECU query interval in seconds (minimum 300 recommended)",
             "port_retries": "Retries when ECU fails to respond (range between 1 - 5 recommended)",
-            "wifi_ssid": "Specify SSID (For ECU-R UID 2162... and ECU-C models only)",
-            "wifi_password": "Specify password (For ECU-R 2162... and ECU-C models only)",
+            "cache_reboot": "Cache count before ECU reboot (For ECU-R 2162... and ECU-C models only)",
             "show_graphs": "Update graphs when inverters are offline"
           },
           "title": "APsystems ECU Configuration"
@@ -15,7 +14,7 @@
       },
       "error": {
         "cannot_connect": "Can't find ECU at this IP-Address or life-time energy is zero",
-        "no_ecu_found": "No ECU found at this IP-address",
+        "no_ecu_found": "No ECU found at this IP-address, check log for more information",
         "unknown": "Unknown error, see log for details"
       },
       "abort": {
@@ -29,8 +28,7 @@
             "ecu_host": "ECU IP address (follow connection method table in readme)",
             "scan_interval": "ECU query interval in seconds (minimum 300 recommended)",
             "port_retries": "Retries when ECU fails to repond (range between 1 - 5 recommended)",
-            "wifi_ssid": "Specify SSID (For ECU-R 2162... and ECU-C models only)",
-            "wifi_password": "Specify password (For ECU-R 2162... and ECU-C models only)",
+            "cache_reboot": "Cache count before ECU reboot (For ECU-R 2162... and ECU-C models only)",
             "show_graphs": "Update graphs when inverters are offline"
           },
           "title": "APsystems ECU Configuration"
@@ -38,7 +36,7 @@
       },
       "error": {
         "cannot_connect": "Can't find ECU at this IP-Address or life-time energy is zero",
-        "no_ecu_found": "No ECU found at this IP-address",
+        "no_ecu_found": "No ECU found at this IP-address, check log for more information",
         "unknown": "Unknown error, see log for details"
       },
       "abort": {
