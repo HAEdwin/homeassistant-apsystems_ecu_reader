@@ -1,49 +1,46 @@
 {
-    "options": {
-      "step": {
-        "init": {
-          "data": {
-            "ecu_host": "ECU IP-Adresse (siehe Verbindungsmethode in der Anleitung)",
-            "scan_interval": "ECU-Abfrageintervall in Sekunden (mindestens 300 empfohlen)",
-            "port_retries": "Wiederholungen, wenn die ECU nicht reagiert (Bereich zwischen 1 - 5 empfohlen)",
-            "wifi_ssid": "SSID angeben (nur für ECU-R UID 2162... und ECU-C Modelle)",
-            "wifi_password": "Passwort angeben (nur für ECU-R 2162... und ECU-C Modelle)",
-            "show_graphs": "Aktualisiere Diagramme, wenn Wechselrichter offline sind"
-          },
-          "title": "APsystems ECU Konfiguration"
-        }
-      },
-      "error": {
-        "cannot_connect": "Kann ECU unter dieser IP-Adresse nicht finden oder Lebensdauerenergie ist null",
-        "no_ecu_found": "Keine ECU unter dieser IP-Adresse gefunden",
-        "unknown": "Unbekannter Fehler, siehe Protokoll für Details"
-      },
-      "abort": {
-        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "ecu_host": "ECU IP-Adresse (siehe Verbindungsmethode in der Anleitung)",
+          "scan_interval": "ECU-Abfrageintervall in Sekunden (mindestens 300 empfohlen)",
+          "port_retries": "Wiederholungen, wenn die ECU nicht reagiert (Bereich zwischen 1 - 5 empfohlen)",
+          "cache_reboot": "Cache count before ECU reboot (For ECU-R 2162... and ECU-C models only)",
+          "show_graphs": "Aktualisiere Diagramme, wenn Wechselrichter offline sind"
+        },
+        "title": "APsystems ECU Konfiguration"
       }
     },
-    "config": {
-      "step": {
-        "user": {
-          "data": {
-            "ecu_host": "ECU IP-Adresse (siehe Verbindungsmethode in der Anleitung)",
-            "scan_interval": "ECU-Abfrageintervall in Sekunden (mindestens 300 empfohlen)",
-            "port_retries": "Wiederholungen, wenn die ECU nicht reagiert (Bereich zwischen 1 - 5 empfohlen)",
-            "wifi_ssid": "SSID angeben (nur für ECU-R 2162... und ECU-C Modelle)",
-            "wifi_password": "Passwort angeben (nur für ECU-R 2162... und ECU-C Modelle)",
-            "show_graphs": "Aktualisiere Diagramme, wenn Wechselrichter offline sind"
-          },
-          "title": "APsystems ECU Konfiguration"
-        }
-      },
-      "error": {
-        "cannot_connect": "Kann ECU unter dieser IP-Adresse nicht finden oder Lebensdauerenergie ist null",
-        "no_ecu_found": "Keine ECU unter dieser IP-Adresse gefunden",
-        "unknown": "Unbekannter Fehler, siehe Protokoll für Details"
-      },
-      "abort": {
-        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    "error": {
+      "cannot_connect": "Kann ECU unter dieser IP-Adresse nicht finden oder Lebensdauerenergie ist null",
+      "no_ecu_found": "Keine ECU unter dieser IP-Adresse gefunden, siehe log für mehr Informationen",
+      "unknown": "Unbekannter Fehler, siehe Protokoll für Details"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "ecu_host": "ECU IP-Adresse (siehe Verbindungsmethode in der Anleitung)",
+          "scan_interval": "ECU-Abfrageintervall in Sekunden (mindestens 300 empfohlen)",
+          "port_retries": "Wiederholungen, wenn die ECU nicht reagiert (Bereich zwischen 1 - 5 empfohlen)",
+          "cache_reboot": "Cache count before ECU reboot (For ECU-R 2162... and ECU-C models only)",
+          "show_graphs": "Aktualisiere Diagramme, wenn Wechselrichter offline sind"
+        },
+        "title": "APsystems ECU Konfiguration"
       }
+    },
+    "error": {
+      "cannot_connect": "Kann ECU unter dieser IP-Adresse nicht finden oder Lebensdauerenergie ist null",
+      "no_ecu_found": "Keine ECU unter dieser IP-Adresse gefunden, siehe log für mehr Informationen",
+      "unknown": "Unbekannter Fehler, siehe Protokoll für Details"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     }
   }
-
+}
