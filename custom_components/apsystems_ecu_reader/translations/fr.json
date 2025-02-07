@@ -6,8 +6,7 @@
           "ecu_host": "Adresse IP de l'ECU (suivez le tableau de méthode de connexion dans le fichier README)",
           "scan_interval": "Intervalle de requête ECU en secondes (minimum 300 recommandé)",
           "port_retries": "Tentatives de connexion lorsque l'ECU ne répond pas (plage entre 1 et 5 recommandé)",
-          "wifi_ssid": "Spécifier le SSID (uniquement pour les modèles ECU-R 2162... et ECU-C)",
-          "wifi_password": "Spécifier le mot de passe (uniquement pour les modèles ECU-R 2162... et ECU-C)",
+          "cache_reboot": "Cache count before ECU reboot (For ECU-R 2162... and ECU-C models only)",
           "show_graphs": "Mettre à jour les graphiques lorsque les onduleurs sont hors ligne"
         },
         "title": "Configuration de l'ECU APsystems"
@@ -15,7 +14,7 @@
     },
     "error": {
       "cannot_connect": "Impossible de trouver l'ECU à cette adresse IP ou l'énergie à vie est nulle",
-      "no_ecu_found": "Aucun ECU trouvé à cette adresse IP",
+      "no_ecu_found": "Aucun ECU trouvé à cette adresse IP, veuillez vérifier l'adresse IP",
       "unknown": "Erreur inconnue, consultez le journal pour plus de détails"
     },
     "abort": {
@@ -29,8 +28,7 @@
           "ecu_host": "Adresse IP de l'ECU (suivez le tableau de méthode de connexion dans le fichier README)",
           "scan_interval": "Intervalle de requête ECU en secondes (minimum 300 recommandé)",
           "port_retries": "Tentatives de connexion lorsque l'ECU ne répond pas (plage entre 1 et 5 recommandé)",
-          "wifi_ssid": "Spécifier le SSID (uniquement pour les modèles ECU-R 2162... et ECU-C)",
-          "wifi_password": "Spécifier le mot de passe (uniquement pour les modèles ECU-R 2162... et ECU-C)",
+          "cache_reboot": "Cache count before ECU reboot (For ECU-R 2162... and ECU-C models only)",
           "show_graphs": "Mettre à jour les graphiques lorsque les onduleurs sont hors ligne"
         },
         "title": "Configuration de l'ECU APsystems"
@@ -38,7 +36,7 @@
     },
     "error": {
       "cannot_connect": "Impossible de trouver l'ECU à cette adresse IP ou l'énergie à vie est nulle",
-      "no_ecu_found": "Aucun ECU trouvé à cette adresse IP",
+      "no_ecu_found": "Aucun ECU trouvé à cette adresse IP, veuillez vérifier l'adresse IP",
       "unknown": "Erreur inconnue, consultez le journal pour plus de détails"
     },
     "abort": {
