@@ -6,8 +6,7 @@
           "ecu_host": "Dirección IP de la ECU (siga la tabla de métodos de conexión en el manual)",
           "scan_interval": "Intervalo de consulta de la ECU en segundos (se recomienda un mínimo de 300)",
           "port_retries": "Reintentos cuando la ECU no responde (se recomienda un rango entre 1 - 5)",
-          "wifi_ssid": "Especificar SSID (solo para modelos ECU-R UID 2162... y ECU-C)",
-          "wifi_password": "Especificar contraseña (solo para modelos ECU-R 2162... y ECU-C)",
+          "cache_reboot": "Cache count before ECU reboot (For ECU-R 2162... and ECU-C models only)",
           "show_graphs": "Actualizar gráficos cuando los inversores están desconectados"
         },
         "title": "Configuración de la ECU de APsystems"
@@ -15,7 +14,7 @@
     },
     "error": {
       "cannot_connect": "No se puede encontrar la ECU en esta dirección IP o la energía de por vida es cero",
-      "no_ecu_found": "No se encontró ninguna ECU en esta dirección IP",
+      "no_ecu_found": "No se encontró ninguna ECU en esta dirección IP, consulte el registro para más información",
       "unknown": "Error desconocido, consulte el registro para más detalles"
     },
     "abort": {
@@ -29,8 +28,7 @@
           "ecu_host": "Dirección IP de la ECU (siga la tabla de métodos de conexión en el manual)",
           "scan_interval": "Intervalo de consulta de la ECU en segundos (se recomienda un mínimo de 300)",
           "port_retries": "Reintentos cuando la ECU no responde (se recomienda un rango entre 1 - 5)",
-          "wifi_ssid": "Especificar SSID (solo para modelos ECU-R 2162... y ECU-C)",
-          "wifi_password": "Especificar contraseña (solo para modelos ECU-R 2162... y ECU-C)",
+          "cache_reboot": "Cache count before ECU reboot (For ECU-R 2162... and ECU-C models only)",
           "show_graphs": "Actualizar gráficos cuando los inversores están desconectados"
         },
         "title": "Configuración de la ECU de APsystems"
@@ -38,7 +36,7 @@
     },
     "error": {
       "cannot_connect": "No se puede encontrar la ECU en esta dirección IP o la energía de por vida es cero",
-      "no_ecu_found": "No se encontró ninguna ECU en esta dirección IP",
+      "no_ecu_found": "No se encontró ninguna ECU en esta dirección IP, consulte el registro para más información",
       "unknown": "Error desconocido, consulte el registro para más detalles"
     },
     "abort": {
