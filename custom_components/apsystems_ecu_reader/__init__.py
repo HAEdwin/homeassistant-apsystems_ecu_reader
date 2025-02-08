@@ -102,6 +102,7 @@ class ECUREADER:
         # Reboot the ECU when the cache counter reaches the cache limit
         # This is a workaround for the ECU not responding to queries after a while
         if self.data_from_cache_count > self._cache_reboot_limit:
+            self.data_from_cache_count = 0
             response = await self.reboot_ecu()
             _LOGGER.warning("Response from ECU on reboot: %s", response)
         else:
