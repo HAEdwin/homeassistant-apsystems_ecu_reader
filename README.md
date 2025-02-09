@@ -21,10 +21,6 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -70dBm (worst signal)
 
 ## Install the integration
-_Note for pre-v1.1.0 users:
-Take into account the changed workflow in which no migration provision has been made.
-It is best to remove and reinstall the integration via HACS._
-
 The installation of custom integrations is done in three steps (assuming HACS is already installed):
 
 **1. Downloading the custom integration**
