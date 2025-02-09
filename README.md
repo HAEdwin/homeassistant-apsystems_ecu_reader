@@ -10,7 +10,6 @@
 This custom integration for Home Assistant sends commands to the ECU to retreive data and is an extension/further development of ksheumaker's "homeassistant-apsystems_ecur" integration. It supports the following features:
 - Extensive data integrity checking
 - Extensive control on communication with the ECU
-- Hardened error handling
 - Ability to switch individual inverters on/off (ECU-R-Pro 2162 and ECU-C only)
 - Better handling of communication errors
 - More efficient handling of queries that fail
