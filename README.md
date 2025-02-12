@@ -74,4 +74,6 @@ This is due to a lost Zigbee connection between the ECU and inverter and will no
 
 - Why do the ECU values ​​differ from the EMA values?
 
+APsystems replied: "The ECU-C is not a continuous energy meter like the one from the electricity company, the sampling frequency can indeed cause a difference, as can the location of the CTs and possible interferences can affect this data.
+It gives an indication of the energy but it is not a calibrated value."
 EMA performs its own calculations based on data received from the ECU. Sometimes data cannot be posted to the EMA and the data is corrected in the evening (ECU maintenance period). If you would like to help solve this problem and do data analysis, please feel free to contact me.
