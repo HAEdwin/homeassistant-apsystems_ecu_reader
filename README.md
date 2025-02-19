@@ -26,7 +26,7 @@ The installation of custom integrations is done in three steps (assuming HACS is
 - Navigate to HACS and choose the overflow menu in the top right corner of the Home Assistant Community Store.
 - Choose Custom repositories and paste the url: https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader in the Repository field.
 - Choose Type > Integration and select the [Add]-button.
-From this point it might allready have been added to the personal store repository.
+From this point it might allready have been added to the personal store repository. If not, wait for it to appear.
 - In HACS search for APsystems and the APsystems ECU Reader will be listed in de Available for download section.
 - From the overflow menu on the right select [Download] and automatically the latest version will be listed for download so choose [Download].
 - HA Settings will now show the repair action that a Restart is required, submit the action and HA will restart.
@@ -38,6 +38,7 @@ The integration will need to be configured in order to fully integrate it in HA 
 - Navigate to [Settings] > [Devices & services] and choose the button [+ ADD INTEGRATION].
 - In "Search for a brand name", choose APsystems and the APsystems ECU Reader will be listed.
 - Select it and the Configuration dialog will show, enter IP-Address of the ECU, rest of the defaults are fine so choose [SUBMIT].
+- If you recieve the message "ECU not found..." make sure the ECU is running for at least 10 minutes because it might still be in recovery state.
 
 ### Test your connection and find your ECU on the LAN
 Final step to the prerequisites is testing the connection between HomeAssistant and the ECU. Sometimes it is difficult to find the ECU among all the other nodes, especially if you have many IOT devices. In any case, look for **Espressif Inc. or ESP** because the ECU's WiFi interface is from this brand. Testing the connection can be done from the terminal using the Netcat command, follow the example below but use the correct (fixed) IP address of your ECU. If connected you'll see line 2, then type in the command APS1100160001END if you get a response (line 4) you are ready to install the integration. If not, power cycle your ECU wait for it to get started and try again. **It is highly recommended to assign a fixed IP-Address to the ECU**.
