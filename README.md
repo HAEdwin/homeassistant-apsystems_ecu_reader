@@ -38,7 +38,7 @@ The integration will need to be configured in order to fully integrate it in HA 
 - Navigate to [Settings] > [Devices & services] and choose the button [+ ADD INTEGRATION].
 - In "Search for a brand name", choose APsystems and the APsystems ECU Reader will be listed.
 - Select it and the Configuration dialog will show, enter IP-Address of the ECU, rest of the defaults are fine so choose [SUBMIT].
-- If you recieve the message "ECU not found..." make sure the ECU is running for at least 10 minutes because it might still be in recovery state.
+- If you recieve the message "ECU not found..." make sure the ECU is running for at least 10 minutes because it might still be in recovery state (inverter data was not yet received).
 
 ### Test your connection and find your ECU on the LAN
 Final step to the prerequisites is testing the connection between HomeAssistant and the ECU. Sometimes it is difficult to find the ECU among all the other nodes, especially if you have many IOT devices. In any case, look for **Espressif Inc. or ESP** because the ECU's WiFi interface is from this brand. Testing the connection can be done from the terminal using the Netcat command, follow the example below but use the correct (fixed) IP address of your ECU. If connected you'll see line 2, then type in the command APS1100160001END if you get a response (line 4) you are ready to install the integration. If not, power cycle your ECU wait for it to get started and try again. **It is highly recommended to assign a fixed IP-Address to the ECU**.
