@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" Module to handle the socket connection to the APsystems ECU. """
+"""  ecu_api.py """
 
 import asyncio
 import socket
@@ -11,7 +11,7 @@ from .helper import (
     aps_str,
     aps_int_from_bytes,
     aps_uid,
-    validate_ecu_data
+    validate_data
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ class APsystemsSocket:
         self.signal_query_prefix = "APS1100280030"
         self.ecu_raw_data = raw_ecu
         self.inverter_raw_data = raw_inverter
+        self.signal_raw_data = None
         self.qty_of_inverters = 0
         self.qty_of_online_inverters = 0
         self.lifetime_energy = 0
@@ -48,10 +49,8 @@ class APsystemsSocket:
         self.firmware = None
         self.timezone = None
         self.last_update = None
-        self.inverter_raw_signal = None
         self.read_buffer = None
         self.sock = None
-
 
     async def open_socket(self, port_retries, delay=1):
         """ Open a socket to the ECU. """
@@ -130,31 +129,32 @@ class APsystemsSocket:
         _LOGGER.debug("ECU raw data: %s", self.ecu_raw_data.hex())
         if status or not self.ecu_raw_data:
             raise APsystemsInvalidData(f"an error while querying ECU where status is: {status}")
-        self.process_ecu_data() # extract ECU-ID needed for other queries
+        # Extract ECU-ID needed for other queries
+        self.ecu_id = aps_str(self.ecu_raw_data, 13, 12)
 
         # Inverter query
-        await self.open_socket(port_retries)
         inverter_cmd = self.inverter_query_prefix + self.ecu_id + "END\n"
+        await self.open_socket(port_retries)
         self.inverter_raw_data, status = await self.send_read_from_socket(inverter_cmd)
         await self.close_socket()
         _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
-        if status or not self.inverter_raw_data:
-            _LOGGER.warning("an error occurred while querying inverter where status is: %s", status)
-            # return valid datapart (ecu data)
-            return self.finalize_data(show_graphs)
+        if status or not self.inverter_raw_data or len(self.inverter_raw_data) < 40:
+            raise APsystemsInvalidData(
+                f"occurred while querying inverter. Status is: "
+                f"{status or 'incomplete inverter data received due to ECU recovery'}"
+            )
 
-       # Signal query
-        await self.open_socket(port_retries)
+        # Signal query
         signal_cmd = self.signal_query_prefix + self.ecu_id + "END\n"
-        self.inverter_raw_signal, status = await self.send_read_from_socket(signal_cmd)
+        await self.open_socket(port_retries)
+        self.signal_raw_data, status = await self.send_read_from_socket(signal_cmd)
         await self.close_socket()
-        _LOGGER.debug("Signal raw data: %s", self.inverter_raw_signal.hex())
-        if status or not self.inverter_raw_signal:
+        _LOGGER.debug("Signal raw data: %s", self.signal_raw_data.hex())
+        if status or not self.signal_raw_data:
             _LOGGER.warning("an error occurred while querying signal where status is: %s", status)
-            # return valid datapart (ecu data + inverter data)
-            return self.finalize_data(show_graphs)
 
         # Finally all went right so call finalize and return it
+        self.process_ecu_data()
         return self.finalize_data(show_graphs)
 
 
@@ -177,16 +177,17 @@ class APsystemsSocket:
 
             return self.data
         except Exception as err:
-            raise APsystemsInvalidData(f"Finalization failure caused by: {err}") from err
+            raise APsystemsInvalidData(f"finalization: {err}") from err
 
 
     def process_ecu_data(self, data=None):
         """  interpret raw ecu data and return it. """
         if self.ecu_raw_data and (aps_str(self.ecu_raw_data, 9, 4)) == '0001':
             data = self.ecu_raw_data
-            error = validate_ecu_data(data, "ECU Query")
+            error = validate_data(data, "ECU Query")
             if error:
                 raise APsystemsInvalidData(error)
+
             self.ecu_id = aps_str(data, 13, 12)
             self.lifetime_energy = aps_int_from_bytes(data, 27, 4) / 10
             self.current_power = aps_int_from_bytes(data, 31, 4)
@@ -204,12 +205,13 @@ class APsystemsSocket:
                 self.vsl = int(aps_str(data, 49, 3))
                 self.firmware = aps_str(data, 52, self.vsl)
 
+
     def process_signal_data(self, data=None):
         """ interpret raw signal data and return it. """	
         signal_data = {}
-        if self.inverter_raw_signal and (aps_str(self.inverter_raw_signal,9,4)) == '0030':
-            data = self.inverter_raw_signal
-            error = validate_ecu_data(data, "Signal Query")
+        if self.signal_raw_data and (aps_str(self.signal_raw_data,9,4)) == '0030':
+            data = self.signal_raw_data
+            error = validate_data(data, "Signal Query")
             if error:
                 raise APsystemsInvalidData(error)
             if not self.qty_of_inverters:
@@ -230,7 +232,7 @@ class APsystemsSocket:
         output = {}
         if self.inverter_raw_data != '' and (aps_str(self.inverter_raw_data,9,4)) == '0002':
             data = self.inverter_raw_data
-            error = validate_ecu_data(data, "Inverter Query")
+            error = validate_data(data, "Inverter Query")
             if error:
                 raise APsystemsInvalidData(error)
             istr = ''

@@ -30,7 +30,6 @@ async def async_setup_entry(hass, _, add_entities):
         )
     ])
 
-
 class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """Representation of a binary sensor for APsystems ECU"""
 

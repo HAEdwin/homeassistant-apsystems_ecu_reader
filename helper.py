@@ -1,7 +1,6 @@
 """ helper.py """
 
 import logging
-
 import binascii
 
 _LOGGER = logging.getLogger(__name__)
@@ -62,23 +61,18 @@ def aps_uid(codec: bytes, start: int, length: int = 12) -> str:
         raise APsystemsInvalidData(error) from e
 
 
-def validate_ecu_data(data: bytes, cmd: str) -> str:
+def validate_data(data: bytes, cmd: str) -> str:
     """ Validate the data received from the ECU """
     datalen = len(data) - 1
     debugdata = binascii.b2a_hex(data).decode('ascii')
-
     # Validate checksum extraction
     try:
-        if len(data) < 9:
-            return f"insufficient data to extract checksum from '{cmd}': data={debugdata}"
         checksum = int(data[5:9])
     except ValueError:
         return f"extracting checksum from '{cmd}': data={debugdata}"
-
-    # Validate checksum
-    if datalen != checksum:
+    # Validate checksum against data length
+    if len(data) - 1 != checksum:
         return f"checksum error on '{cmd}': checksum={checksum} datalen={datalen} data={debugdata}"
-
     # Validate start and end signature
     start_str = aps_str(data, 0, 3)
     end_str = aps_str(data, len(data) - 4, 3)

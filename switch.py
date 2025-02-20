@@ -26,7 +26,6 @@ async def async_setup_entry(hass, _, add_entities):
         switches.append(APsystemsECUInverterSwitch(coordinator, ecu, uid, inv_data))
     add_entities(switches)
 
-
 class APsystemsECUInverterSwitch(CoordinatorEntity, SwitchEntity):
     """Representation of a switch for an individual inverter."""
     def __init__(self, coordinator, ecu, uid, inv_data):

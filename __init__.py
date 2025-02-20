@@ -26,26 +26,17 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor", "binary_sensor", "switch"]
 
-
 class ECUREADER:
     """ECU Reader"""
-    def __init__(self, ipaddr, show_graphs, config_entry):
+    def __init__(self, ipaddr, wifi_ssid, wifi_password, show_graphs):
         self.ipaddr = ipaddr
+        self.wifi_ssid = wifi_ssid
+        self.wifi_password = wifi_password
         self.show_graphs = show_graphs
-        self._cache_reboot_limit = config_entry.data.get("cache_reboot", 4)
         self.ecu = APsystemsSocket(ipaddr, self.show_graphs)
         self.data_from_cache = False
         self.data_from_cache_count = 0
         self.cached_data = {}
-
-        # Register callback for options update
-        config_entry.add_update_listener(self.async_options_updated)
-
-
-    async def async_options_updated(self, _, config_entry):
-        """Handle options update."""
-        _LOGGER.warning("Options updated: %s", config_entry.data)
-        self._cache_reboot_limit = config_entry.data.get("cache_reboot", 4)
 
     # called from switch.py
     def set_inverter_state(self, inverter_id, state):
@@ -56,14 +47,14 @@ class ECUREADER:
 
         try:
             response = requests.post(url, headers=headers, data=action, timeout=15)
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "Response from ECU on switching the inverter %s to state %s: %s",
                 inverter_id, 'on' if state else 'off',
                 re.search(r'"message":"([^"]+)"', response.text).group(1)
             )
 
         except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as err:
-            _LOGGER.warning(
+            _LOGGER.debug(
                 "Attempt to switch inverter %s failed with error: %s\n\t"
                 "This switch is only compatible with ECU-ID 2162... series and ECU-C models",
                 state, err
@@ -71,50 +62,56 @@ class ECUREADER:
 
     async def reboot_ecu(self):
         """ Reboot the ECU (compatible with ECU-ID 2162... series and ECU-C models) """
-        action = {"command" : "reboot"}
-        headers = {'X-Requested-With': 'XMLHttpRequest', "Connection": "keep-alive"}
-        url = f'http://{self.ipaddr}/index.php/hidden/exec_command'
+        _LOGGER.warning("ecu_id: %s", self.cached_data.get("ecu_id", None))
+        if (
+            (self.cached_data.get("ecu_id", None)[0:3] == "215")
+            or (self.cached_data.get("ecu_id", None)[0:4] == "2162")
+        ):
+            action = {
+                'SSID': self.wifi_ssid,
+                'channel': 0,
+                'method': 2,
+                'psk_wep': '',
+                'psk_wpa': self.wifi_password
+            }
+            headers = {'X-Requested-With': 'XMLHttpRequest'}
+            url = 'http://' + str(self.ipaddr) + '/index.php/management/set_wlan_ap'
 
-        try:
-            async with (
-                aiohttp.ClientSession() as session,
-                async_timeout.timeout(15),
-                session.post(url, headers=headers, data=action) as response
-            ):
-                response_text = await response.text()
-                if (match := re.search(r'"value":(\d+)', response_text)):
-                    return "Ok" if match.group(1) == "0" else "Error"
-                return "Error regex don't match"
-        except (
-            aiohttp.ClientError,
-            aiohttp.ClientConnectionError,
-            asyncio.TimeoutError,
-        ) as err:
-            return f"Attempt to reboot the ECU failed with error: {err}"
+            try:
+                async with (
+                    aiohttp.ClientSession() as session,
+                    async_timeout.timeout(15),
+                    session.post(url, headers=headers, data=action) as response
+                ):
+                    return await response.text()
+            except (
+                aiohttp.ClientError,
+                aiohttp.ClientConnectionError,
+                asyncio.TimeoutError,
+            ) as err:
+                return err
 
 
-    async def update(self, port_retries, show_graphs):
+    async def update(self, port_retries, cache_reboot, show_graphs):
         """ Fetch ECU data or use cached data if querying failed. """
-
         self.data_from_cache = True
         self.data_from_cache_count += 1
 
         # Reboot the ECU when the cache counter reaches the cache limit
         # This is a workaround for the ECU not responding to queries after a while
-        if self.data_from_cache_count > self._cache_reboot_limit:
-            self.data_from_cache_count = 0
+        if self.data_from_cache_count > cache_reboot:
             response = await self.reboot_ecu()
-            _LOGGER.warning("Response from ECU on reboot: %s", response)
+            self.data_from_cache_count = 0
+            _LOGGER.debug("Response from ECU on reboot: %s", response)
         else:
             try:
-                # Fetch the latest port_retries value dynamically.
                 data = await self.ecu.query_ecu(port_retries, show_graphs)
                 if data.get("ecu_id"):
                     self.cached_data = data
                     self.data_from_cache = False
                     self.data_from_cache_count = 0
             except APsystemsInvalidData as err:
-                _LOGGER.warning("Update failure caused by %s", err)
+                _LOGGER.warning("Update failure during %s", err)
 
         # Set cache sensors
         self.cached_data["data_from_cache"] = self.data_from_cache
@@ -123,10 +120,15 @@ class ECUREADER:
         _LOGGER.debug("Returning data: %s", self.cached_data)
         return self.cached_data
 
-
-async def update_listener(_, config):
+async def update_listener(hass, config):
     """ Handle options update being triggered by config entry options updates """
-    _LOGGER.debug("Configuration updated: %s",config.as_dict())
+    _LOGGER.debug("Configuration updated: %s", config.as_dict())
+    config_dict = config.as_dict()
+    # Update the scan interval
+    new_interval = timedelta(seconds=config_dict["data"]["scan_interval"])
+    coordinator = hass.data[DOMAIN]["coordinator"]
+    coordinator.update_interval = new_interval
+    await coordinator.async_refresh()
 
 
 async def async_setup_entry(hass, config):
@@ -135,14 +137,16 @@ async def async_setup_entry(hass, config):
     interval = timedelta(seconds=config.data["scan_interval"])
     ecu = ECUREADER(
         config.data["ecu_host"],
-        config.data["show_graphs"],
-        config  # Pass the config_entry to ECUREADER
+        config.data["wifi_ssid"],
+        config.data["wifi_password"],
+        config.data["show_graphs"]
     )
 
     async def do_ecu_update():
         """ Pass current port_retries value dynamically. """
         return await ecu.update(
             config.data["port_retries"],
+            config.data["cache_reboot"],
             config.data["show_graphs"]
         )
 

@@ -238,9 +238,7 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
         ):
 
         super().__init__(coordinator)
-
         self.coordinator = coordinator
-
         self._index = index
         self._uid = uid
         self._ecu = ecu
@@ -252,7 +250,6 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
         self._unit = unit
         self._stateclass = stateclass
         self._entity_category = entity_category
-
         self._name = f"Inverter {self._uid} {self._label}"
         self._state = None
 
