@@ -1,0 +1,48 @@
+{
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "ecu_host": "ECU IP-adres (volg de verbindingsmethode in de readme-tabel)",
+          "scan_interval": "ECU-queryinterval in seconden (minimaal 300 aanbevolen)",
+          "port_retries": "Pogingen wanneer de ECU niet reageert",
+          "cache_reboot": "Aantal caches vóór een automatische ECU-herstart (ECU-R-Pro- en ECU-C-modellen)",
+          "show_graphs": "Werk grafieken bij wanneer omvormers offline zijn",
+          "wifi_ssid": "Geef SSID op (alleen voor ECU-R-Pro- en ECU-C-modellen)",
+          "wifi_password": "Geef wachtwoord op (alleen voor ECU-R-Pro- en ECU-C-modellen)"
+        },
+        "title": "APsystems ECU Configuratie"
+      }
+    },
+    "error": {
+      "no_ecu_found": "Geen ECU gevonden op dit IP-adres of de ECU is bezig te herstellen van een herstart",
+      "unknown": "Onbekende fout, zie logboek voor details."
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "ecu_host": "ECU IP-adres (volg de verbindingsmethode in de readme-tabel)",
+          "scan_interval": "ECU-queryinterval in seconden (minimaal 300 aanbevolen)",
+          "port_retries": "Pogingen wanneer de ECU niet reageert",
+          "cache_reboot": "Aantal caches vóór een automatische ECU-herstart (ECU-R-Pro- en ECU-C-modellen)",
+          "show_graphs": "Werk grafieken bij wanneer omvormers offline zijn",
+          "wifi_ssid": "Geef SSID op (alleen voor ECU-R-Pro- en ECU-C-modellen)",
+          "wifi_password": "Geef wachtwoord op (alleen voor ECU-R-Pro- en ECU-C-modellen)"
+        },
+        "title": "APsystems ECU Configuratie"
+      }
+    },
+    "error": {
+      "no_ecu_found": "Geen ECU gevonden op dit IP-adres of de ECU is bezig te herstellen van een herstart",
+      "unknown": "Onbekende fout, zie logboek voor details"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  }
+}
