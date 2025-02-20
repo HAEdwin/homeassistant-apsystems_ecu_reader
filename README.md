@@ -69,7 +69,6 @@ If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU fi
 ## Support my work
 <a href="https://buymeacoffee.com/haedwin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
-
 ## FAQ
 - Why is my inverter going offline sometimes during the day?
 
