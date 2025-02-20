@@ -1,0 +1,48 @@
+{
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "ecu_host": "Adresse IP de l'ECU (suivez le tableau de méthode de connexion dans le fichier readme)",
+          "scan_interval": "Intervalle de requête de l'ECU en secondes (minimum de 300 recommandé)",
+          "port_retries": "Tentatives de reconnexion lorsque l'ECU ne répond pas",
+          "cache_reboot": "Nombre de caches avant un redémarrage automatique de l'ECU (modèles ECU-R-Pro et ECU-C)",
+          "show_graphs": "Mettre à jour les graphiques lorsque les onduleurs sont hors ligne",
+          "wifi_ssid": "Spécifier le SSID (uniquement pour les modèles ECU-R-Pro et ECU-C)",
+          "wifi_password": "Spécifier le mot de passe (uniquement pour les modèles ECU-R-Pro et ECU-C)"
+        },
+        "title": "Configuration ECU d'APsystems"
+      }
+    },
+    "error": {
+      "no_ecu_found": "Aucune ECU trouvée à cette adresse IP ou l'ECU est en train de récupérer d'un redémarrage",
+      "unknown": "Erreur inconnue, consultez le journal pour plus de détails."
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "ecu_host": "Adresse IP de l'ECU (suivez le tableau de méthode de connexion dans le fichier readme)",
+          "scan_interval": "Intervalle de requête de l'ECU en secondes (minimum de 300 recommandé)",
+          "port_retries": "Tentatives de reconnexion lorsque l'ECU ne répond pas",
+          "cache_reboot": "Nombre de caches avant un redémarrage automatique de l'ECU (modèles ECU-R-Pro et ECU-C)",
+          "show_graphs": "Mettre à jour les graphiques lorsque les onduleurs sont hors ligne",
+          "wifi_ssid": "Spécifier le SSID (uniquement pour les modèles ECU-R-Pro et ECU-C)",
+          "wifi_password": "Spécifier le mot de passe (uniquement pour les modèles ECU-R-Pro et ECU-C)"
+        },
+        "title": "Configuration ECU d'APsystems"
+      }
+    },
+    "error": {
+      "no_ecu_found": "Aucune ECU trouvée à cette adresse IP ou l'ECU est en train de récupérer d'un redémarrage",
+      "unknown": "Erreur inconnue, consultez le journal pour plus de détails"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  }
+}
