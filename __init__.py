@@ -174,8 +174,8 @@ async def async_setup_entry(hass, config):
     # If not, the user should be notified and devices should not be created.
     if not ecu.ecu.ecu_id:
         _LOGGER.error(
-            "Not able to establish a connection with the ECU @ %s. "
-            "Check the ECU status and/or IP-Address.",
+            "Unable to connect to ECU @ %s. "
+            "Check the IP-Address or the ECU is recovering from reboot.",
             config.data["ecu_host"]
         )
         return False
