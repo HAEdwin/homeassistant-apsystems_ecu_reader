@@ -12,7 +12,6 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - Ability to switch individual inverters on/off (ECU-R-Pro 2162 and ECU-C only)
 - Better handling of communication errors
 - More efficient handling of queries that fail
-- Caching based on individual queries
 - Added L2 and L3 voltages for three-phased inverters
 - Added support for multiple ECU hubs
 - Added individual Inverter Online sensors for automations
