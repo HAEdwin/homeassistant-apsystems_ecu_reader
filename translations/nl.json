@@ -8,7 +8,7 @@
           "port_retries": "Aantal pogingen wanneer de ECU niet reageert",
           "cache_reboot": "Aantal caches vóór een automatische ECU-herstart (ECU-R-Pro en ECU-C-modellen)",
           "show_graphs": "Werk grafieken bij wanneer omvormers offline zijn",
-          "wifi_ssid": "Geef SSID op (alleen voor ECU-R-Pro- en ECU-C-modellen)",
+          "wifi_ssid": "Geef SSID op (alleen voor ECU-R-Pro en ECU-C-modellen)",
           "wifi_password": "Geef wachtwoord op (alleen voor ECU-R-Pro- en ECU-C-modellen)"
         },
         "title": "APsystems ECU Configuratie"
@@ -31,7 +31,7 @@
           "port_retries": "Aantal pogingen wanneer de ECU niet reageert",
           "cache_reboot": "Aantal caches vóór een automatische ECU-herstart (ECU-R-Pro en ECU-C-modellen)",
           "show_graphs": "Werk grafieken bij wanneer omvormers offline zijn",
-          "wifi_ssid": "Geef SSID op (alleen voor ECU-R-Pro- en ECU-C-modellen)",
+          "wifi_ssid": "Geef SSID op (alleen voor ECU-R-Pro en ECU-C-modellen)",
           "wifi_password": "Geef wachtwoord op (alleen voor ECU-R-Pro- en ECU-C-modellen)"
         },
         "title": "APsystems ECU Configuratie"
