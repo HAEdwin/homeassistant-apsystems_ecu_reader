@@ -1,7 +1,7 @@
 [![hacs_badge](https://img.shields.io/github/v/release/haedwin/homeassistant-apsystems_ecu_reader)](https://github.com/haedwin/homeassistant-apsystems_ecu_reader)
+[![Validate with Hassfest](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/Validate%20with%20Hassfest.yaml/badge.svg)](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/Validate%20with%20Hassfest.yaml)
+[![Validate with HACS](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/Validate%20with%20HACS.yaml/badge.svg)](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/Validate%20with%20HACS.yaml)
 <!--
-[![Validate with Hassfest](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/validate%20with%20Hassfest.yml/badge.svg)](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/validate%20with%20Hassfest.yml)
-[![Validate with HACS](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/validate%20with%20HACS.yml/badge.svg)](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/actions/workflows/validate%20with%20HACS.yml)
 ![Home Assistant Dashboard](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/blob/main/dashboard.PNG)
 -->
 
