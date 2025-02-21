@@ -70,7 +70,7 @@ class APsystemsSocket:
                 await self.close_socket()
                 raise APsystemsInvalidData(str(err)) from err
         raise APsystemsInvalidData(
-            f"attempt to claim socket after {port_retries} retries, using cached data"
+            f"failure to claim socket after {port_retries} attempts, using cached data"
             )
 
 
