@@ -32,7 +32,7 @@ class FlowHandler(config_entries.ConfigFlow):
             if ecu_id:
                 await self.async_set_unique_id(ecu_id)
                 return self.async_create_entry(title="APsystems", data=user_input)
-            errors["ecu_host"] = "no_ecu_found"
+            errors[KEYS[0]] = "no_ecu_found"
 
         # Show form because user input is empty.
         return self.async_show_form(
