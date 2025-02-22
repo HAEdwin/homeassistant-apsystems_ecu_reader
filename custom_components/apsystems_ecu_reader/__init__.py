@@ -134,20 +134,20 @@ async def update_listener(hass, config):
 async def async_setup_entry(hass, config):
     """ Setup APsystems platform """
     hass.data.setdefault(DOMAIN, {})
-    interval = timedelta(seconds=config.data["scan_interval"])
+    interval = timedelta(seconds=config.data.get("scan_interval", 300))
     ecu = ECUREADER(
         config.data["ecu_host"],
-        config.data["wifi_ssid"],
-        config.data["wifi_password"],
-        config.data["show_graphs"]
+        config.data.get("wifi_ssid", "ECU-local"),
+        config.data.get("wifi_password", "default"),
+        config.data.get("show_graphs", True)
     )
 
     async def do_ecu_update():
         """ Pass current port_retries value dynamically. """
         return await ecu.update(
-            config.data["port_retries"],
-            config.data["cache_reboot"],
-            config.data["show_graphs"]
+            config.data.get("port_retries", 2),
+            config.data.get("cache_reboot", 3),
+            config.data.get("show_graphs", True)
         )
 
 
@@ -174,8 +174,8 @@ async def async_setup_entry(hass, config):
     # If not, the user should be notified and devices should not be created.
     if not ecu.ecu.ecu_id:
         _LOGGER.error(
-            "Not able to establish a connection with the ECU @ %s. "
-            "Check the ECU status and/or IP-Address.",
+           "Unable to connect with ECU @ %s. Check IP-Address or wait "
+            "10 minutes because the ECU might be recovering from reboot.",
             config.data["ecu_host"]
         )
         return False
