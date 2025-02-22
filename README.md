@@ -26,7 +26,7 @@ The installation of custom integrations is done in three steps (assuming HACS is
 - Navigate to HACS and choose the overflow menu in the top right corner of the Home Assistant Community Store.
 - Choose Custom repositories and paste the url: https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader in the Repository field.
 - Choose Type > Integration and select the [Add]-button.
-From this point it might allready have been added to the personal store repository. If not, wait for it to appear.
+From this point it might allready have been added to the personal store repository. If not, wait for it to appear then close the Custom repositories dialog window.
 - In HACS search for APsystems and the APsystems ECU Reader will be listed in de Available for download section.
 - From the overflow menu on the right select [Download] and automatically the latest version will be listed for download so choose [Download].
 - HA Settings will now show the repair action that a Restart is required, submit the action and HA will restart.
@@ -35,7 +35,7 @@ After HA's restart the downloaded custom integration will be detected by HA.
 The integration will need to be configured in order to fully integrate it in HA and make it work.
 
 **2. Integrating the custom integration into Home Assistant**
-- Navigate to [Settings] > [Devices & services] and choose the button [+ ADD INTEGRATION].
+- Navigate to [Settings] > [Devices & services] and choose the button [+ ADD INTEGRATION] in the lower right corner.
 - In "Search for a brand name", choose APsystems and the APsystems ECU Reader will be listed.
 - Select it and the Configuration dialog will show, enter IP-Address of the ECU, rest of the defaults are fine so choose [SUBMIT].
 > [!IMPORTANT]
