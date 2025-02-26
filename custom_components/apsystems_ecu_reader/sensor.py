@@ -8,6 +8,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -60,6 +61,13 @@ async def async_setup_entry(hass, _, add_entities):
         ),
         APsystemsECUSensor(coordinator, ecu, "lifetime_energy",
             label=f"{ecu.ecu.ecu_id} Lifetime Energy",
+            unit=UnitOfEnergy.KILO_WATT_HOUR,
+            devclass=SensorDeviceClass.ENERGY,
+            icon=SOLAR_ICON,
+            stateclass=SensorStateClass.TOTAL_INCREASING
+        ),
+        APsystemsECUSensor(coordinator, ecu, "lifetime_energy_produced",
+            label=f"{ecu.ecu.ecu_id} Lifetime Energy Produced",
             unit=UnitOfEnergy.KILO_WATT_HOUR,
             devclass=SensorDeviceClass.ENERGY,
             icon=SOLAR_ICON,
@@ -331,7 +339,7 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
     def entity_category(self):
         return self._entity_category
 
-class APsystemsECUSensor(CoordinatorEntity, SensorEntity):
+class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
     """ sensor.py APsystemsECUSensor """
 
     def __init__(
@@ -339,23 +347,26 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity):
             ecu, field, label=None, icon=None, unit=None,
             devclass=None, stateclass=None, entity_category=None
         ):
-
         super().__init__(coordinator)
-
         self.coordinator = coordinator
         self._ecu = ecu
         self._field = field
-        self._label = label
-        if not label:
-            self._label = field
+        self._label = label or field
         self._icon = icon
         self._unit = unit
         self._devclass = devclass
         self._stateclass = stateclass
         self._entity_category = entity_category
-
         self._name = f"ECU {self._label}"
         self._state = None
+
+    async def async_added_to_hass(self):
+        """Handle entity that needs to be restored."""
+        await super().async_added_to_hass()
+        if self._field == "lifetime_energy_produced":
+            last_state = await self.async_get_last_state()
+            _LOGGER.debug("sensor.py last state %s", last_state)
+            self._state = float(last_state.state) if last_state else 0
 
     @property
     def unique_id(self):
@@ -372,28 +383,34 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        #_LOGGER.debug("State called for %s", self._field)
-        return self.coordinator.data.get(self._field)
+        # Get the current value from the coordinator data
+        current_value = self.coordinator.data.get(self._field)
+
+        # Check if the field is "lifetime_energy_produced"
+        if self._field == "lifetime_energy_produced":
+            current_power = self.coordinator.data.get("current_power")
+            time_interval = 5 / 60  # fixed 5 minutes interval for now
+            energy = (current_power / 1000) * time_interval
+            self._state += energy
+            return round(self._state, 2)
+        return current_value
 
     @property
     def icon(self):
         return self._icon
 
-    #def unit_of_measurement(self):
     @property
     def native_unit_of_measurement(self):
         return self._unit
 
     @property
     def extra_state_attributes(self):
-
-        attrs = {
-            "ecu_id" : self._ecu.ecu.ecu_id,
-            "Firmware" : self._ecu.ecu.firmware,
-            "Timezone" : self._ecu.ecu.timezone,
-            "last_update" : self._ecu.ecu.last_update
+        return {
+            "ecu_id": self._ecu.ecu.ecu_id,
+            "Firmware": self._ecu.ecu.firmware,
+            "Timezone": self._ecu.ecu.timezone,
+            "last_update": self._ecu.ecu.last_update
         }
-        return attrs
 
     @property
     def state_class(self):
