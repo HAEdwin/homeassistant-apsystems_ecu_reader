@@ -74,9 +74,7 @@ def validate_data(data: bytes, cmd: str) -> str:
     if len(data) - 1 != checksum:
         return f"checksum error on '{cmd}': checksum={checksum} datalen={datalen} data={debugdata}"
     # Validate start and end signature
-    start_str = aps_str(data, 0, 3)
-    end_str = aps_str(data, len(data) - 4, 3)
-    if start_str != 'APS' or end_str != 'END':
-        return f"signature error on '{cmd}': start='{start_str}', end='{end_str}' data={debugdata}"
+    if aps_str(data, 0, 3) != 'APS' or aps_str(data, len(data) - 4, 3) != 'END':
+        return f"signature error on '{cmd}': data={debugdata}"
 
     return ""

@@ -66,12 +66,12 @@ async def async_setup_entry(hass, _, add_entities):
             icon=SOLAR_ICON,
             stateclass=SensorStateClass.TOTAL_INCREASING
         ),
-        APsystemsECUSensor(coordinator, ecu, "lifetime_energy_produced",
-            label=f"{ecu.ecu.ecu_id} Lifetime Energy Produced",
-            unit=UnitOfEnergy.KILO_WATT_HOUR,
-            devclass=SensorDeviceClass.ENERGY,
+        APsystemsECUSensor(coordinator, ecu, "lifetime_maximum_power",
+            label=f"{ecu.ecu.ecu_id} Lifetime Maximum Power",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
             icon=SOLAR_ICON,
-            stateclass=SensorStateClass.TOTAL_INCREASING
+            stateclass=SensorStateClass.MEASUREMENT
         ),
         APsystemsECUSensor(coordinator, ecu, "qty_of_inverters",
             label=f"{ecu.ecu.ecu_id} Inverters",
@@ -363,10 +363,10 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
     async def async_added_to_hass(self):
         """Handle entity that needs to be restored."""
         await super().async_added_to_hass()
-        if self._field == "lifetime_energy_produced":
-            last_state = await self.async_get_last_state()
-            _LOGGER.debug("sensor.py last state %s", last_state)
-            self._state = float(last_state.state) if last_state else 0
+        last_state = await self.async_get_last_state()
+        if last_state and self._field == "lifetime_maximum_power":
+            self._last_update = last_state.attributes.get("last_update")
+            self._state = 0 if last_state.state == 'unknown' else float(last_state.state)
 
     @property
     def unique_id(self):
@@ -384,16 +384,12 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
     def native_value(self):
         """Return the state of the sensor."""
         # Get the current value from the coordinator data
-        current_value = self.coordinator.data.get(self._field)
-
-        # Check if the field is "lifetime_energy_produced"
-        if self._field == "lifetime_energy_produced":
+        if self._field == "lifetime_maximum_power":
             current_power = self.coordinator.data.get("current_power")
-            time_interval = 5 / 60  # fixed 5 minutes interval for now
-            energy = (current_power / 1000) * time_interval
-            self._state += energy
-            return round(self._state, 2)
-        return current_value
+            self._state = max(self._state or 0, current_power)
+            return round(self._state)
+        else:
+            return self.coordinator.data.get(self._field, 0)
 
     @property
     def icon(self):

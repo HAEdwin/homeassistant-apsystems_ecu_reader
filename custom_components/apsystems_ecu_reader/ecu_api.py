@@ -63,7 +63,7 @@ class APsystemsSocket:
                 _LOGGER.debug("Socket successfully claimed")
                 return
             except (socket.timeout, socket.gaierror, socket.error) as err:
-                _LOGGER.warning("Socket claim attempt %s/%s failed: %s", attempt, port_retries, err)
+                _LOGGER.debug("Socket claim attempt %s/%s failed: %s", attempt, port_retries, err)
                 await asyncio.sleep(delay)  # Wait before retrying
             except Exception as err:
                 _LOGGER.error("An unexpected error occurred: %s", err, exc_info=True)
@@ -128,7 +128,12 @@ class APsystemsSocket:
         await self.close_socket()
         _LOGGER.debug("ECU raw data: %s", self.ecu_raw_data.hex())
         if status or not self.ecu_raw_data:
-            raise APsystemsInvalidData(f"an error while querying ECU where status is: {status}")
+            raise APsystemsInvalidData(
+                f"querying ECU where status is: {status}"
+                if status
+                else "querying ECU where received data is none"
+            )
+
         # Extract ECU-ID needed for other queries
         self.ecu_id = aps_str(self.ecu_raw_data, 13, 12)
 
@@ -140,7 +145,7 @@ class APsystemsSocket:
         _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
         if status or not self.inverter_raw_data or len(self.inverter_raw_data) < 40:
             raise APsystemsInvalidData(
-                f"occurred while querying inverter. Status is: "
+                f"querying inverter. Status is: "
                 f"{status or 'incomplete inverter data received due to ECU recovery'}"
             )
 

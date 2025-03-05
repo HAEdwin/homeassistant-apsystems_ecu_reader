@@ -62,7 +62,7 @@ class ECUREADER:
 
     async def reboot_ecu(self):
         """ Reboot the ECU (compatible with ECU-ID 2162... series and ECU-C models) """
-        _LOGGER.warning("ecu_id: %s", self.cached_data.get("ecu_id", None))
+        _LOGGER.debug("ecu_id: %s", self.cached_data.get("ecu_id", None))
         if (
             (self.cached_data.get("ecu_id", None)[0:3] == "215")
             or (self.cached_data.get("ecu_id", None)[0:4] == "2162")
@@ -99,9 +99,13 @@ class ECUREADER:
 
         # Reboot the ECU when the cache counter reaches the cache limit
         # This is a workaround for the ECU not responding to queries after a while
-        if self.data_from_cache_count > cache_reboot:
-            response = await self.reboot_ecu()
+        if self.data_from_cache_count >= cache_reboot:
+            _LOGGER.warning(
+                "Restarting ECU after %s failed attempts to fetch data",
+                self.data_from_cache_count
+            )
             self.data_from_cache_count = 0
+            response = await self.reboot_ecu()
             _LOGGER.debug("Response from ECU on reboot: %s", response)
         else:
             try:
