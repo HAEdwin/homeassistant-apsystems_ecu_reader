@@ -46,7 +46,7 @@ Choose the "Local" connection option. The app should automatically detect and co
 Once connected, use the EMA Manager app to configure the ECU-R's network settings.
 Connect the ECU-R to the same Wi-Fi network as your Home Assistant.
 
-### Test your connection and find your ECU on the LAN
+### Test the ECU connection and finding your ECU on the Local Network
 Final step to the prerequisites is testing the connection between HomeAssistant and the ECU. Sometimes it is difficult to find the ECU among all the other nodes, especially if you have many IOT devices. In any case, look for **Espressif Inc. or ESP** because the ECU's WiFi interface is from this brand. Testing the connection can be done from the terminal using the Netcat command, follow the example below but use the correct (fixed) IP address of your ECU. If connected you'll see line 2, then type in the command APS1100160001END if you get a response (line 4) you are ready to install the integration. If not, power cycle your ECU wait for it to get started and try again. **It is highly recommended to assign a fixed IP-Address to the ECU**.
 ```
 [core-ssh .storage]$ nc -v 172.16.0.4 8899 <┘
@@ -54,7 +54,6 @@ Final step to the prerequisites is testing the connection between HomeAssistant 
 APS1100160001END <┘
 APS11009400012160000xxxxxxxz%10012ECU_R_1.2.22009Etc/GMT-8
 ```
-Sometimes you might see the "Unknown error occurred" message. Installation can best be done in the daytime when inverters are running.
 
 ## Install the integration
 The installation of custom integrations is done in three steps (assuming HACS is already installed):
