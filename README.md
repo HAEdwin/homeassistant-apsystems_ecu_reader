@@ -20,6 +20,42 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 > [!CAUTION]
 > ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's. The inverter entities have remained the same, except for the Zigbee signal (this unit is converted from % to dBm). To avoid duplication of inverter entities ("inverter_408000123456_power_ch_1" becomes two entities: "inverter_408000123456_power_ch_1" and "inverter_408000123456_power_ch_1-1") you have to completely remove the old integration and reboot before activating the new one. The old entities are then first removed and later added again without losing historical data. Always use the UI to remove an integration.
 
+## Prerequisites
+You own an APSystems ECU model ECU-B, ECU-R or ECU-C and any combination of YC600, YC1000/QT2, DS3/DS3D, DS3-H or QS1/QS1A inverter. If your inverter is not supported, please raise an issue. Your ECU is connected to your LAN, correctly configured (assigned a fixed IP address) and Home Assistant has free access to it. You also have HACS installed in Home Assistant. You allready have an APsystemsema (Energy Monitoring & Analysis System) account and are succesfully uploading data to the EMA site.
+Connection method (ethernet or WiFi) depends on your ECU model, follow the table below.
+Connection required | ECU Model | Automated Restart* | Turn on/off Inverters
+--- | --- | --- | ---
+Wireless | ECU-R (2160xxxxxxxx series) and ECU-B | No | No
+Wireless | ECU-R (SunSpec logo/ECU-ID starting with 2162xxxxxxxx) | Yes | Yes
+Wired | ECU-C | Yes | Yes
+
+ECU-3 owners might want to take a look at: https://github.com/jeeshofone/ha-apc-ecu-3
+
+### Configure your wireless ECU connection
+1. **Install EMA Manager**: 
+Download and install the EMA Manager app on your mobile device from the appropriate app store.
+1. **Put ECU-R in Access Point Mode**: 
+Locate the physical button on your ECU-R router. Press and hold the button for a few seconds until the router's Wi-Fi starts. You should see it in your accessible WIFI networks of your device (phone). This indicates that the router is in Access Point mode.
+1. **Connect to ECU-R Wi-Fi**:
+Use your mobile device to connect to the newly created Wi-Fi network from your ECU-R router.
+The default Wi-Fi password is 88888888.
+1. **Launch EMA Manager**:
+Open the EMA Manager app on your device.
+Choose the "Local" connection option. The app should automatically detect and connect to your ECU-R router.
+1. **Configure ECU-R Network Settings**:
+Once connected, use the EMA Manager app to configure the ECU-R's network settings.
+Connect the ECU-R to the same Wi-Fi network as your Home Assistant.
+
+### Test your connection and find your ECU on the LAN
+Final step to the prerequisites is testing the connection between HomeAssistant and the ECU. Sometimes it is difficult to find the ECU among all the other nodes, especially if you have many IOT devices. In any case, look for **Espressif Inc. or ESP** because the ECU's WiFi interface is from this brand. Testing the connection can be done from the terminal using the Netcat command, follow the example below but use the correct (fixed) IP address of your ECU. If connected you'll see line 2, then type in the command APS1100160001END if you get a response (line 4) you are ready to install the integration. If not, power cycle your ECU wait for it to get started and try again. **It is highly recommended to assign a fixed IP-Address to the ECU**.
+```
+[core-ssh .storage]$ nc -v 172.16.0.4 8899 <┘
+172.16.0.4 (172.16.0.4:8899) open
+APS1100160001END <┘
+APS11009400012160000xxxxxxxz%10012ECU_R_1.2.22009Etc/GMT-8
+```
+Sometimes you might see the "Unknown error occurred" message. Installation can best be done in the daytime when inverters are running.
+
 ## Install the integration
 The installation of custom integrations is done in three steps (assuming HACS is already installed):
 
@@ -41,16 +77,6 @@ The integration will need to be configured in order to fully integrate it in HA 
 - Select it and the Configuration dialog will show, enter IP-Address of the ECU, rest of the defaults are fine so choose [SUBMIT].
 > [!IMPORTANT]
 > If you recieve the message "No ECU found at this IP-address or ECU is recovering from restart" make sure the ECU is running for at least 10 minutes after a restart of the ECU before (re-)configuring the integration. The ECU might still contain incomplete data which cannot be accepted. Other option is still a wrong IP-address being entered, below more details on how to test and find the ECU on your network.
-
-### Test your connection and find your ECU on the LAN
-Final step to the prerequisites is testing the connection between HomeAssistant and the ECU. Sometimes it is difficult to find the ECU among all the other nodes, especially if you have many IOT devices. In any case, look for **Espressif Inc. or ESP** because the ECU's WiFi interface is from this brand. Testing the connection can be done from the terminal using the Netcat command, follow the example below but use the correct (fixed) IP address of your ECU. If connected you'll see line 2, then type in the command APS1100160001END if you get a response (line 4) you are ready to install the integration. If not, power cycle your ECU wait for it to get started and try again. **It is highly recommended to assign a fixed IP-Address to the ECU**.
-```
-[core-ssh .storage]$ nc -v 172.16.0.4 8899 <┘
-172.16.0.4 (172.16.0.4:8899) open
-APS1100160001END <┘
-APS11009400012160000xxxxxxxz%10012ECU_R_1.2.22009Etc/GMT-8
-```
-Sometimes you might see the "Unknown error occurred" message. Installation can best be done in the daytime when inverters are running.
 
 ### APsystems ECU Configuration
 - ECU-IP address: The address you have assigned to the ECU must be entered here
