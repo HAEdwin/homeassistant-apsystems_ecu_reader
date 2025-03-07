@@ -59,6 +59,26 @@ Sometimes you might see the "Unknown error occurred" message. Installation can b
 If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU firmware does not provide this option on these models. Instead you can use an automation where you use the UCC sensor to trigger a smartplug to turn Off and On again after a 10 seconds wait. If you don't restart the ECU, the UCC will increase until there was a succesfull connection with the ECU again.
 - Update graphs when inverters are offline: You can turn this on or off. In the On state most entities will be set to zero when the inverters are offline. The temperature and zigbee sensors will never be plotted when the inverters are offline.
 
+## In case of ECU firmware issues
+In some cases the ECU firmware is not handling the Daily Energy or Lifetime Energy well. I recommend the utility meter integration to accommodate this. Below is an example of a Lifetime Energy Meter.
+Edit in configuration.yaml:
+```
+# integration
+utility_meter:
+  lifetime_energy:
+    source: sensor.ecu_xxxxxxxxxxxx_current_power
+		       
+
+# Custom sensors
+sensor:
+  - platform: template
+    sensors:
+      lifetime_energy_kwh:
+        friendly_name: "Lifetime Energy (kWh)"
+        unit_of_measurement: "kWh"
+        value_template: "{{ states('sensor.lifetime_energy') | float / 1000 }}"
+```
+
 ## To Do
 - Expand readme
 - Still some code cleanup/checks to do
