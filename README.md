@@ -18,7 +18,8 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - Added individual Inverter Online sensors for automations
 - dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -70dBm (worst signal)
 > [!CAUTION]
-> ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's. The inverter entities have remained the same, except for the Zigbee signal (this unit is converted from % to dBm). To avoid duplication of inverter entities ("inverter_408000123456_power_ch_1" becomes two entities: "inverter_408000123456_power_ch_1" and "inverter_408000123456_power_ch_1-1") you have to completely remove the old integration and reboot before activating the new one. The old entities are then first removed and later added again without losing historical data. Always use the UI to remove an integration.
+> - ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's.
+> - Inverter entities have remained the same, except for the Zigbee signal (this unit is converted from % to dBm). To avoid duplication of inverter entities ("inverter_408000123456_power_ch_1" becomes two entities: "inverter_408000123456_power_ch_1" and "inverter_408000123456_power_ch_1-1") you have to completely remove the old integration and reboot before activating the new one. The old entities are then first removed and later added again without losing historical data. Always use the UI to remove an integration.
 
 ## Prerequisites
 You own an APSystems ECU model ECU-B, ECU-R or ECU-C and any combination of YC600, YC1000/QT2, DS3/DS3D, DS3-H or QS1/QS1A inverter. If your inverter is not supported, please raise an issue. Your ECU is connected to your LAN, correctly configured (assigned a fixed IP address) and Home Assistant has free access to it. You also have HACS installed in Home Assistant. You allready have an APsystemsema (Energy Monitoring & Analysis System) account and are succesfully uploading data to the EMA site.
@@ -75,7 +76,7 @@ The integration will need to be configured in order to fully integrate it in HA 
 - In "Search for a brand name", choose APsystems and the APsystems ECU Reader will be listed.
 - Select it and the Configuration dialog will show, enter IP-Address of the ECU, rest of the defaults are fine so choose [SUBMIT].
 > [!IMPORTANT]
-> If you recieve the message "No ECU found at this IP-address or ECU is recovering from restart" make sure the ECU is running for at least 10 minutes after a restart of the ECU before (re-)configuring the integration. The ECU might still contain incomplete data which cannot be accepted. Other option is still a wrong IP-address being entered, below more details on how to test and find the ECU on your network.
+> When you recieve the message "No ECU found at this IP-address or ECU is recovering from restart" make sure the ECU is running for at least 10 minutes after a restart of the ECU before (re-)configuring the integration. The ECU might still contain incomplete data which cannot be accepted. Other option is still a wrong IP-address being entered, below more details on how to test and find the ECU on your network.
 
 ### APsystems ECU Configuration
 - ECU-IP address: The address you have assigned to the ECU must be entered here
