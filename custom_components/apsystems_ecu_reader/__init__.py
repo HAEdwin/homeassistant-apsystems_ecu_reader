@@ -21,6 +21,7 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import DOMAIN
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
+from .gui_helpers import set_inverter_state, set_zero_export, reboot_ecu  # Import the functions
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,58 +40,17 @@ class ECUREADER:
         self.cached_data = {}
 
     # called from switch.py
-    def set_inverter_state(self, inverter_id, state):
+    async def set_inverter_state(self, inverter_id, state):
         """Set the on/off state of an inverter. 1=on, 2=off"""
-        action = {"ids[]": f'{inverter_id}1' if state else f'{inverter_id}2'}
-        headers = {'X-Requested-With': 'XMLHttpRequest', "Connection": "keep-alive"}
-        url = f'http://{self.ipaddr}/index.php/configuration/set_switch_state'
+        await set_inverter_state(self.ipaddr, inverter_id, state)
 
-        try:
-            response = requests.post(url, headers=headers, data=action, timeout=15)
-            _LOGGER.debug(
-                "Response from ECU on switching the inverter %s to state %s: %s",
-                inverter_id, 'on' if state else 'off',
-                re.search(r'"message":"([^"]+)"', response.text).group(1)
-            )
-
-        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as err:
-            _LOGGER.debug(
-                "Attempt to switch inverter %s failed with error: %s\n\t"
-                "This switch is only compatible with ECU-ID 2162... series and ECU-C models",
-                state, err
-            )
+    async def set_zero_export(self, state):
+        """Set the bridge state for zero export. 0=closed, 1=open"""
+        await set_zero_export(self.ipaddr, state)
 
     async def reboot_ecu(self):
         """ Reboot the ECU (compatible with ECU-ID 2162... series and ECU-C models) """
-        _LOGGER.debug("ecu_id: %s", self.cached_data.get("ecu_id", None))
-        if (
-            (self.cached_data.get("ecu_id", None)[0:3] == "215")
-            or (self.cached_data.get("ecu_id", None)[0:4] == "2162")
-        ):
-            action = {
-                'SSID': self.wifi_ssid,
-                'channel': 0,
-                'method': 2,
-                'psk_wep': '',
-                'psk_wpa': self.wifi_password
-            }
-            headers = {'X-Requested-With': 'XMLHttpRequest'}
-            url = 'http://' + str(self.ipaddr) + '/index.php/management/set_wlan_ap'
-
-            try:
-                async with (
-                    aiohttp.ClientSession() as session,
-                    async_timeout.timeout(15),
-                    session.post(url, headers=headers, data=action) as response
-                ):
-                    return await response.text()
-            except (
-                aiohttp.ClientError,
-                aiohttp.ClientConnectionError,
-                asyncio.TimeoutError,
-            ) as err:
-                return err
-
+        return await reboot_ecu(self.ipaddr, self.wifi_ssid, self.wifi_password, self.cached_data)
 
     async def update(self, port_retries, cache_reboot, show_graphs):
         """ Fetch ECU data or use cached data if querying failed. """

@@ -2,24 +2,16 @@
 
 import logging
 
-from homeassistant.components.binary_sensor import (
-    BinarySensorEntity,
-)
+from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import (
-    DOMAIN,
-    CACHE_ICON
-)
+from .const import DOMAIN, CACHE_ICON
 
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, _, add_entities):
-    """Set up the binary sensor for the APsystems ECU data cache"""
-
+    """Set up the binary sensor for the APsystems ECU data cache."""
     ecu = hass.data[DOMAIN].get("ecu")
     coordinator = hass.data[DOMAIN].get("coordinator")
 
@@ -31,18 +23,14 @@ async def async_setup_entry(hass, _, add_entities):
     ])
 
 class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
-    """Representation of a binary sensor for APsystems ECU"""
+    """Representation of a binary sensor for APsystems ECU."""
 
     def __init__(self, coordinator, ecu, field, label=None, icon=None):
-
         super().__init__(coordinator)
-
         self.coordinator = coordinator
         self._ecu = ecu
         self._field = field
-        self._label = label
-        if not label:
-            self._label = field
+        self._label = label or field
         self._icon = icon
         self._name = f"ECU {self._label}"
         self._state = None
@@ -65,14 +53,13 @@ class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
 
     @property
     def extra_state_attributes(self):
-
-        attrs = {
-            "ecu_id" : self._ecu.ecu.ecu_id,
-            "firmware" : self._ecu.ecu.firmware,
-            "timezone" : self._ecu.ecu.timezone,
-            "last_update" : self._ecu.ecu.last_update
+        """Return the state attributes of the sensor."""
+        return {
+            "ecu_id": self._ecu.ecu.ecu_id,
+            "firmware": self._ecu.ecu.firmware,
+            "timezone": self._ecu.ecu.timezone,
+            "last_update": self._ecu.ecu.last_update
         }
-        return attrs
 
     @property
     def entity_category(self):

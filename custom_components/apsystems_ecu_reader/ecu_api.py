@@ -6,7 +6,7 @@ import asyncio
 import socket
 import logging
 
-from .helper import (
+from .ecu_helpers import (
     aps_datetimestamp,
     aps_str,
     aps_int_from_bytes,
@@ -126,7 +126,6 @@ class APsystemsSocket:
         await self.open_socket(port_retries)
         self.ecu_raw_data, status = await self.send_read_from_socket(self.ecu_cmd)
         await self.close_socket()
-        _LOGGER.debug("ECU raw data: %s", self.ecu_raw_data.hex())
         if status or not self.ecu_raw_data:
             raise APsystemsInvalidData(
                 f"querying ECU where status is: {status}"

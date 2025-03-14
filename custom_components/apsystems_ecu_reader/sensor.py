@@ -365,7 +365,6 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         await super().async_added_to_hass()
         last_state = await self.async_get_last_state()
         if last_state and self._field == "lifetime_maximum_power":
-            self._last_update = last_state.attributes.get("last_update")
             self._state = 0 if last_state.state == 'unknown' else float(last_state.state)
 
     @property
