@@ -6,7 +6,9 @@
 ![Home Assistant Dashboard](https://github.com/haedwin/homeassistant-apsystems_ecu_reader/blob/main/dashboard.PNG)
 -->
 
-# APsystems ECU Reader
+# APsystems ECU Reader (since 2022)
+📢 We have over 740 active installations! 🎉
+
 This custom integration for Home Assistant sends commands to the ECU to retreive data and is an extension/further development of ksheumaker's "homeassistant-apsystems_ecur" integration. It supports the following features:
 - Extensive data integrity checking
 - Extensive control on communication with the ECU
@@ -16,6 +18,8 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - Added L2 and L3 voltages for three-phased inverters
 - Added support for multiple ECU hubs
 - Added individual Inverter Online sensors for automations
+- Ability to enable Zero Export (ECU-C and ECU-3)
+- Limit maximum Power of each panel (ECU-R-Pro, ECU-C, ECU-3)
 - dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -70dBm (worst signal)
 > [!CAUTION]
 > - ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's.
