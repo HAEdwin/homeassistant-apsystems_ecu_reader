@@ -118,10 +118,9 @@ sensor:
 |action	|Software Reboot	|No    |Yes	  |Yes	 |Yes  |
 
 
-## To Do
-- Expand readme
-- Still some code cleanup/checks to do
-- Debugging
+## Other languages
+German: https://smart-home-assistant.de/ap-systems-ecu-b-einbinden
+Dutch: https://doe-duurzaam.nl/artikel/je-apsystems-micro-omvormers-slim-uitzetten-via-web-of-home-assistant/#teruglevering-beperken-per-micro-omvormer
 
 ## FAQ
 - Why is my inverter going offline sometimes during the day?
