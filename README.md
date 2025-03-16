@@ -105,6 +105,14 @@ sensor:
         unit_of_measurement: "kWh"
         value_template: "{{ states('sensor.lifetime_energy') | float / 1000 }}"
 ```
+## Compatibility of extra features
+|Type	|function		|ECU-R |ECU-R-Pro |ECU-C |ECU-3|
+|-------|-----------------------|------|----------|------|-----|
+|switch	|Zero Export Control	|No    |No	  |Yes   |Yes  |
+|switch	|Inverter On/Off	|No    |Yes	  |Yes	 |Yes  |
+|action	|Maximum Power		|No    |Yes	  |Yes	 |Yes  |
+|action	|Software Reboot	|No    |Yes	  |Yes	 |Yes  |
+
 
 ## To Do
 - Expand readme
