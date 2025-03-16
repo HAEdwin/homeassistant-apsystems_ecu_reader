@@ -117,6 +117,24 @@ sensor:
 |action	|Maximum Power		|No    |Yes	  |Yes	 |Yes  |
 |action	|Software Reboot	|No    |Yes	  |Yes	 |Yes  |
 
+## The temperature sensors
+When the inverters are turned off at sundown the ECU returns zero for inverters temperature. Users prefer to keep them as null values instead of zero so the graphs are not being updated during the offline periods. In return, this causes a non-numeric error message for the gauge if you use that as a temperature indicator. In that case you can use this template part in configuration.yaml which converts the value to zero:
+```
+sensor:
+  - platform: template
+    sensors:
+      temperature_non_numeric_4080xxxxxxxx:
+        value_template: "{{ states('sensor.inverter_4080xxxxxxxx_temperature')|float(0) }}"
+        unit_of_measurement: "°C"
+      temperature_non_numeric_8060xxxxxxxx:
+        value_template: "{{ states('sensor.inverter_8060xxxxxxxx_temperature')|float(0) }}"
+        unit_of_measurement: "°C"
+```
+
+### How to derive new sensors from excisting sensors
+* Total power for each inverter: Settings > Devices and Services > Helpers (top of the screen) > +Create Helper > +/- Combine the state of several sensors
+* Use the Home Assistant Utility-Meter integration
+
 
 ## Other languages
 German: https://smart-home-assistant.de/ap-systems-ecu-b-einbinden
