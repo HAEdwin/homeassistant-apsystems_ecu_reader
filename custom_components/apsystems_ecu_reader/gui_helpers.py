@@ -56,6 +56,33 @@ async def set_zero_export(ipaddr, state):
             "This switch is only compatible with ECU-C models", err
         )
 
+async def inverter_max_power(ipaddr, inverter_uid, max_panel_power):
+    """Set the max power for an inverter."""
+    action = {
+        "id": inverter_uid,
+        "maxpower": max_panel_power
+    }
+    headers = {'X-Requested-With': 'XMLHttpRequest'}
+    url = f'http://{ipaddr}/index.php/configuration/set_maxpower'
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, data=action, timeout=15) as response:
+                response_text = await response.text()
+                _LOGGER.debug(
+                    "Response from ECU on setting panel max power to %s for inverter %s: %s",
+                    max_panel_power,
+                    inverter_uid,
+                    re.search(r'"message":"([^"]+)"', response_text).group(1)
+                )
+    except (
+        aiohttp.ClientError,
+        aiohttp.ClientConnectionError,
+        asyncio.TimeoutError,
+    ) as err:
+        _LOGGER.error("Error setting max power for inverter %s: %s", inverter_uid, err)
+        return err
+
 async def reboot_ecu(ipaddr, wifi_ssid, wifi_password, cached_data):
     """ Reboot the ECU (compatible with ECU-ID 2162... series and ECU-C models) """
     ecu_id = cached_data.get("ecu_id", None)
