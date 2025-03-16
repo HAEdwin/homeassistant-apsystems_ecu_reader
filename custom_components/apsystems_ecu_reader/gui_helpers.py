@@ -53,7 +53,7 @@ async def set_zero_export(ipaddr, state):
     except (aiohttp.ClientError, aiohttp.ClientConnectionError, asyncio.TimeoutError) as err:
         _LOGGER.debug(
             "Attempt to bridge zero export failed with error: %s\n\t"
-            "This switch is only compatible with ECU-ID 2162... series and ECU-C models", err
+            "This switch is only compatible with ECU-C models", err
         )
 
 async def reboot_ecu(ipaddr, wifi_ssid, wifi_password, cached_data):

@@ -21,7 +21,7 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import DOMAIN
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
-from .gui_helpers import set_inverter_state, set_zero_export, reboot_ecu  # Import the functions
+from .gui_helpers import set_inverter_state, set_zero_export, reboot_ecu
 
 _LOGGER = logging.getLogger(__name__)
 
