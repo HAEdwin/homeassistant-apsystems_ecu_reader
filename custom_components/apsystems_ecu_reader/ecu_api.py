@@ -167,15 +167,17 @@ class APsystemsSocket:
         try:
             self.data["ecu_id"] = self.ecu_id
             self.data["last_update"] = self.last_update
-            if self.lifetime_energy != 0:
-                self.data["lifetime_energy"] = self.lifetime_energy
             self.data["current_power"] = self.current_power
-
-            # apply filter for ECU-R-pro firmware bug where both are zero
-            if self.qty_of_inverters > 0:
-                self.data["qty_of_inverters"] = self.qty_of_inverters
-                self.data["today_energy"] = self.today_energy
             self.data["qty_of_online_inverters"] = self.qty_of_online_inverters
+
+            # apply filters for ECU firmware bug where sometimes values are zero
+            if self.qty_of_inverters:
+                self.data["qty_of_inverters"] = self.qty_of_inverters
+            if self.today_energy:
+                self.data["today_energy"] = self.today_energy
+            if self.lifetime_energy:
+                self.data["lifetime_energy"] = self.lifetime_energy
+
             # Add inverter and signal data to the dictionary
             self.data.update(self.process_inverter_data(show_graphs))
 
