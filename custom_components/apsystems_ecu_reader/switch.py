@@ -75,7 +75,7 @@ class APsystemsECUInverterSwitch(CoordinatorEntity, SwitchEntity, RestoreEntity)
     @property
     def entity_category(self):
         """Return the category of the entity."""
-        return EntityCategory.DIAGNOSTIC
+        return EntityCategory.CONFIG
 
     @property
     def is_on(self):
