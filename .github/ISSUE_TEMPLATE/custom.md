@@ -40,7 +40,7 @@ Providing context helps us come up with a solution that is most useful in the re
 
 - [ ] ECU-B
 - [ ] ECU-R (2160 series)
-- [ ] ECU-R-Pro (2161 series)
+- [ ] ECU-R-Pro (2162 series)
 - [ ] ECU-C
 - [ ] ECU-3
 
