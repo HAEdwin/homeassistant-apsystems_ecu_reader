@@ -56,7 +56,7 @@ async def set_zero_export(ipaddr, state):
             "This switch is only compatible with ECU-C models", err
         )
 
-async def inverter_max_power(ipaddr, inverter_uid, max_panel_power):
+async def set_inverter_max_power(ipaddr, inverter_uid, max_panel_power):
     """Set the max power for an inverter."""
     action = {
         "id": inverter_uid,

@@ -36,7 +36,6 @@ from .const import (
     CACHE_COUNTER_ICON
 )
 
-
 _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, _, add_entities):

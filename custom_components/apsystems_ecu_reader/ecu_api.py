@@ -173,7 +173,10 @@ class APsystemsSocket:
             # apply filters for ECU firmware bug where sometimes values are zero
             if self.qty_of_inverters:
                 self.data["qty_of_inverters"] = self.qty_of_inverters
-            if self.today_energy and self.qty_of_online_inverters:
+            if (
+                self.today_energy != 0 or
+                (self.today_energy == 0 and self.qty_of_online_inverters == 0)
+            ):
                 self.data["today_energy"] = self.today_energy
             if self.lifetime_energy:
                 self.data["lifetime_energy"] = self.lifetime_energy

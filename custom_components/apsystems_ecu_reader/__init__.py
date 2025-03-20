@@ -18,15 +18,14 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
-from homeassistant.helpers.event import async_track_state_change_event
 
 from .const import DOMAIN
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
-from .gui_helpers import set_inverter_state, set_zero_export, reboot_ecu, inverter_max_power
+from .gui_helpers import set_inverter_state, set_zero_export, reboot_ecu, set_inverter_max_power
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["sensor", "binary_sensor", "switch"]
+PLATFORMS = ["sensor", "binary_sensor", "switch", "number"]
 
 class ECUREADER:
     """ECU Reader"""
@@ -39,6 +38,11 @@ class ECUREADER:
         self.data_from_cache = False
         self.data_from_cache_count = 0
         self.cached_data = {}
+
+    # called from number.py
+    async def set_inverter_max_power(self, inverter_uid, max_panel_power):
+        """Set the max power for an inverter."""
+        return await set_inverter_max_power(self.ipaddr, inverter_uid, max_panel_power)
 
     # called from switch.py
     async def set_inverter_state(self, inverter_id, state):
@@ -97,7 +101,7 @@ async def update_listener(hass, config):
 
 
 async def async_setup_entry(hass, config):
-    """Setup APsystems platform."""
+    """ Setup APsystems platform """
     hass.data.setdefault(DOMAIN, {})
     interval = timedelta(seconds=config.data.get("scan_interval", 300))
     ecu = ECUREADER(
@@ -108,12 +112,13 @@ async def async_setup_entry(hass, config):
     )
 
     async def do_ecu_update():
-        """Pass current port_retries value dynamically."""
+        """ Pass current port_retries value dynamically. """
         return await ecu.update(
             config.data.get("port_retries", 2),
             config.data.get("cache_reboot", 3),
             config.data.get("show_graphs", True)
         )
+
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -138,7 +143,7 @@ async def async_setup_entry(hass, config):
     # If not, the user should be notified and devices should not be created.
     if not ecu.ecu.ecu_id:
         _LOGGER.error(
-            "Unable to connect with ECU @ %s. Check IP-Address or wait "
+           "Unable to connect with ECU @ %s. Check IP-Address or wait "
             "10 minutes because the ECU might be recovering from reboot.",
             config.data["ecu_host"]
         )
@@ -171,24 +176,8 @@ async def async_setup_entry(hass, config):
     # Forward platform setup requests.
     await hass.config_entries.async_forward_entry_setups(config, PLATFORMS)
     config.async_on_unload(config.add_update_listener(update_listener))
-
-    # Add listeners for state changes of the input_number entities
-    async def max_panel_power_listener(event):
-        """Handle state changes of the input_number entity."""
-        new_state = event.data.get("new_state")
-        if new_state is None:
-            return
-        new_value = new_state.state
-        await inverter_max_power(ecu.ipaddr, event.data["entity_id"].split('.')[-1], new_value)
-
-    # Create listeners for each inverter UID
-    max_panel_power_entity_ids = [
-        f"max_panel_power.{uid}" for uid in inverters.keys()
-    ]
-    _LOGGER.debug("Adding listeners for input_number entities: %s",max_panel_power_entity_ids)
-    for entity_id in max_panel_power_entity_ids:
-        async_track_state_change_event(hass, entity_id, max_panel_power_listener)
     return True
+
 
 async def async_remove_config_entry_device(hass, _, device_entry) -> bool:
     """ Handle device removal """	
