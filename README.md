@@ -20,7 +20,8 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - Added individual Inverter Online sensors for automations
 - Ability to enable Zero Export (ECU-C and ECU-3)
 - Limit maximum Power of each panel (ECU-R-Pro, ECU-C, ECU-3)
-- dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -70dBm (worst signal)
+- dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -29dBm (worst signal).
+
 > [!CAUTION]
 > - ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's.
 > - Inverter entities have remained the same, except for the Zigbee signal (this unit is converted from % to dBm). To avoid duplication of inverter entities ("inverter_408000123456_power_ch_1" becomes two entities: "inverter_408000123456_power_ch_1" and "inverter_408000123456_power_ch_1-1") you have to completely remove the old integration and reboot before activating the new one. The old entities are then first removed and later added again without losing historical data. Always use the UI to remove an integration.
