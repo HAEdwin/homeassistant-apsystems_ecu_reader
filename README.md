@@ -35,7 +35,7 @@ Wireless | ECU-R (2160xxxxxxxx series) and ECU-B | No | No
 Wireless | ECU-R (SunSpec logo/ECU-ID starting with 2162xxxxxxxx) | Yes | Yes
 Wired | ECU-C | Yes | Yes
 
-ECU-3 owners might want to take a look at: https://github.com/jeeshofone/ha-apc-ecu-3
+_ECU-3 owners might want to take a look at: https://github.com/jeeshofone/ha-apc-ecu-3_
 
 ### Configure your wireless ECU connection
 1. **Install EMA Manager**: 
@@ -91,6 +91,23 @@ The integration will need to be configured in order to fully integrate it in HA 
 If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU firmware does not provide this option on these models. Instead you can use an automation where you use the UCC sensor to trigger a smartplug to turn Off and On again after a 10 seconds wait. If you don't restart the ECU, the UCC will increase until there was a succesfull connection with the ECU again.
 - Update graphs when inverters are offline: You can turn this on or off. In the On state most entities will be set to zero when the inverters are offline. The temperature and zigbee sensors will never be plotted when the inverters are offline.
 
+## Compatibility of extra features
+|Type	|Entity		|ECU-R |ECU-R-Pro |ECU-C |ECU-3|
+|-------|-----------------------|------|----------|------|-----|
+|switch	|ecu_{ECU-ID}_zero_export [^1]	|No    |No	  |Yes   |Yes  |
+|switch	|inverter_{Inverter-ID}_on_off [^2]	|No    |Yes	  |Yes	 |Yes  |
+|switch |ecu_{ECU-ID}_all_inverters_on_off [^3]	|No	|Yes	|Yes	|Yes	|
+|switch	|ecu_{ECU-ID}_reboot_switch [^4]	|No	|Yes	|Yes	|Yes	|
+|number	|inverter_{Inverter-ID}_maxpwr [^5]		|No    |Yes	  |Yes	 |Yes  |
+
+_Note that the switch/number effects only the specified ECU-ID or Inverter-ID_
+
+[^1]: This switch will dynamically regulate the inverters to ensure that no energy is being exported
+[^2]: Switch to turn On/Off the individual inverter completely
+[^3]: Switch to turn On/Off all the inverters completely at once
+[^4]: Momentairy switch (2 seconds) which will reboot the ECU (take recovery into account)
+[^5]: Regulator to set the maximum amount of power on each individual inverter (per channel)
+
 ## In case of ECU firmware issues
 In some cases the ECU firmware is not handling the Daily Energy or Lifetime Energy well. I recommend the utility meter integration to accommodate this. Below is an example of a Lifetime Energy Meter.
 Edit in configuration.yaml:
@@ -99,7 +116,6 @@ Edit in configuration.yaml:
 utility_meter:
   lifetime_energy:
     source: sensor.ecu_xxxxxxxxxxxx_current_power
-		       
 
 # Custom sensors
 sensor:
@@ -110,13 +126,7 @@ sensor:
         unit_of_measurement: "kWh"
         value_template: "{{ states('sensor.lifetime_energy') | float / 1000 }}"
 ```
-## Compatibility of extra features
-|Type	|function		|ECU-R |ECU-R-Pro |ECU-C |ECU-3|
-|-------|-----------------------|------|----------|------|-----|
-|switch	|Zero Export Control	|No    |No	  |Yes   |Yes  |
-|switch	|Inverter On/Off	|No    |Yes	  |Yes	 |Yes  |
-|action	|Maximum Power		|No    |Yes	  |Yes	 |Yes  |
-|action	|Software Reboot	|No    |Yes	  |Yes	 |Yes  |
+
 
 ## The temperature sensors
 When the inverters are turned off at sundown the ECU returns zero for inverters temperature. Users prefer to keep them as null values instead of zero so the graphs are not being updated during the offline periods. In return, this causes a non-numeric error message for the gauge if you use that as a temperature indicator. In that case you can use this template part in configuration.yaml which converts the value to zero:
