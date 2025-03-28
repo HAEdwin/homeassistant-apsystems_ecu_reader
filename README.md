@@ -98,7 +98,7 @@ If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU fi
 |switch	|inverter_{Inverter-ID}_on_off [^2]	|No    |Yes	  |Yes	 |Yes  |
 |switch |ecu_{ECU-ID}_all_inverters_on_off [^3]	|No	|Yes	|Yes	|Yes	|
 |switch	|ecu_{ECU-ID}_reboot_switch [^4]	|No	|Yes	|Yes	|Yes	|
-|number	|inverter_{Inverter-ID}_maxpwr [^5]		|No    |Yes	  |Yes	 |Yes  |
+|number	|inverter_{Inverter-ID}_maxpwr [^5]		|No    |No	  |Yes	 |Yes  |
 
 _Note that the switch/number effects only the specified ECU-ID or Inverter-ID_
 
