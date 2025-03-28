@@ -225,6 +225,19 @@ class RebootECUSwitch(SwitchEntity, RestoreEntity):
         return ECU_REBOOT_ICON
 
     @property
+    def device_info(self):
+        """Return the device info for the ECU."""
+        return {
+            "identifiers": {
+                (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
+            },
+            "name": f"ECU {self._ecu.ecu.ecu_id}",
+            "manufacturer": "APsystems",
+            "model": self._ecu.ecu.firmware,
+            "sw_version": self._ecu.ecu.firmware,
+        }
+
+    @property
     def entity_category(self):
         """Return the category of the entity."""
         return EntityCategory.DIAGNOSTIC
