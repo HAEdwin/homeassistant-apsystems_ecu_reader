@@ -364,7 +364,10 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         await super().async_added_to_hass()
         last_state = await self.async_get_last_state()
         if last_state and self._field == "lifetime_maximum_power":
-            self._state = 0 if last_state.state == 'unknown' else float(last_state.state)
+            try:
+                self._state = 0 if last_state.state in ['unknown', 'unavailable'] else float(last_state.state)
+            except ValueError:
+                self._state = 0
 
     @property
     def unique_id(self):
@@ -383,7 +386,7 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         """Return the state of the sensor."""
         # Get the current value from the coordinator data
         if self._field == "lifetime_maximum_power":
-            current_power = self.coordinator.data.get("current_power")
+            current_power = self.coordinator.data.get("current_power", 0) or 0
             self._state = max(self._state or 0, current_power)
             return round(self._state)
         else:

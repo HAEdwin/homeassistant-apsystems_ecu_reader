@@ -21,7 +21,13 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import DOMAIN
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
-from .gui_helpers import set_inverter_state, set_zero_export, reboot_ecu, set_inverter_max_power
+from .gui_helpers import (
+    set_inverter_state,
+    set_all_inverters_state,
+    set_zero_export,
+    reboot_ecu,
+    set_inverter_max_power,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,6 +54,10 @@ class ECUREADER:
     async def set_inverter_state(self, inverter_id, state):
         """Set the on/off state of an inverter. 1=on, 2=off"""
         await set_inverter_state(self.ipaddr, inverter_id, state)
+    
+    async def set_all_inverters_state(self, state):
+        """Set the on/off state of an inverter. 1=on, 2=off"""
+        await set_all_inverters_state(self.ipaddr, state)
 
     async def set_zero_export(self, state):
         """Set the bridge state for zero export. 0=closed, 1=open"""

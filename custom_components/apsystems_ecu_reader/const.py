@@ -8,7 +8,8 @@ SIGNAL_ICON = "mdi:signal"
 CACHE_ICON = "mdi:cached"
 POWER_ICON = "mdi:power"
 SOLAR_PANEL_ICON = "mdi:solar-panel"
-CACHE_COUNTER_ICON = "mdi:restart"
+CACHE_COUNTER_ICON = "mdi:counter"
+ECU_REBOOT_ICON = "mdi:restart"
 
 
 # Config flow schema. These are also translated through json translations
