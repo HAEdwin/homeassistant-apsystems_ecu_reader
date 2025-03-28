@@ -86,7 +86,7 @@ The integration will need to be configured in order to fully integrate it in HA 
 ### APsystems ECU Configuration
 - ECU-IP address: The address you have assigned to the ECU must be entered here
 - ECU query interval in seconds: I strongly recommend keeping this value set to 300 since data in the ECU is only refreshed every 5 minutes. 
-- Using Cache Counter (UCC) sensor: When the ECU fails to respond to connection requests for the number of retries you specified, the UCC value will increase until the number you specified at "Cache count before ECU reboot". 
+- Using Cache Counter (UCC) sensor: When the ECU fails to respond to connection requests for the number of retries you specified, the UCC value will increase until the number you specified at "Cache count before ECU reboot". When you use a smart-plug to reboot the ECU, you should set the UCC value higher than the value you would like to reboot the ECU at. 
 - Cache countbefore ECU reboot: If you own an ECU-R-Pro (2162xxxxx) or an ECU-C the integration will reboot the ECU and set the UCC to zero.
 If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU firmware does not provide this option on these models. Instead you can use an automation where you use the UCC sensor to trigger a smartplug to turn Off and On again after a 10 seconds wait. If you don't restart the ECU, the UCC will increase until there was a succesfull connection with the ECU again.
 - Update graphs when inverters are offline: You can turn this on or off. In the On state most entities will be set to zero when the inverters are offline. The temperature and zigbee sensors will never be plotted when the inverters are offline.
