@@ -98,7 +98,7 @@ If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU fi
 |switch	|ecu_{ECU-ID}_zero_export [^1]	|No    |No	  |Yes   |Yes  |
 |switch	|inverter_{Inverter-ID}_on_off [^2]	|No    |Yes	  |Yes	 |Yes  |
 |switch |ecu_{ECU-ID}_all_inverters_on_off [^3]	|No	|Yes	|Yes	|Yes	|
-|switch	|ecu_{ECU-ID}_reboot_switch [^4]	|No	|Yes	|Yes	|Yes	|
+|button	|ecu_{ECU-ID}_reboot [^4]	|No	|Yes	|Yes	|Yes	|
 |number	|inverter_{Inverter-ID}_maxpwr [^5]		|No    |No	  |Yes	 |Yes  |
 
 _Note that the switch/number effects only the specified ECU-ID or Inverter-ID_
@@ -106,8 +106,8 @@ _Note that the switch/number effects only the specified ECU-ID or Inverter-ID_
 [^1]: This switch will dynamically regulate the inverters to ensure that no energy is being exported
 [^2]: Switch to turn On/Off the individual inverter completely
 [^3]: Switch to turn On/Off all the inverters completely at once
-[^4]: Momentairy switch (2 seconds) which will reboot the ECU (take recovery into account)
-[^5]: Regulator to set the maximum amount of power on each individual inverter (per channel)
+[^4]: Momentairy button which will reboot the ECU (take recovery into account)
+[^5]: Number regulator to set the maximum amount of power on each individual inverter (per channel)
 
 ## In case of ECU firmware issues
 In some cases the ECU firmware is not handling the Daily Energy or Lifetime Energy well. I recommend the utility meter integration to accommodate this. Below is an example of a Lifetime Energy Meter.
