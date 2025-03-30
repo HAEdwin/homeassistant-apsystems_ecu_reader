@@ -8,7 +8,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, POWER_ICON, ECU_REBOOT_ICON
+from .const import DOMAIN, POWER_ICON
 from .gui_helpers import pers_notification
 
 _LOGGER = logging.getLogger(__name__)
@@ -22,7 +22,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for uid, inv_data in inverters.items():
         switches.append(APsystemsECUInverterSwitch(coordinator, ecu, uid, inv_data))
     switches.append(APsystemsZeroExportSwitch(coordinator, ecu))
-    switches.append(RebootECUSwitch(ecu))
     switches.append(APsystemsAllInvertersSwitch(coordinator, ecu))
     async_add_entities(switches)
 
@@ -198,78 +197,3 @@ class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
             self.async_write_ha_state()
         except Exception as e:
             _LOGGER.error("Failed to turn off zero export: %s", e)
-
-class RebootECUSwitch(SwitchEntity, RestoreEntity):
-    """Momentary switch to reboot the ECU."""
-
-    def __init__(self, ecu):
-        """Initialize the switch."""
-        self._ecu = ecu
-        self._state = False
-        self._name = f"ECU {ecu.ecu.ecu_id} Reboot Switch"
-        self._unique_id = f"ECU_{ecu.ecu.ecu_id}_reboot_switch"
-
-    @property
-    def unique_id(self):
-        """Return the unique ID of the switch."""
-        return self._unique_id
-
-    @property
-    def name(self):
-        """Return the name of the switch."""
-        return self._name
-
-    @property
-    def icon(self):
-        """Return the icon to use in the UI."""
-        return ECU_REBOOT_ICON
-
-    @property
-    def device_info(self):
-        """Return the device info for the ECU."""
-        return {
-            "identifiers": {
-                (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
-            },
-            "name": f"ECU {self._ecu.ecu.ecu_id}",
-            "manufacturer": "APsystems",
-            "model": self._ecu.ecu.firmware,
-            "sw_version": self._ecu.ecu.firmware,
-        }
-
-    @property
-    def entity_category(self):
-        """Return the category of the entity."""
-        return EntityCategory.DIAGNOSTIC
-
-    @property
-    def is_on(self):
-        """Return the state of the switch."""
-        return self._state
-
-    async def async_turn_on(self, **kwargs):
-        """Reboot the ECU."""
-        self._state = True
-        self.async_write_ha_state()
-
-        try:
-            await self._ecu.reboot_ecu()
-            pers_notification(
-                self.hass,
-                f"Rebooted ECU {self._ecu.ecu.ecu_id}"
-            )
-        except Exception as e:
-            _LOGGER.error("Failed to reboot ECU: %s", e)
-            pers_notification(
-                self.hass,
-                f"Failed to reboot ECU: {e}"
-            )
-
-        # Turn off the switch after 2 seconds
-        await asyncio.sleep(2)
-        self._state = False
-        self.async_write_ha_state()
-
-    async def async_turn_off(self, **kwargs):
-        """Handle turning the switch off."""
-        pass  # Momentary switch, no manual turn-off

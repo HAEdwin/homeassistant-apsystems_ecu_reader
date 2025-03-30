@@ -31,7 +31,7 @@ from .gui_helpers import (
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["sensor", "binary_sensor", "switch", "number"]
+PLATFORMS = ["sensor", "binary_sensor", "switch", "number", "button"]
 
 class ECUREADER:
     """ECU Reader"""
