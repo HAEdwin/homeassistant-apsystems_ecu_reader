@@ -32,7 +32,7 @@ Connection method (ethernet or WiFi) depends on your ECU model, follow the table
 Connection required | ECU Model | Automated Restart* | Turn on/off Inverters
 --- | --- | --- | ---
 Wireless | ECU-R (2160xxxxxxxx series) and ECU-B | No | No
-Wireless | ECU-R (SunSpec logo/ECU-ID starting with 2162xxxxxxxx) | Yes | Yes
+Wireless | ECU-R (2162xxxxxxxx series) | Yes | Yes
 Wired | ECU-C | Yes | Yes
 
 _ECU-3 owners might want to take a look at: https://github.com/jeeshofone/ha-apc-ecu-3_
