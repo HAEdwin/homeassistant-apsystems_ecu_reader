@@ -35,7 +35,14 @@ If relevant when reproducing the bug, paste the log in here
 3.
 4.
 
-## PV-hardware (Environment)
+## Home Assistant hardware
+
+- [ ] Raspberry Pi
+- [ ] Docker container
+- [ ] Virtual Machine
+- [ ] Other
+
+## PV-hardware
 Providing context helps us come up with a solution that is most useful in the real world
 
 - [ ] ECU-B
