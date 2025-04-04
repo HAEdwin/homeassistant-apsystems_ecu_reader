@@ -90,7 +90,7 @@ The integration will need to be configured in order to fully integrate it in HA 
 - Cache count before auto ECU reboot (ECU-R-Pro & ECU-C models): The integration will reboot the ECU and sets the Using Cache Counter to zero.
 If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU firmware does not provide this option on these models. Instead you can use an automation where you use the UCC sensor to trigger a smartplug to turn Off and On again after a 10 seconds wait. When you use a smartplug to reboot the ECU, you should set the UCC value higher than the value you would like to reboot the ECU at. The UCC will increase until the set value.
 - Update graphs when inverters are offline: You can turn this on or off. In the On state most entities will be set to zero when the inverters are offline. The temperature and zigbee sensors will never be plotted when the inverters are offline.
-- SSID and Password ((ECU-R-Pro & ECU-C models): Using these fields will force the ECU to reboot when submitted. It's a workaround for the missing command to enable a forced reboot by the integration. The fields are not used to authenticate so can be randomly filled.
+- SSID and Password (ECU-R-Pro & ECU-C models): Using these fields will force the ECU to reboot when submitted. It's a workaround for the missing command to enable a forced reboot by the integration. The fields are not used to authenticate so can be randomly filled.
 
 ## Compatibility of extra features
 |Type	|Entity		|ECU-R |ECU-R-Pro |ECU-C |ECU-3|
