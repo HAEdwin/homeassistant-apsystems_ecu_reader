@@ -61,7 +61,18 @@ APS1100160001END <┘
 APS11009400012160000xxxxxxxz%10012ECU_R_1.2.22009Etc/GMT-8
 ```
 
-## Install the integration
+## Migrating from "APSystems PV solar ECU" to the "APsystems ECU Reader" integration
+> [!CAUTION]
+> ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's.
+
+Go to [Settings] > [Devices & Services]. In the default integration tab you will find the "APSystems PV solar ECU" integration. Select the integration and choose the overflow menu. Delete the integration.
+You are prompted to restart Home Assistant, do so but note that this will not remove the integration files from the custom_components folder, you will have to go to HACS in order to remove the files entirely.
+### Removing the old "APSystems PV solar ECU" integration files from Home Assistant
+Go to [HACS] and under "Downloaded" you will find the "APSystems ECU-R" integration with on the right the overflow menu. From that menu select [X Remove]. When prompted again select [REMOVE]. The integration files are now permanently removed.
+
+
+
+## Installing the "APsystems ECU Reader" integration
 The installation of custom integrations is done in three steps (assuming HACS is already installed):
 
 **1. Downloading the custom integration**
@@ -91,6 +102,30 @@ The integration will need to be configured in order to fully integrate it in HA 
 If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU firmware does not provide this option on these models. Instead you can use an automation where you use the UCC sensor to trigger a smartplug to turn Off and On again after a 10 seconds wait. When you use a smartplug to reboot the ECU, you should set the UCC value higher than the value you would like to reboot the ECU at. The UCC will increase until the set value.
 - Update graphs when inverters are offline: You can turn this on or off. In the On state most entities will be set to zero when the inverters are offline. The temperature and zigbee sensors will never be plotted when the inverters are offline.
 - SSID and Password (ECU-R-Pro & ECU-C models): Using these fields will force the ECU to reboot when submitted. It's a workaround for the missing command to enable a forced reboot by the integration. The fields are not used to authenticate so can be randomly filled.
+
+
+### Old versus renamed or expired ECU entities
+|Old entity  |New entity |
+|-------|-------------|
+|sensor.ecu_current_power | sensor.ecu_{ECU-ID}_current_power|
+|sensor.ecu_lifetime_energy | sensor.ecu_{ECU-ID}_lifetime_energy|
+|sensor.ecu_today_energy | sensor.ecu_{ECU-ID}_today_energy|
+|switch.ecu_inverters_online | switch.ecu_{ECU-ID}_all_inverters_on_off|
+|switch.ecu_query_device | expired entity|
+|sensor.ecu_inverters | sensor.ecu_{ECU-ID}_inverters|
+|sensor.ecu_inverters_online | sensor.ecu_{ECU-ID}_inverters_online|
+|binary_sensor.ecu_restart | expired entity|
+|binary_sensor.ecu_using_cached_data | binary_sensor.ecu_{ECU-ID}_using_cached_data|
+
+### New ECU entities
+- sensor.ecu_{ECU-ID}_lifetime_maximum_power
+- switch.ecu_{ECU-ID}_zero_export
+- button.ecu_{ECU-ID}_reboot
+- sensor.ecu_{ECU-ID}_using_cache_counter
+
+### New Inverter entities
+- switch.inverter_{UID}_on_off
+- number.inverter_{UID}_maxpwr
 
 ## Compatibility of extra features
 |Type	|Entity		|ECU-R |ECU-R-Pro |ECU-C |ECU-3|
