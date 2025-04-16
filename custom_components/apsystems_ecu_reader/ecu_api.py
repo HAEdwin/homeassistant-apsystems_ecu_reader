@@ -14,6 +14,10 @@ from .ecu_helpers import (
     validate_data
 )
 
+from .gui_helpers import (
+    get_power_meter_graph_data
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 class APsystemsInvalidData(Exception):
@@ -45,6 +49,7 @@ class APsystemsSocket:
         self.tsl = 0
         self.inverters = {}
         self.data = {}
+        self.meter_data = {}
         self.ecu_id = None
         self.firmware = None
         self.timezone = None
@@ -145,7 +150,7 @@ class APsystemsSocket:
         if status or not self.inverter_raw_data or len(self.inverter_raw_data) < 40:
             raise APsystemsInvalidData(
                 f"querying inverter. Status is: "
-                f"{status or 'incomplete inverter data received due to ECU recovery'}"
+                f"{status or 'incomplete inverter data received (might be due to ECU reboot recovery)'}"
             )
 
         # Signal query
@@ -157,10 +162,22 @@ class APsystemsSocket:
         if status or not self.signal_raw_data:
             _LOGGER.warning("an error occurred while querying signal where status is: %s", status)
 
-        # Finally all went right so call finalize and return it
+        # Add CT data to the dictionary for ECU-C models
+        if self.ecu_id.startswith("215"):
+            await self.add_meter_data()
+        # Add ECU parameters to the dictionary
         self.process_ecu_data()
+        # Finally all went right so call finalize and return it
         return self.finalize_data(show_graphs)
 
+    async def add_meter_data(self):
+        """ Add the meter data to the dictionary. """
+        self.meter_data = await get_power_meter_graph_data(self.ipaddr)
+        
+        if self.meter_data:
+            self.data.update(self.meter_data)
+        else:
+            _LOGGER.warning("No meter data received.")
 
     def finalize_data(self, show_graphs):
         """ Finalize the data and return it. """
@@ -183,7 +200,6 @@ class APsystemsSocket:
 
             # Add inverter and signal data to the dictionary
             self.data.update(self.process_inverter_data(show_graphs))
-
             return self.data
         except Exception as err:
             raise APsystemsInvalidData(f"finalization: {err}") from err

@@ -6,17 +6,13 @@ import re
 import traceback
 from datetime import timedelta
 
-import aiohttp
-import async_timeout
-import requests
+#import aiohttp
+#import async_timeout
+#import requests
 
-from homeassistant.components.persistent_notification import (
-    create as create_persistent_notification
-)
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import (
-    DataUpdateCoordinator,
-    UpdateFailed,
+    DataUpdateCoordinator
 )
 
 from .const import DOMAIN
@@ -27,6 +23,7 @@ from .gui_helpers import (
     set_zero_export,
     reboot_ecu,
     set_inverter_max_power,
+    pers_gui_notification
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,6 +60,7 @@ class ECUREADER:
         """Set the bridge state for zero export. 0=closed, 1=open"""
         await set_zero_export(self.ipaddr, state)
 
+    #called from button.py
     async def reboot_ecu(self):
         """ Reboot the ECU (compatible with ECU-ID 2162... series and ECU-C models) """
         return await reboot_ecu(self.ipaddr, self.wifi_ssid, self.wifi_password, self.cached_data)
@@ -193,11 +191,7 @@ async def async_remove_config_entry_device(hass, _, device_entry) -> bool:
     """ Handle device removal """	
     if device_entry:
         # Notify the user that the device has been removed
-        create_persistent_notification(
-            hass,
-            title="Device Removed",
-            message=f"The following device was removed: {device_entry.name}"
-        )
+        pers_gui_notification(hass, f"Device {device_entry.name} removed")
         return True
     return False
 

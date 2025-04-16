@@ -33,7 +33,9 @@ from .const import (
     FREQ_ICON,
     SIGNAL_ICON,
     SOLAR_PANEL_ICON,
-    CACHE_COUNTER_ICON
+    CACHE_COUNTER_ICON,
+    FROM_GRID_ICON,
+    CONSUMED_ICON
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,6 +89,72 @@ async def async_setup_entry(hass, _, add_entities):
             icon=CACHE_COUNTER_ICON,
             entity_category=EntityCategory.DIAGNOSTIC
         ),
+        # Add production CT sensors
+        APsystemsECUSensor(coordinator, ecu, "production_ct_a",
+            label=f"{ecu.ecu.ecu_id} Production CT A",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=SOLAR_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
+        APsystemsECUSensor(coordinator, ecu, "production_ct_b",
+            label=f"{ecu.ecu.ecu_id} Production CT B",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=SOLAR_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
+        APsystemsECUSensor(coordinator, ecu, "production_ct_c",
+            label=f"{ecu.ecu.ecu_id} Production CT C",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=SOLAR_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
+        # Add grid CT sensors
+        APsystemsECUSensor(coordinator, ecu, "grid_ct_a",
+            label=f"{ecu.ecu.ecu_id} Grid CT A",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=FROM_GRID_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
+        APsystemsECUSensor(coordinator, ecu, "grid_ct_b",
+            label=f"{ecu.ecu.ecu_id} Grid CT B",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=FROM_GRID_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
+        APsystemsECUSensor(coordinator, ecu, "grid_ct_c",
+            label=f"{ecu.ecu.ecu_id} Grid CT C",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=FROM_GRID_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
+        # Add consumed CT sensors
+        APsystemsECUSensor(coordinator, ecu, "consumed_a",
+            label=f"{ecu.ecu.ecu_id} Consumed A",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=CONSUMED_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
+        APsystemsECUSensor(coordinator, ecu, "consumed_b",
+            label=f"{ecu.ecu.ecu_id} Consumed B",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=CONSUMED_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
+        APsystemsECUSensor(coordinator, ecu, "consumed_c",
+            label=f"{ecu.ecu.ecu_id} Consumed C",
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=CONSUMED_ICON,
+            stateclass=SensorStateClass.MEASUREMENT
+        ),
     ]
 
     # Add inverter binary sensors
@@ -127,7 +195,7 @@ async def async_setup_entry(hass, _, add_entities):
             ])
 
             # 3-phase inverters
-            if inv_data.get("uid")[:3] in ["501", "502", "503", "504", "901"]:
+            if inv_data.get("uid")[:2] in ["50", "90"]:
                 for i, label in enumerate(["Voltage L1", "Voltage L2", "Voltage L3"]):
                     sensors.append(
                         APsystemsECUInverterSensor(

@@ -2,10 +2,10 @@
 
 from homeassistant.components.button import ButtonEntity, ButtonDeviceClass
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 
 from .const import DOMAIN, ECU_REBOOT_ICON
-from .gui_helpers import pers_notification
+from .gui_helpers import pers_gui_notification
 
 
 import logging
@@ -51,12 +51,16 @@ class RebootECUButton(ButtonEntity):
         """Handle the button press."""
         try:
             response = await self._ecu.reboot_ecu()
-            pers_notification(
-                self.hass,
-                f"Rebooted ECU {self._ecu.ecu.ecu_id}"
-            )
+
+            # Interpret the response
+            if response == '{"value":0}':
+                message = f"Rebooted ECU {self._ecu.ecu.ecu_id} successfully."
+            else:
+                message = f"Reboot ECU {self._ecu.ecu.ecu_id} failed."
+
+            # Send notification
+            pers_gui_notification(self.hass, message)
+
         except Exception as e:
-            pers_notification(
-                self.hass,
-                f"Failed to reboot ECU: {e}"
-            )
+            _LOGGER.error("Failed to reboot ECU %s: %s", self._ecu.ecu.ecu_id, e)
+            pers_gui_notification(self.hass, f"Failed to reboot ECU: {e}")
