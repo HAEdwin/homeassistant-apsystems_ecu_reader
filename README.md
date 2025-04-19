@@ -219,9 +219,8 @@ This is due to a lost Zigbee connection between the ECU and inverter and will no
 
 - Why do the ECU values ​​differ from the EMA values?
 
-APsystems replied: "The ECU-C is not a continuous energy meter like the one from the electricity company, the sampling frequency can indeed cause a difference, as can the location of the CTs and possible interferences can affect this data.
-It gives an indication of the energy but it is not a calibrated value."
-EMA performs its own calculations based on data received from the ECU. Sometimes data cannot be posted to the EMA and the data is corrected in the evening (ECU maintenance period). If you would like to help solve this problem and do data analysis, please feel free to contact me.
+The ECU is not a continuous energy meter like the one from the electricity company, the sampling frequency can indeed cause a difference, as can the location of the CTs on a ECU-C and possible interferences can affect this data.
+Overall it gives an indication of the energy but it is not a calibrated value.
 
 ## Background & acknowledgement
 Realization in 2022 was a collaboration between checking12, ksheumaker, HAEdwin on the Home Assistant forum, and all the other people from this forum (https://gathering.tweakers.net/forum/list_messages/2032302/1). Thanks goes out to 12christiaan and ViperRNMC for providing an automated solution to restart the ECU-C and ECU-R (SunSpec logo/ECU-ID starting with 2162xxxxxxxx) models. Best for last all my sponsors who provide me with coffee! Thank you, it keeps me motivated!
