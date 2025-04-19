@@ -189,6 +189,29 @@ sensor:
 German: https://smart-home-assistant.de/ap-systems-ecu-b-einbinden
 Dutch: https://doe-duurzaam.nl/artikel/je-apsystems-micro-omvormers-slim-uitzetten-via-web-of-home-assistant/#teruglevering-beperken-per-micro-omvormer
 
+## Firmware updates
+ECU-C 2025-04-17, V1.2.18
+- Optimize PV-storage linkage function
+- Optimize automatic upgrades
+- Change Redundant Energy Control to Relay Control
+- Optimize function
+
+ECU-R-Pro 2025-04-17, V2.1.24
+- Add master-slave function
+- Optimize PV-storage linkage function
+- Optimize automatic upgrades
+- Optimize function
+
+ECU-R 2025-03-25, V1.3.17
+- Optimize master-slave function
+- Optimize PV-storage linkage function
+- Optimize function
+
+ECU-B 2024-12-30, V1.2.35
+- Support ZigBee Router
+- Optimize the display of data
+- Optimize function
+
 ## FAQ
 - Why is my inverter going offline sometimes during the day?
 
