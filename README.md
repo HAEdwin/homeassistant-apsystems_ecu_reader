@@ -221,6 +221,10 @@ This is due to a lost Zigbee connection between the ECU and inverter and will no
 
 The ECU is not a continuous energy meter like the one from the electricity company, the sampling frequency can indeed cause a difference, as can the location of the CTs on a ECU-C and possible interferences can affect this data. Results from data samples requested by this integration may differ from data samples sent to EMA. Overall it gives an indication of the energy but it is not a calibrated value.
 
+- Why doesn't this integration find my ECU?
+
+9.9 out of 10 cases it turns out that a wrong node or network configuration is applicable. Make sure that HA can reach the ECU and that you can ping the ECU
+
 ## Background & acknowledgement
 Realization in 2022 was a collaboration between checking12, ksheumaker, HAEdwin on the Home Assistant forum, and all the other people from this forum (https://gathering.tweakers.net/forum/list_messages/2032302/1). Thanks goes out to 12christiaan and ViperRNMC for providing an automated solution to restart the ECU-C and ECU-R (SunSpec logo/ECU-ID starting with 2162xxxxxxxx) models. Best for last all my sponsors who provide me with coffee! Thank you, it keeps me motivated!
 
