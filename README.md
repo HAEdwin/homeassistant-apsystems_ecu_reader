@@ -150,33 +150,29 @@ _Note that the switch/number effects only the specified ECU-ID or Inverter-ID_
 In some cases the ECU firmware is not handling the Daily Energy or Lifetime Energy well. I recommend the utility meter integration to accommodate this. Below is an example of a Lifetime Energy Meter.
 Edit in configuration.yaml:
 ```
-# integration
 utility_meter:
   lifetime_energy:
     source: sensor.ecu_xxxxxxxxxxxx_current_power
 
-# Custom sensors
-sensor:
-  - platform: template
-    sensors:
-      lifetime_energy_kwh:
-        friendly_name: "Lifetime Energy (kWh)"
+template:
+  - sensor:
+      - name: "Lifetime Energy (kWh)"
         unit_of_measurement: "kWh"
-        value_template: "{{ states('sensor.lifetime_energy') | float / 1000 }}"
+        state: "{{ states('sensor.lifetime_energy')|float(0) / 1000 }}"
 ```
 
 
 ## The temperature sensors
 When the inverters are turned off at sundown the ECU returns zero for inverters temperature. Users prefer to keep them as null values instead of zero so the graphs are not being updated during the offline periods. In return, this causes a non-numeric error message for the gauge if you use that as a temperature indicator. In that case you can use this template part in configuration.yaml which converts the value to zero:
 ```
-sensor:
-  - platform: template
-    sensors:
-      temperature_non_numeric_4080xxxxxxxx:
-        value_template: "{{ states('sensor.inverter_4080xxxxxxxx_temperature')|float(0) }}"
+template:
+  - sensor:
+      - name: "Temperature non numeric 4080xxxxxxxx"
+        state: "{{ states('sensor.inverter_4080xxxxxxxx_temperature')|float(0) }}"
         unit_of_measurement: "°C"
-      temperature_non_numeric_8060xxxxxxxx:
-        value_template: "{{ states('sensor.inverter_8060xxxxxxxx_temperature')|float(0) }}"
+
+      - name: "Temperature non numeric 8060xxxxxxxx"
+        state: "{{ states('sensor.inverter_8060xxxxxxxx_temperature')|float(0) }}"
         unit_of_measurement: "°C"
 ```
 
