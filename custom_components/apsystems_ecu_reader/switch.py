@@ -1,6 +1,5 @@
 """Switch platform for APsystems ECU Reader."""
 
-import asyncio
 import logging
 
 from homeassistant.components.switch import SwitchEntity
@@ -8,11 +7,12 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, POWER_ICON
+from .const import DOMAIN, POWER_ICON, ECU_MODEL_MAP, INVERTER_MODEL_MAP
 
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+
+async def async_setup_entry(hass, _, async_add_entities):
     """Set up the switch platform."""
     ecu = hass.data[DOMAIN]["ecu"]
     coordinator = hass.data[DOMAIN].get("coordinator")
@@ -23,6 +23,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     switches.append(APsystemsZeroExportSwitch(coordinator, ecu))
     switches.append(APsystemsAllInvertersSwitch(coordinator, ecu))
     async_add_entities(switches)
+
 
 class APsystemsBaseSwitch(CoordinatorEntity, SwitchEntity, RestoreEntity):
     """Base class for APsystems switches."""
@@ -62,7 +63,7 @@ class APsystemsBaseSwitch(CoordinatorEntity, SwitchEntity, RestoreEntity):
             },
             "name": f"ECU {self._ecu.ecu.ecu_id}",
             "manufacturer": "APsystems",
-            "model": self._ecu.ecu.firmware,
+            "model": ECU_MODEL_MAP.get(self._ecu.ecu.ecu_id[:4], "Unknown Model"),
             "sw_version": self._ecu.ecu.firmware,
         }
 
@@ -90,6 +91,7 @@ class APsystemsBaseSwitch(CoordinatorEntity, SwitchEntity, RestoreEntity):
     async def async_turn_off(self, **kwargs):
         """Turn off the switch."""
         raise NotImplementedError("This method should be implemented by subclasses.")
+
 
 class APsystemsAllInvertersSwitch(APsystemsBaseSwitch):
     """Switch to control all inverters."""
@@ -124,6 +126,7 @@ class APsystemsAllInvertersSwitch(APsystemsBaseSwitch):
         except Exception as e:
             _LOGGER.error("Failed to turn off all inverters: %s", e)
 
+
 class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
     """Representation of a switch for an individual inverter."""
 
@@ -150,7 +153,7 @@ class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
             },
             "name": f"Inverter {self._uid}",
             "manufacturer": "APsystems",
-            "model": self._inv_data.get("model", "Unknown"),
+            "model": INVERTER_MODEL_MAP.get(self._uid[:2], "Unknown Model"),
             "via_device": (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
         }
 
@@ -165,6 +168,7 @@ class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
         await self._ecu.set_inverter_state(self._uid, True)
         self._state = True
         self.async_write_ha_state()
+
 
 class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
     """Switch for zero export control."""

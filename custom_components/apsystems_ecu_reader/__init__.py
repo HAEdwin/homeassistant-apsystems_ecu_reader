@@ -1,21 +1,14 @@
-""" __init__.py """
+"""__init__.py"""
 
 import asyncio
 import logging
-import re
-import traceback
 from datetime import timedelta
 
-#import aiohttp
-#import async_timeout
-#import requests
 
 from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.update_coordinator import (
-    DataUpdateCoordinator
-)
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import DOMAIN
+from .const import DOMAIN, ECU_MODEL_MAP
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
 from .gui_helpers import (
     set_inverter_state,
@@ -23,15 +16,17 @@ from .gui_helpers import (
     set_zero_export,
     reboot_ecu,
     set_inverter_max_power,
-    pers_gui_notification
+    pers_gui_notification,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["sensor", "binary_sensor", "switch", "number", "button"]
 
+
 class ECUREADER:
     """ECU Reader"""
+
     def __init__(self, ipaddr, wifi_ssid, wifi_password, show_graphs):
         self.ipaddr = ipaddr
         self.wifi_ssid = wifi_ssid
@@ -51,7 +46,7 @@ class ECUREADER:
     async def set_inverter_state(self, inverter_id, state):
         """Set the on/off state of an inverter. 1=on, 2=off"""
         await set_inverter_state(self.ipaddr, inverter_id, state)
-    
+
     async def set_all_inverters_state(self, state):
         """Set the on/off state of an inverter. 1=on, 2=off"""
         await set_all_inverters_state(self.ipaddr, state)
@@ -60,22 +55,24 @@ class ECUREADER:
         """Set the bridge state for zero export. 0=closed, 1=open"""
         await set_zero_export(self.ipaddr, state)
 
-    #called from button.py
+    # called from button.py
     async def reboot_ecu(self):
-        """ Reboot the ECU (compatible with ECU-ID 2162... series and ECU-C models) """
-        return await reboot_ecu(self.ipaddr, self.wifi_ssid, self.wifi_password, self.cached_data)
+        """Reboot the ECU (ECU-ID 2162... and ECU-C compatible)"""
+        return await reboot_ecu(
+            self.ipaddr, self.wifi_ssid, self.wifi_password, self.cached_data
+        )
 
     async def update(self, port_retries, cache_reboot, show_graphs):
-        """ Fetch ECU data or use cached data if querying failed. """
+        """Fetch ECU data or use cached data if querying failed."""
         self.data_from_cache = True
         self.data_from_cache_count += 1
 
         # Reboot the ECU when the cache counter reaches the cache limit
-        # This is a workaround for the ECU not responding to queries after a while
+        # This is a workaround for the ECU not responding to queries
         if self.data_from_cache_count >= cache_reboot:
             _LOGGER.warning(
                 "Restarting ECU after %s failed attempts to fetch data",
-                self.data_from_cache_count
+                self.data_from_cache_count,
             )
             self.data_from_cache_count = 0
             response = await self.reboot_ecu()
@@ -87,8 +84,9 @@ class ECUREADER:
                     self.cached_data = data
                     self.data_from_cache = False
                     self.data_from_cache_count = 0
+            # collector of APsystemsInvalidData exceptions
             except APsystemsInvalidData as err:
-                _LOGGER.warning("Update failure during %s", err)
+                _LOGGER.warning("Using cached data: %s", err)
 
         # Set cache sensors
         self.cached_data["data_from_cache"] = self.data_from_cache
@@ -97,8 +95,9 @@ class ECUREADER:
         _LOGGER.debug("Returning data: %s", self.cached_data)
         return self.cached_data
 
+
 async def update_listener(hass, config):
-    """ Handle options update being triggered by config entry options updates """
+    """Handle options update, triggered by config entry options updates"""
     _LOGGER.debug("Configuration updated: %s", config.as_dict())
     config_dict = config.as_dict()
     # Update the scan interval
@@ -109,24 +108,28 @@ async def update_listener(hass, config):
 
 
 async def async_setup_entry(hass, config):
-    """ Setup APsystems platform """
+    """Setup APsystems platform"""
     hass.data.setdefault(DOMAIN, {})
+
+    # delay the setup after the first and every following ECU hub
+    if len(hass.data.get(DOMAIN, {})) > 1:
+        await asyncio.sleep(10)
+
     interval = timedelta(seconds=config.data.get("scan_interval", 300))
     ecu = ECUREADER(
         config.data["ecu_host"],
         config.data.get("wifi_ssid", "ECU-local"),
         config.data.get("wifi_password", "default"),
-        config.data.get("show_graphs", True)
+        config.data.get("show_graphs", True),
     )
 
     async def do_ecu_update():
-        """ Pass current port_retries value dynamically. """
+        """Pass current port_retries value dynamically."""
         return await ecu.update(
             config.data.get("port_retries", 2),
             config.data.get("cache_reboot", 3),
-            config.data.get("show_graphs", True)
+            config.data.get("show_graphs", True),
         )
-
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -136,10 +139,8 @@ async def async_setup_entry(hass, config):
         update_interval=interval,
     )
 
-    hass.data[DOMAIN] = {
-        "ecu": ecu,
-        "coordinator": coordinator
-    }
+    hass.data[DOMAIN] = {"ecu": ecu, "coordinator": coordinator}
+
 
     # First refresh the coordinator to make sure data is fetched.
     await coordinator.async_config_entry_first_refresh()
@@ -147,13 +148,13 @@ async def async_setup_entry(hass, config):
     # Ensure data is updated before getting it
     await coordinator.async_refresh()
 
-    # When first install was successful, an ECU ID should be available when HA restarts.
+    # When first install was ok, an ECU ID should be present when HA restarts.
     # If not, the user should be notified and devices should not be created.
     if not ecu.ecu.ecu_id:
         _LOGGER.error(
-           "Unable to connect with ECU @ %s. Check IP-Address or wait "
+            "Unable to connect with ECU @ %s. Check IP-Address or wait "
             "10 minutes because the ECU might be recovering from reboot.",
-            config.data["ecu_host"]
+            config.data["ecu_host"],
         )
         return False
 
@@ -165,7 +166,7 @@ async def async_setup_entry(hass, config):
         manufacturer="APsystems",
         suggested_area="Roof",
         name=f"ECU {ecu.ecu.ecu_id}",
-        model=ecu.ecu.firmware,
+        model=ECU_MODEL_MAP.get(ecu.ecu.ecu_id[:4], "Unknown Model"),
         sw_version=ecu.ecu.firmware,
     )
 
@@ -178,29 +179,31 @@ async def async_setup_entry(hass, config):
             manufacturer="APsystems",
             suggested_area="Roof",
             name=f"Inverter {uid}",
-            model=inv_data.get("model")
+            model=inv_data.get("model"),
         )
 
-    # Forward platform setup requests.
+    # Forward all platforms at once.
     await hass.config_entries.async_forward_entry_setups(config, PLATFORMS)
+
     config.async_on_unload(config.add_update_listener(update_listener))
     return True
 
 
 async def async_remove_config_entry_device(hass, _, device_entry) -> bool:
-    """ Handle device removal """	
+    """Handle device removal"""
     if device_entry:
         # Notify the user that the device has been removed
         pers_gui_notification(hass, f"Device {device_entry.name} removed")
         return True
     return False
 
+
 async def async_unload_config_entry(hass, config):
-    """ Unload APsystems platform """
+    """Unload APsystems platform"""
     ecu = hass.data[DOMAIN].get("ecu")
     unload_ok, _ = await asyncio.gather(
         hass.config_entries.async_unload_platforms(config, PLATFORMS),
-        ecu.set_querying_state(False)
+        ecu.set_querying_state(False),
     )
     if unload_ok:
         hass.data[DOMAIN].pop(config.entry_id)

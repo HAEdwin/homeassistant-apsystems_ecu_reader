@@ -1,4 +1,4 @@
-""" sensor.py """
+"""sensor.py"""
 
 import logging
 
@@ -21,7 +21,7 @@ from homeassistant.const import (
     UnitOfTemperature,
     UnitOfElectricPotential,
     UnitOfFrequency,
-    SIGNAL_STRENGTH_DECIBELS_MILLIWATT as dBm
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT as dBm,
 )
 
 
@@ -35,196 +35,287 @@ from .const import (
     SOLAR_PANEL_ICON,
     CACHE_COUNTER_ICON,
     FROM_GRID_ICON,
-    CONSUMED_ICON
+    CONSUMED_ICON,
+    INVERTER_MODEL_MAP,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(hass, _, add_entities):
-    """ sensor.py async_setup_entry """
+    """sensor.py async_setup_entry"""
 
     ecu = hass.data[DOMAIN].get("ecu")
     coordinator = hass.data[DOMAIN].get("coordinator")
 
     # Add ECU sensors
     sensors = [
-        APsystemsECUSensor(coordinator, ecu, "current_power",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "current_power",
             label=f"{ecu.ecu.ecu_id} Current Power",
-            unit=UnitOfPower.WATT, devclass=SensorDeviceClass.POWER,
-            icon=SOLAR_ICON, stateclass=SensorStateClass.MEASUREMENT
+            unit=UnitOfPower.WATT,
+            devclass=SensorDeviceClass.POWER,
+            icon=SOLAR_ICON,
+            stateclass=SensorStateClass.MEASUREMENT,
         ),
-        APsystemsECUSensor(coordinator, ecu, "today_energy",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "today_energy",
             label=f"{ecu.ecu.ecu_id} Today Energy",
             unit=UnitOfEnergy.KILO_WATT_HOUR,
             devclass=SensorDeviceClass.ENERGY,
             icon=SOLAR_ICON,
-            stateclass=SensorStateClass.TOTAL_INCREASING
+            stateclass=SensorStateClass.TOTAL_INCREASING,
         ),
-        APsystemsECUSensor(coordinator, ecu, "lifetime_energy",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "lifetime_energy",
             label=f"{ecu.ecu.ecu_id} Lifetime Energy",
             unit=UnitOfEnergy.KILO_WATT_HOUR,
             devclass=SensorDeviceClass.ENERGY,
             icon=SOLAR_ICON,
-            stateclass=SensorStateClass.TOTAL_INCREASING
+            stateclass=SensorStateClass.TOTAL_INCREASING,
         ),
-        APsystemsECUSensor(coordinator, ecu, "lifetime_maximum_power",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "lifetime_maximum_power",
             label=f"{ecu.ecu.ecu_id} Lifetime Maximum Power",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=SOLAR_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
         ),
-        APsystemsECUSensor(coordinator, ecu, "qty_of_inverters",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "qty_of_inverters",
             label=f"{ecu.ecu.ecu_id} Inverters",
             icon=SOLAR_ICON,
-            entity_category=EntityCategory.DIAGNOSTIC
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
-        APsystemsECUSensor(coordinator, ecu, "qty_of_online_inverters",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "qty_of_online_inverters",
             label=f"{ecu.ecu.ecu_id} Inverters Online",
             icon=SOLAR_ICON,
-            entity_category=EntityCategory.DIAGNOSTIC
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
-        APsystemsECUSensor(coordinator, ecu, "data_from_cache_count",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "data_from_cache_count",
             label=f"{ecu.ecu.ecu_id} Using Cache Counter",
             icon=CACHE_COUNTER_ICON,
-            entity_category=EntityCategory.DIAGNOSTIC
+            entity_category=EntityCategory.DIAGNOSTIC,
         ),
         # Add production CT sensors
-        APsystemsECUSensor(coordinator, ecu, "production_ct_a",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "production_ct_a",
             label=f"{ecu.ecu.ecu_id} Production CT A",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=SOLAR_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
-        APsystemsECUSensor(coordinator, ecu, "production_ct_b",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "production_ct_b",
             label=f"{ecu.ecu.ecu_id} Production CT B",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=SOLAR_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
-        APsystemsECUSensor(coordinator, ecu, "production_ct_c",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "production_ct_c",
             label=f"{ecu.ecu.ecu_id} Production CT C",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=SOLAR_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
         # Add grid CT sensors
-        APsystemsECUSensor(coordinator, ecu, "grid_ct_a",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "grid_ct_a",
             label=f"{ecu.ecu.ecu_id} Grid CT A",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=FROM_GRID_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
-        APsystemsECUSensor(coordinator, ecu, "grid_ct_b",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "grid_ct_b",
             label=f"{ecu.ecu.ecu_id} Grid CT B",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=FROM_GRID_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
-        APsystemsECUSensor(coordinator, ecu, "grid_ct_c",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "grid_ct_c",
             label=f"{ecu.ecu.ecu_id} Grid CT C",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=FROM_GRID_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
         # Add consumed CT sensors
-        APsystemsECUSensor(coordinator, ecu, "consumed_a",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "consumed_a",
             label=f"{ecu.ecu.ecu_id} Consumed A",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=CONSUMED_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
-        APsystemsECUSensor(coordinator, ecu, "consumed_b",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "consumed_b",
             label=f"{ecu.ecu.ecu_id} Consumed B",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=CONSUMED_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
-        APsystemsECUSensor(coordinator, ecu, "consumed_c",
+        APsystemsECUSensor(
+            coordinator,
+            ecu,
+            "consumed_c",
             label=f"{ecu.ecu.ecu_id} Consumed C",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=CONSUMED_ICON,
-            stateclass=SensorStateClass.MEASUREMENT
+            stateclass=SensorStateClass.MEASUREMENT,
+            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
         ),
     ]
 
     # Add inverter binary sensors
     inverters = coordinator.data.get("inverters", {})
     for uid, inv_data in inverters.items():
-        sensors.append(APsystemsECUInverterBinarySensor(coordinator, ecu, uid, inv_data))
-
+        sensors.append(
+            APsystemsECUInverterBinarySensor(coordinator, ecu, uid, inv_data)
+        )
 
     # Add Inverter sensors
     inverters = coordinator.data.get("inverters", {})
-    for uid,inv_data in inverters.items():
+    for uid, inv_data in inverters.items():
 
         # if statement for configured but not yet connected inverters
         if inv_data.get("channel_qty"):
-            sensors.extend([
-                    APsystemsECUInverterSensor(coordinator, ecu, uid, "temperature",
+            sensors.extend(
+                [
+                    APsystemsECUInverterSensor(
+                        coordinator,
+                        ecu,
+                        uid,
+                        "temperature",
                         label="Temperature",
                         unit=UnitOfTemperature.CELSIUS,
                         devclass=SensorDeviceClass.TEMPERATURE,
                         stateclass=SensorStateClass.MEASUREMENT,
-                        entity_category=EntityCategory.DIAGNOSTIC
+                        entity_category=EntityCategory.DIAGNOSTIC,
                     ),
-                    APsystemsECUInverterSensor(coordinator, ecu, uid, "frequency",
+                    APsystemsECUInverterSensor(
+                        coordinator,
+                        ecu,
+                        uid,
+                        "frequency",
                         label="Frequency",
                         unit=UnitOfFrequency.HERTZ,
                         stateclass=SensorStateClass.MEASUREMENT,
                         devclass=SensorDeviceClass.FREQUENCY,
                         icon=FREQ_ICON,
-                        entity_category=EntityCategory.DIAGNOSTIC
+                        entity_category=EntityCategory.DIAGNOSTIC,
                     ),
-                    APsystemsECUInverterSensor(coordinator, ecu, uid, "signal",
+                    APsystemsECUInverterSensor(
+                        coordinator,
+                        ecu,
+                        uid,
+                        "signal",
                         unit=dBm,
                         stateclass=SensorStateClass.MEASUREMENT,
                         devclass=SensorDeviceClass.SIGNAL_STRENGTH,
                         icon=SIGNAL_ICON,
-                        entity_category=EntityCategory.DIAGNOSTIC
-                    )
-            ])
+                        entity_category=EntityCategory.DIAGNOSTIC,
+                    ),
+                ]
+            )
 
             # 3-phase inverters
             if inv_data.get("uid")[:2] in ["50", "90"]:
                 for i, label in enumerate(["Voltage L1", "Voltage L2", "Voltage L3"]):
                     sensors.append(
                         APsystemsECUInverterSensor(
-                            coordinator, ecu, uid, "voltage",
-                            index=i, label=label,
+                            coordinator,
+                            ecu,
+                            uid,
+                            "voltage",
+                            index=i,
+                            label=label,
                             unit=UnitOfElectricPotential.VOLT,
                             stateclass=SensorStateClass.MEASUREMENT,
                             devclass=SensorDeviceClass.VOLTAGE,
-                            entity_category=EntityCategory.DIAGNOSTIC
+                            entity_category=EntityCategory.DIAGNOSTIC,
                         )
                     )
-            else: # single-phase inverters
+            else:  # single-phase inverters
                 sensors.append(
-                    APsystemsECUInverterSensor(coordinator, ecu, uid, "voltage",
-                    index=0, label="Voltage",
-                    unit=UnitOfElectricPotential.VOLT,
-                    stateclass=SensorStateClass.MEASUREMENT,
-                    devclass=SensorDeviceClass.VOLTAGE, entity_category=EntityCategory.DIAGNOSTIC
-                ))
-
+                    APsystemsECUInverterSensor(
+                        coordinator,
+                        ecu,
+                        uid,
+                        "voltage",
+                        index=0,
+                        label="Voltage",
+                        unit=UnitOfElectricPotential.VOLT,
+                        stateclass=SensorStateClass.MEASUREMENT,
+                        devclass=SensorDeviceClass.VOLTAGE,
+                        entity_category=EntityCategory.DIAGNOSTIC,
+                    )
+                )
 
             for i in range(0, inv_data.get("channel_qty", 0)):
                 sensors.append(
-                    APsystemsECUInverterSensor(coordinator, ecu, uid, "power",
-                        index=i, label=f"Power Ch {i+1}",
+                    APsystemsECUInverterSensor(
+                        coordinator,
+                        ecu,
+                        uid,
+                        "power",
+                        index=i,
+                        label=f"Power Ch {i+1}",
                         unit=UnitOfPower.WATT,
                         devclass=SensorDeviceClass.POWER,
                         icon=SOLAR_ICON,
-                        stateclass=SensorStateClass.MEASUREMENT
+                        stateclass=SensorStateClass.MEASUREMENT,
                     )
                 )
     add_entities(sensors)
@@ -232,6 +323,7 @@ async def async_setup_entry(hass, _, add_entities):
 
 class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """Representation of a binary sensor for an individual inverter being Online/Offline."""
+
     def __init__(self, coordinator, ecu, uid, inv_data):
 
         super().__init__(coordinator)
@@ -274,7 +366,7 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
             },
             "name": f"Inverter {self._uid}",
             "manufacturer": "APsystems",
-            "model": self._inv_data.get("model", "Unknown"),
+            "model": INVERTER_MODEL_MAP.get(self._uid[:2], "Unknown Model"),
             "via_device": (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
         }
 
@@ -300,17 +392,29 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
     @callback
     def _handle_coordinator_update(self):
         """Handle updated data from the coordinator."""
-        self._inv_data = self.coordinator.data["inverters"].get(self._uid, self._inv_data)
+        self._inv_data = self.coordinator.data["inverters"].get(
+            self._uid, self._inv_data
+        )
         self.async_write_ha_state()
 
 
 class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
-    """ sensor.py APsystemsECUInverterSensor """
+    """sensor.py APsystemsECUInverterSensor"""
+
     def __init__(
-            self, coordinator, ecu, uid, field, index=0,
-            label=None, icon=None, unit=None, devclass=None,
-            stateclass=None, entity_category=None
-        ):
+        self,
+        coordinator,
+        ecu,
+        uid,
+        field,
+        index=0,
+        label=None,
+        icon=None,
+        unit=None,
+        devclass=None,
+        stateclass=None,
+        entity_category=None,
+    ):
 
         super().__init__(coordinator)
         self.coordinator = coordinator
@@ -346,27 +450,24 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        #_LOGGER.debug("State called for %s", self._field)
+        # _LOGGER.debug("State called for %s", self._field)
         if self._field == "voltage":
-            #_LOGGER.debug("VOLTAGE  %s %s", self._uid, self._index)
+            # _LOGGER.debug("VOLTAGE  %s %s", self._uid, self._index)
             return (
-                self.coordinator.data
-                .get("inverters", {})
+                self.coordinator.data.get("inverters", {})
                 .get(self._uid, {})
                 .get("voltage", [])[self._index]
             )
         elif self._field == "power":
-            #_LOGGER.debug("POWER  %s %s", self._uid, self._index)
+            # _LOGGER.debug("POWER  %s %s", self._uid, self._index)
             return (
-                self.coordinator.data
-                .get("inverters", {})
+                self.coordinator.data.get("inverters", {})
                 .get(self._uid, {})
                 .get("power", [])[self._index]
             )
         else:
             return (
-                self.coordinator.data
-                .get("inverters", {})
+                self.coordinator.data.get("inverters", {})
                 .get(self._uid, {})
                 .get(self._field)
             )
@@ -382,15 +483,15 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         attrs = {
-            "ecu_id" : self._ecu.ecu.ecu_id,
-            "inverter_uid" : self._uid,
-            "last_update" : self._ecu.ecu.last_update,
+            "ecu_id": self._ecu.ecu.ecu_id,
+            "inverter_uid": self._uid,
+            "last_update": self._ecu.ecu.last_update,
         }
         return attrs
 
     @property
     def state_class(self):
-        #_LOGGER.debug("State class %s - %s", self._stateclass, self._field)
+        # _LOGGER.debug("State class %s - %s", self._stateclass, self._field)
         return self._stateclass
 
     @property
@@ -406,14 +507,23 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
     def entity_category(self):
         return self._entity_category
 
+
 class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
-    """ sensor.py APsystemsECUSensor """
+    """sensor.py APsystemsECUSensor"""
 
     def __init__(
-            self, coordinator,
-            ecu, field, label=None, icon=None, unit=None,
-            devclass=None, stateclass=None, entity_category=None
-        ):
+        self,
+        coordinator,
+        ecu,
+        field,
+        label=None,
+        icon=None,
+        unit=None,
+        devclass=None,
+        stateclass=None,
+        entity_category=None,
+        disabled_by=None,
+    ):
         super().__init__(coordinator)
         self.coordinator = coordinator
         self._ecu = ecu
@@ -424,8 +534,14 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         self._devclass = devclass
         self._stateclass = stateclass
         self._entity_category = entity_category
+        self._disabled_by = disabled_by
         self._name = f"ECU {self._label}"
         self._state = None
+
+    @property
+    def entity_registry_enabled_default(self):
+        """Return whether the entity should be enabled by default."""
+        return self._disabled_by is None
 
     async def async_added_to_hass(self):
         """Handle entity that needs to be restored."""
@@ -433,7 +549,11 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         last_state = await self.async_get_last_state()
         if last_state and self._field == "lifetime_maximum_power":
             try:
-                self._state = 0 if last_state.state in ['unknown', 'unavailable'] else float(last_state.state)
+                self._state = (
+                    0
+                    if last_state.state in ["unknown", "unavailable"]
+                    else float(last_state.state)
+                )
             except ValueError:
                 self._state = 0
 
@@ -474,12 +594,12 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
             "ecu_id": self._ecu.ecu.ecu_id,
             "Firmware": self._ecu.ecu.firmware,
             "Timezone": self._ecu.ecu.timezone,
-            "last_update": self._ecu.ecu.last_update
+            "last_update": self._ecu.ecu.last_update,
         }
 
     @property
     def state_class(self):
-        #_LOGGER.debug("State class %s - %s", self._stateclass, self._field)
+        # _LOGGER.debug("State class %s - %s", self._stateclass, self._field)
         return self._stateclass
 
     @property

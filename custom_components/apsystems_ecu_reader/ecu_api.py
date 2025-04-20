@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""  ecu_api.py """
+"""ecu_api.py"""
 
 import asyncio
 import socket
@@ -11,20 +11,23 @@ from .ecu_helpers import (
     aps_str,
     aps_int_from_bytes,
     aps_uid,
-    validate_data
+    validate_data,
 )
 
-from .gui_helpers import (
-    get_power_meter_graph_data
-)
+from .const import INVERTER_MODEL_MAP
+
+from .gui_helpers import get_power_meter_graph_data
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class APsystemsInvalidData(Exception):
-    """ Exception for invalid data from the APsystems ECU."""
+    """Exception for invalid data from the APsystems ECU."""
+
 
 class APsystemsSocket:
-    """ Class to handle the socket connection to the APsystems ECU. """
+    """Class to handle the socket connection to the APsystems ECU."""
+
     def __init__(self, ipaddr, raw_ecu=None, raw_inverter=None, timeout=5):
 
         self.ipaddr = ipaddr
@@ -58,7 +61,7 @@ class APsystemsSocket:
         self.sock = None
 
     async def open_socket(self, port_retries, delay=1):
-        """ Open a socket to the ECU. """
+        """Open a socket to the ECU."""
         for attempt in range(1, port_retries + 1):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(self.timeout)
@@ -68,22 +71,22 @@ class APsystemsSocket:
                 _LOGGER.debug("Socket successfully claimed")
                 return
             except (socket.timeout, socket.gaierror, socket.error) as err:
-                _LOGGER.debug("Socket claim attempt %s/%s failed: %s", attempt, port_retries, err)
+                _LOGGER.debug(
+                    "Socket claim attempt %s/%s failed: %s", attempt, port_retries, err
+                )
                 await asyncio.sleep(delay)  # Wait before retrying
             except Exception as err:
-                _LOGGER.error("An unexpected error occurred: %s", err, exc_info=True)
                 await self.close_socket()
                 raise APsystemsInvalidData(str(err)) from err
         raise APsystemsInvalidData(
-            f"failure to claim socket after {port_retries} attempts, using cached data"
-            )
-
+            f"failed to claim socket after {port_retries} attempts"
+        )
 
     async def send_read_from_socket(self, cmd):
-        """ Send command to the socket and read the response. """
+        """Send command to the socket and read the response."""
         try:
             self.sock.settimeout(self.timeout)  # Set timeout once
-            self.sock.sendall(cmd.encode('utf-8'))  # Send command
+            self.sock.sendall(cmd.encode("utf-8"))  # Send command
             # Read the response asynchronously to prevent blocking
             self.read_buffer = await asyncio.to_thread(self.sock.recv, self.recv_size)
             return self.read_buffer, None
@@ -109,7 +112,7 @@ class APsystemsSocket:
             return None, f"General OS error occurred: {err}\n"
 
     async def close_socket(self):
-        """ Ensure created and allocated resources are properly cleaned up. """
+        """Ensure created and allocated resources are properly cleaned up."""
         if self.sock is not None:
             try:
                 self.sock.shutdown(socket.SHUT_RDWR)
@@ -119,9 +122,8 @@ class APsystemsSocket:
             except (OSError, socket.error) as err:
                 _LOGGER.warning("Socket shutdown error: %s", err)
 
-
     async def query_ecu(self, port_retries, show_graphs):
-        """ 
+        """
         Query the ECU for data and return it.
         In contrast to ECU 2160 models, the 2162 models require an
         open and close on the port between the individual  queries.
@@ -133,9 +135,7 @@ class APsystemsSocket:
         await self.close_socket()
         if status or not self.ecu_raw_data:
             raise APsystemsInvalidData(
-                f"querying ECU where status is: {status}"
-                if status
-                else "querying ECU where received data is none"
+                f"ECU status is: {status}" if status else "received data is none"
             )
 
         # Extract ECU-ID needed for other queries
@@ -149,8 +149,7 @@ class APsystemsSocket:
         _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
         if status or not self.inverter_raw_data or len(self.inverter_raw_data) < 40:
             raise APsystemsInvalidData(
-                f"querying inverter. Status is: "
-                f"{status or 'incomplete inverter data received (might be due to ECU reboot recovery)'}"
+                f"{status or 'incomplete inverter data (possibly due to ECU reboot)'}"
             )
 
         # Signal query
@@ -160,9 +159,11 @@ class APsystemsSocket:
         await self.close_socket()
         _LOGGER.debug("Signal raw data: %s", self.signal_raw_data.hex())
         if status or not self.signal_raw_data:
-            _LOGGER.warning("an error occurred while querying signal where status is: %s", status)
+            _LOGGER.warning(
+                "an error occurred while querying signal where status is: %s", status
+            )
 
-        # Add CT data to the dictionary for ECU-C models
+        # Add CT data to the dictionary for ECU-C models only
         if self.ecu_id.startswith("215"):
             await self.add_meter_data()
         # Add ECU parameters to the dictionary
@@ -171,16 +172,15 @@ class APsystemsSocket:
         return self.finalize_data(show_graphs)
 
     async def add_meter_data(self):
-        """ Add the meter data to the dictionary. """
+        """Add the meter data to the dictionary."""
         self.meter_data = await get_power_meter_graph_data(self.ipaddr)
-        
         if self.meter_data:
             self.data.update(self.meter_data)
         else:
             _LOGGER.warning("No meter data received.")
 
     def finalize_data(self, show_graphs):
-        """ Finalize the data and return it. """
+        """Finalize the data and return it."""
         try:
             self.data["ecu_id"] = self.ecu_id
             self.data["last_update"] = self.last_update
@@ -190,9 +190,8 @@ class APsystemsSocket:
             # apply filters for ECU firmware bug where sometimes values are zero
             if self.qty_of_inverters:
                 self.data["qty_of_inverters"] = self.qty_of_inverters
-            if (
-                self.today_energy != 0 or
-                (self.today_energy == 0 and self.qty_of_online_inverters == 0)
+            if self.today_energy != 0 or (
+                self.today_energy == 0 and self.qty_of_online_inverters == 0
             ):
                 self.data["today_energy"] = self.today_energy
             if self.lifetime_energy:
@@ -202,12 +201,11 @@ class APsystemsSocket:
             self.data.update(self.process_inverter_data(show_graphs))
             return self.data
         except Exception as err:
-            raise APsystemsInvalidData(f"finalization: {err}") from err
-
+            raise APsystemsInvalidData(f"error during finalization ({err})") from err
 
     def process_ecu_data(self, data=None):
-        """  interpret raw ecu data and return it. """
-        if self.ecu_raw_data and (aps_str(self.ecu_raw_data, 9, 4)) == '0001':
+        """interpret raw ecu data and return it."""
+        if self.ecu_raw_data and (aps_str(self.ecu_raw_data, 9, 4)) == "0001":
             data = self.ecu_raw_data
             error = validate_data(data, "ECU Query")
             if error:
@@ -224,17 +222,16 @@ class APsystemsSocket:
                 self.firmware = aps_str(data, 55, self.vsl)
                 self.tsl = int(aps_str(data, 55 + self.vsl, 3))
                 self.timezone = aps_str(data, 58 + self.vsl, self.tsl)
-            elif aps_str(data,25,2) == "02":
+            elif aps_str(data, 25, 2) == "02":
                 self.qty_of_inverters = aps_int_from_bytes(data, 39, 2)
                 self.qty_of_online_inverters = aps_int_from_bytes(data, 41, 2)
                 self.vsl = int(aps_str(data, 49, 3))
                 self.firmware = aps_str(data, 52, self.vsl)
 
-
     def process_signal_data(self, data=None):
-        """ interpret raw signal data and return it. """	
+        """interpret raw signal data and return it."""
         signal_data = {}
-        if self.signal_raw_data and (aps_str(self.signal_raw_data,9,4)) == '0030':
+        if self.signal_raw_data and (aps_str(self.signal_raw_data, 9, 4)) == "0030":
             data = self.signal_raw_data
             error = validate_data(data, "Signal Query")
             if error:
@@ -251,19 +248,21 @@ class APsystemsSocket:
                 signal_data[inverter_uid] = signal_strength
         return signal_data
 
-
     def process_inverter_data(self, show_graphs, data=None):
-        """ interpret raw inverter data and return it. """
+        """interpret raw inverter data and return it."""
         output = {}
-        if self.inverter_raw_data != '' and (aps_str(self.inverter_raw_data,9,4)) == '0002':
+        if (
+            self.inverter_raw_data != ""
+            and (aps_str(self.inverter_raw_data, 9, 4)) == "0002"
+        ):
             data = self.inverter_raw_data
             error = validate_data(data, "Inverter Query")
             if error:
                 raise APsystemsInvalidData(error)
-            istr = ''
+            istr = ""
             cnt1 = 0
             cnt2 = 26
-            if aps_str(data, 14, 2) == '00':
+            if aps_str(data, 14, 2) == "00":
                 timestamp = aps_datetimestamp(data, 19, 14)
                 inverter_qty = aps_int_from_bytes(data, 17, 2)
                 self.last_update = timestamp
@@ -273,60 +272,71 @@ class APsystemsSocket:
                 inverters = {}
 
                 while cnt1 < inverter_qty:
-                    inv={}
-                    if aps_str(data, 15, 2) == '01':
+                    inv = {}
+                    if aps_str(data, 15, 2) == "01":
                         inverter_uid = aps_uid(data, cnt2)
                         inv["uid"] = inverter_uid
                         inv["online"] = bool(aps_int_from_bytes(data, cnt2 + 6, 1))
-                        istr = aps_str(data, cnt2 + 7, 2) #inverter type
+                        istr = aps_str(data, cnt2 + 7, 2)  # inverter type
 
                         # Should the signal graphs be updated?
                         inv["signal"] = (
-                            None if not inv["online"]
-                            else signal.get(inverter_uid, 0)
+                            None if not inv["online"] else signal.get(inverter_uid, 0)
                         )
 
                         # Distinguishes the different inverters from this point down
-                        if istr in [ '01', '04', '05']: #01 (=YC600/DS3) 04 (=DS3D-L) 05 (=DS3-H)
+                        if istr in [
+                            "01",
+                            "04",
+                            "05",
+                        ]:  # 01 (=YC600/DS3) 04 (=DS3D-L) 05 (=DS3-H)
                             power = []
                             voltages = []
 
                             # Should graphs be updated?
                             if inv["online"]:
-                                inv["temperature"] = aps_int_from_bytes(data, cnt2 + 11, 2) - 100
+                                inv["temperature"] = (
+                                    aps_int_from_bytes(data, cnt2 + 11, 2) - 100
+                                )
 
                             if not inv["online"] and not show_graphs:
                                 inv["frequency"] = None
                                 power.extend([None, None])
                                 voltages.extend([None, None])
                             else:
-                                inv["frequency"] = aps_int_from_bytes(data, cnt2 + 9, 2) / 10
+                                inv["frequency"] = (
+                                    aps_int_from_bytes(data, cnt2 + 9, 2) / 10
+                                )
                                 power.append(aps_int_from_bytes(data, cnt2 + 13, 2))
                                 voltages.append(aps_int_from_bytes(data, cnt2 + 15, 2))
                                 power.append(aps_int_from_bytes(data, cnt2 + 17, 2))
 
                             inv_details = {
-                            "model" : "YC600/DS3 series",
-                            "channel_qty" : 2,
-                            "power" : power,
-                            "voltage" : voltages
+                                "model": INVERTER_MODEL_MAP.get(inverter_uid[:2], "Unknown Model"),
+                                "channel_qty": 2,
+                                "power": power,
+                                "voltage": voltages,
                             }
                             inv.update(inv_details)
                             cnt2 = cnt2 + 21
-                        elif istr == '02': #YC1000/QT2 3 phase inverters
+                        elif istr == "02":  # YC1000/QT2 3 phase inverters
                             power = []
                             voltages = []
 
                             # Should graphs be updated?
                             if inv["online"]:
-                                inv["temperature"] = aps_int_from_bytes(data, cnt2 + 11, 2) - 100
+                                inv["temperature"] = (
+                                    aps_int_from_bytes(data, cnt2 + 11, 2) - 100
+                                )
 
                             if not inv["online"] and not show_graphs:
                                 inv["frequency"] = None
                                 power.extend([None, None, None, None])
                                 voltages.extend([None, None, None])
                             else:
-                                inv["frequency"] = aps_int_from_bytes(data, cnt2 + 9, 2) / 10
+                                inv["frequency"] = (
+                                    aps_int_from_bytes(data, cnt2 + 9, 2) / 10
+                                )
                                 power.append(aps_int_from_bytes(data, cnt2 + 13, 2))
                                 voltages.append(aps_int_from_bytes(data, cnt2 + 15, 2))
                                 power.append(aps_int_from_bytes(data, cnt2 + 17, 2))
@@ -336,26 +346,30 @@ class APsystemsSocket:
                                 power.append(aps_int_from_bytes(data, cnt2 + 25, 2))
 
                             inv_details = {
-                            "model" : "YC1000/QT2",
-                            "channel_qty" : 4,
-                            "power" : power,
-                            "voltage" : voltages
+                                "model": INVERTER_MODEL_MAP.get(inverter_uid[:2], "Unknown Model"),
+                                "channel_qty": 4,
+                                "power": power,
+                                "voltage": voltages,
                             }
                             inv.update(inv_details)
                             cnt2 = cnt2 + 27
-                        elif istr == '03':
+                        elif istr == "03":
                             power = []
                             voltages = []
 
                             # Should graphs be updated?
                             if inv["online"]:
-                                inv["temperature"] = aps_int_from_bytes(data, cnt2 + 11, 2) - 100
+                                inv["temperature"] = (
+                                    aps_int_from_bytes(data, cnt2 + 11, 2) - 100
+                                )
                             if not inv["online"] and not show_graphs:
                                 inv["frequency"] = None
                                 voltages.append(None)
                                 power.extend([None, None, None, None])
                             else:
-                                inv["frequency"] = aps_int_from_bytes(data, cnt2 + 9, 2) / 10
+                                inv["frequency"] = (
+                                    aps_int_from_bytes(data, cnt2 + 9, 2) / 10
+                                )
                                 power.append(aps_int_from_bytes(data, cnt2 + 13, 2))
                                 voltages.append(aps_int_from_bytes(data, cnt2 + 15, 2))
                                 power.append(aps_int_from_bytes(data, cnt2 + 17, 2))
@@ -363,10 +377,10 @@ class APsystemsSocket:
                                 power.append(aps_int_from_bytes(data, cnt2 + 21, 2))
 
                             inv_details = {
-                            "model" : "QS1",
-                            "channel_qty" : 4,
-                            "power" : power,
-                            "voltage" : voltages
+                                "model": INVERTER_MODEL_MAP.get(inverter_uid[:2], "Unknown Model"),
+                                "channel_qty": 4,
+                                "power": power,
+                                "voltage": voltages,
                             }
                             inv.update(inv_details)
                             cnt2 = cnt2 + 23

@@ -1,4 +1,4 @@
-""" binary_sensor.py """
+"""binary_sensor.py"""
 
 import logging
 
@@ -10,17 +10,24 @@ from .const import DOMAIN, CACHE_ICON
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(hass, _, add_entities):
     """Set up the binary sensor for the APsystems ECU data cache."""
     ecu = hass.data[DOMAIN].get("ecu")
     coordinator = hass.data[DOMAIN].get("coordinator")
 
-    add_entities([
-        APsystemsECUBinarySensor(
-            coordinator, ecu, "data_from_cache",
-            label=f"{ecu.ecu.ecu_id} Using Cached Data", icon=CACHE_ICON
-        )
-    ])
+    add_entities(
+        [
+            APsystemsECUBinarySensor(
+                coordinator,
+                ecu,
+                "data_from_cache",
+                label=f"{ecu.ecu.ecu_id} Using Cached Data",
+                icon=CACHE_ICON,
+            )
+        ]
+    )
+
 
 class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
     """Representation of a binary sensor for APsystems ECU."""
@@ -58,7 +65,7 @@ class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
             "ecu_id": self._ecu.ecu.ecu_id,
             "firmware": self._ecu.ecu.firmware,
             "timezone": self._ecu.ecu.timezone,
-            "last_update": self._ecu.ecu.last_update
+            "last_update": self._ecu.ecu.last_update,
         }
 
     @property

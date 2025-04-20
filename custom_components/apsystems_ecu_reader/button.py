@@ -1,18 +1,18 @@
 """Button platform for APsystems ECU Reader."""
 
+import logging
 from homeassistant.components.button import ButtonEntity, ButtonDeviceClass
 from homeassistant.helpers.entity import EntityCategory
 
 
-from .const import DOMAIN, ECU_REBOOT_ICON
+from .const import DOMAIN, ECU_REBOOT_ICON, ECU_MODEL_MAP
 from .gui_helpers import pers_gui_notification
 
 
-import logging
-
 _LOGGER = logging.getLogger(__name__)
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+
+async def async_setup_entry(hass, _, async_add_entities):
     """Set up the button platform."""
     ecu = hass.data[DOMAIN]["ecu"]
     async_add_entities([RebootECUButton(ecu)])
@@ -20,6 +20,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 class RebootECUButton(ButtonEntity):
     """Representation of a button to reboot the ECU."""
+
+    def press(self):
+        """Handle the synchronous button press."""
+        self.hass.async_create_task(self.async_press())
 
     def __init__(self, ecu):
         """Initialize the button."""
@@ -38,7 +42,7 @@ class RebootECUButton(ButtonEntity):
             },
             "name": f"ECU {self._ecu.ecu.ecu_id}",
             "manufacturer": "APsystems",
-            "model": self._ecu.ecu.firmware,
+            "model": ECU_MODEL_MAP.get(self._ecu.ecu.ecu_id[:4], "Unknown Model"),
             "sw_version": self._ecu.ecu.firmware,
         }
 
@@ -46,7 +50,7 @@ class RebootECUButton(ButtonEntity):
     def entity_category(self):
         """Return the category of the entity."""
         return EntityCategory.DIAGNOSTIC
-    
+
     async def async_press(self):
         """Handle the button press."""
         try:
@@ -61,6 +65,6 @@ class RebootECUButton(ButtonEntity):
             # Send notification
             pers_gui_notification(self.hass, message)
 
-        except Exception as e:
+        except (ConnectionError, TimeoutError, ValueError) as e:
             _LOGGER.error("Failed to reboot ECU %s: %s", self._ecu.ecu.ecu_id, e)
             pers_gui_notification(self.hass, f"Failed to reboot ECU: {e}")

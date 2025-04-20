@@ -4,7 +4,8 @@ from homeassistant.components.number import RestoreNumber
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import EntityCategory
 
-from .const import DOMAIN
+from .const import DOMAIN, INVERTER_MODEL_MAP
+
 
 async def async_setup_entry(hass, _, async_add_entities):
     """Set up the number platform."""
@@ -13,9 +14,12 @@ async def async_setup_entry(hass, _, async_add_entities):
 
     entities = []
     for inverter_id, inverter_data in coordinator.data.get("inverters", {}).items():
-        entities.append(InverterMaxPwrNumber(coordinator, ecu, inverter_id, inverter_data))
+        entities.append(
+            InverterMaxPwrNumber(coordinator, ecu, inverter_id, inverter_data)
+        )
 
     async_add_entities(entities, True)
+
 
 class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
     """Representation of an Inverter_MaxPwr Number entity."""
@@ -45,7 +49,7 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
             },
             "name": f"Inverter {self._uid}",
             "manufacturer": "APsystems",
-            "model": self._inv_data.get("model", "Unknown"),
+            "model": INVERTER_MODEL_MAP.get(self._uid[:2], "Unknown Model"),
             "via_device": (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
         }
 
@@ -53,7 +57,7 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
     def entity_category(self):
         """Return the category of the entity."""
         return EntityCategory.CONFIG
-    
+
     async def async_set_native_value(self, value: float):
         """Update the current value."""
         await self._ecu.set_inverter_max_power(self._uid, value)
