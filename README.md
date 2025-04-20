@@ -22,7 +22,7 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - Limit maximum Power of each panel (ECU-R-Pro, ECU-C, ECU-3)
 - dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -25dBm (worst signal).
 
-[^0]: When you restart Home Assistant, disable all hubs except for one. Then one minute after each other enable one hub at a time (I'll patch this later).
+[^0]: When you restart Home Assistant, disable all hubs except for one. Then one minute after each other enable one hub at a time (fixed in v2.7.0).
 
 > [!CAUTION]
 > - ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's.
