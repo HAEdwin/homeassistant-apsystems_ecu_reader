@@ -159,10 +159,10 @@ class APsystemsSocket:
         await self.close_socket()
         _LOGGER.debug("Signal raw data: %s", self.signal_raw_data.hex())
         if status or not self.signal_raw_data:
-            _LOGGER.warning(
-                "an error occurred while querying signal where status is: %s", status
+            raise APsystemsInvalidData(
+                f"an error occurred while querying signal, {status}"
             )
-
+        
         # Add CT data to the dictionary for ECU-C models only
         if self.ecu_id.startswith("215"):
             await self.add_meter_data()
