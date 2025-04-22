@@ -226,5 +226,4 @@ Realization in 2022 was a collaboration between checking12, ksheumaker, HAEdwin 
 
 ## To Do
 - Fix bug where pressing the reboot button for an ECU-B seems to go allright while it does not (not compatible function for ECU-B)
-- Multiple ECU's, do some debugging
 - Code cleanup
