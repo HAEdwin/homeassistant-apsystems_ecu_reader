@@ -93,23 +93,23 @@ class APsystemsSocket:
         except socket.timeout:
             # Handle timeout specifically
             await self.close_socket()
-            return None, "timeout occurred while reading from socket\n"
+            return None, "timeout occurred while reading from socket"
         except ConnectionResetError:
             # Handle connection reset error
             await self.close_socket()
-            return None, "Connection reset by peer\n"
+            return None, "connection reset by peer"
         except BrokenPipeError:
             # Handle broken pipe (connection closed by peer)
             await self.close_socket()
-            return None, "Connection closed by peer\n"
+            return None, "connection closed by peer"
         except asyncio.CancelledError:
             # Handle the case when the task is cancelled
             await self.close_socket()
-            return None, "Operation was cancelled\n"
+            return None, "operation was cancelled"
         except OSError as err:
             # Handle general socket errors
             await self.close_socket()
-            return None, f"General OS error occurred: {err}\n"
+            return None, f"general OS error {err}"
 
     async def close_socket(self):
         """Ensure created and allocated resources are properly cleaned up."""
@@ -120,7 +120,7 @@ class APsystemsSocket:
                 self.sock = None
                 _LOGGER.debug("Socket resources released")
             except (OSError, socket.error) as err:
-                _LOGGER.warning("Socket shutdown error: %s", err)
+                raise APsystemsInvalidData(f"socket shutdown error {err}") from err
 
     async def query_ecu(self, port_retries, show_graphs):
         """
@@ -135,7 +135,7 @@ class APsystemsSocket:
         await self.close_socket()
         if status or not self.ecu_raw_data:
             raise APsystemsInvalidData(
-                f"ECU status is: {status}" if status else "received data is none"
+                f"{status}" if status else "received data is none"
             )
 
         # Extract ECU-ID needed for other queries
@@ -162,7 +162,7 @@ class APsystemsSocket:
             raise APsystemsInvalidData(
                 f"an error occurred while querying signal, {status}"
             )
-        
+
         # Add CT data to the dictionary for ECU-C models only
         if self.ecu_id.startswith("215"):
             await self.add_meter_data()
@@ -177,7 +177,7 @@ class APsystemsSocket:
         if self.meter_data:
             self.data.update(self.meter_data)
         else:
-            _LOGGER.warning("No meter data received.")
+            raise APsystemsInvalidData("no meter data received")
 
     def finalize_data(self, show_graphs):
         """Finalize the data and return it."""
@@ -312,7 +312,9 @@ class APsystemsSocket:
                                 power.append(aps_int_from_bytes(data, cnt2 + 17, 2))
 
                             inv_details = {
-                                "model": INVERTER_MODEL_MAP.get(inverter_uid[:2], "Unknown Model"),
+                                "model": INVERTER_MODEL_MAP.get(
+                                    inverter_uid[:2], "Unknown Model"
+                                ),
                                 "channel_qty": 2,
                                 "power": power,
                                 "voltage": voltages,
@@ -346,7 +348,9 @@ class APsystemsSocket:
                                 power.append(aps_int_from_bytes(data, cnt2 + 25, 2))
 
                             inv_details = {
-                                "model": INVERTER_MODEL_MAP.get(inverter_uid[:2], "Unknown Model"),
+                                "model": INVERTER_MODEL_MAP.get(
+                                    inverter_uid[:2], "Unknown Model"
+                                ),
                                 "channel_qty": 4,
                                 "power": power,
                                 "voltage": voltages,
@@ -377,7 +381,9 @@ class APsystemsSocket:
                                 power.append(aps_int_from_bytes(data, cnt2 + 21, 2))
 
                             inv_details = {
-                                "model": INVERTER_MODEL_MAP.get(inverter_uid[:2], "Unknown Model"),
+                                "model": INVERTER_MODEL_MAP.get(
+                                    inverter_uid[:2], "Unknown Model"
+                                ),
                                 "channel_qty": 4,
                                 "power": power,
                                 "voltage": voltages,
