@@ -212,6 +212,8 @@ ECU-B 2024-12-30, V1.2.35
 - Why is my inverter going offline sometimes during the day?
 
 This is due to a lost Zigbee connection between the ECU and inverter and will not effect the power returned to the grid. There may be poor reception of the Zigbee signal (< -70dBm), causing the inverter to appear to be offline. Move the ECU to a better position or point the Zigbee antenna towards the inverter and keep a close eye on the Signal Strength sensors. Strength should be between -10dBm (best) and -70dBm (worst). Sometimes reception is temporarily poor due to weather conditions.
+Another reason can be overvoltage, this is caused by bad AC voltage wiring (wire diameter too small) or cable too long. As a result, the resistance increases and there is a voltage drop on the cable. The inverter thinks that the voltage is too high, because it measures its own output voltage which has been increased by the voltage drop in the cable.
+A grid over voltage can occur when there are many solarpanels producing at the same time.
 
 - Why do the ECU values ​​differ from the EMA values?
 
