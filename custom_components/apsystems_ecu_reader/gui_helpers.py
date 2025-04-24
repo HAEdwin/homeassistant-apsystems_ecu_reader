@@ -175,7 +175,7 @@ async def get_power_meter_graph_data(ipaddr):
                         _LOGGER.warning("Failed to decode JSON response: %s", err)
                         return None
 
-                    _LOGGER.warning("Parsed data: %s", data)
+                    _LOGGER.debug("Parsed data: %s", data)
 
                     # Map the data to sensor properties and add calculated fields
                     mapped_data = {
