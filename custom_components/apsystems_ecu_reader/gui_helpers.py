@@ -184,7 +184,7 @@ async def get_power_meter_graph_data(ipaddr):
                             if data[f"power{index}"]
                             else None
                         )
-                        for index, prefix in enumerate(["grid", "production"], start=1)
+                        for index, prefix in enumerate(["production","grid"], start=1)
                         for phase in ["A", "B", "C"]
                     }
 
