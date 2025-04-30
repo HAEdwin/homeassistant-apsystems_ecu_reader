@@ -30,12 +30,12 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 
 ## Prerequisites
 You own an APSystems ECU model ECU-B, ECU-R or ECU-C and any combination of YC600, YC1000/QT2 series, DS3-series or QS1 series inverter. If your inverter is not supported, please raise an issue. Your ECU is connected to your LAN, correctly configured (assigned a fixed IP address) and Home Assistant has free access to it. You also have HACS installed in Home Assistant. You allready have an APsystemsema (Energy Monitoring & Analysis System) account and are succesfully uploading data to the EMA site.
-Connection method (ethernet or WiFi) depends on your ECU model, follow the table below.
-Connection required | ECU Model | Automated Restart* | Turn on/off Inverters
---- | --- | --- | ---
-Wireless | ECU-R (2160xxxxxxxx series) and ECU-B | No | No
-Wireless/Wired | ECU-R (2162xxxxxxxx series) | Yes | Yes
-Wired | ECU-C | Yes | Yes
+Connection method (ethernet or WiFi) and capabilities depends on your ECU model, follow the table below.
+Connection required | ECU Model | Automated Restart* | Turn on/off Inverters | Max Power | Zero Export
+--- | --- | --- | --- | --- | ---
+Wireless | ECU-R (2160 series) and ECU-B | No | No | No | No
+Wireless/Wired | ECU-R (2162 series) | Yes | Yes | Yes | No
+Wired | ECU-C | Yes | Yes | Yes | Yes
 
 _ECU-3 owners might want to take a look at: https://github.com/jeeshofone/ha-apc-ecu-3_
 
