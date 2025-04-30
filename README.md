@@ -223,7 +223,3 @@ The ECU is not a continuous energy meter like the one from the electricity compa
 
 ## Background & acknowledgement
 Realization in 2022 was a collaboration between checking12, ksheumaker, HAEdwin on the Home Assistant forum, and all the other people from this forum (https://gathering.tweakers.net/forum/list_messages/2032302/1). Thanks goes out to 12christiaan and ViperRNMC for providing an automated solution to restart the ECU-C and ECU-R (SunSpec logo/ECU-ID starting with 2162xxxxxxxx) models. Best for last all my sponsors who provide me with coffee! Thank you, it keeps me motivated!
-
-## To Do
-- Fix bug where pressing the reboot button for an ECU-B seems to go allright while it does not (not compatible function for ECU-B)
-- Code cleanup
