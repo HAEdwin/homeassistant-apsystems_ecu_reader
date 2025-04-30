@@ -30,12 +30,12 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 
 ## Prerequisites
 You own an APSystems ECU model ECU-B, ECU-R or ECU-C and any combination of YC600, YC1000/QT2 series, DS3-series or QS1 series inverter. If your inverter is not supported, please raise an issue. Your ECU is connected to your LAN, correctly configured (assigned a fixed IP address) and Home Assistant has free access to it. You also have HACS installed in Home Assistant. You allready have an APsystemsema (Energy Monitoring & Analysis System) account and are succesfully uploading data to the EMA site.
-Connection method (ethernet or WiFi) and capabilities depends on your ECU model, follow the table below.
-Connection required | ECU Model | Automated Restart* | Turn on/off Inverters | Max Power | Zero Export
---- | --- | --- | --- | --- | ---
-Wireless | ECU-R (2160 series) and ECU-B | No | No | No | No
-Wireless/Wired | ECU-R (2162 series) | Yes | Yes | Yes | No
-Wired | ECU-C | Yes | Yes | Yes | Yes
+Required connection method (ethernet or WiFi) for this integration to work depends on your ECU model, follow the table below.
+Connection required | ECU Model | Automated Restart*
+--- | --- | ---
+Wireless | ECU-R (2160 series) and ECU-B | No
+Wireless/Wired | ECU-R (2162 series) | Yes
+Wired | ECU-C | Yes
 
 _ECU-3 owners might want to take a look at: https://github.com/jeeshofone/ha-apc-ecu-3_
 
@@ -130,12 +130,12 @@ If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU fi
 - number.inverter_{UID}_maxpwr
 
 ## Compatibility of extra features
-|Type	|Entity		|ECU-R |ECU-R-Pro |ECU-C |ECU-3|
-|-------|-----------------------|------|----------|------|-----|
-|switch	|ecu_{ECU-ID}_zero_export [^1]	|No    |No	  |Yes   |Yes  |
-|switch	|inverter_{Inverter-ID}_on_off [^2]	|No    |Yes	  |Yes	 |Yes  |
-|button	|ecu_{ECU-ID}_reboot [^4]	|No	|Yes	|Yes	|Yes	|
-|number	|inverter_{Inverter-ID}_maxpwr [^5]		|No    |Yes	  |Yes	 |Yes  |
+|Type	|Entity		|ECU-B |ECU-R |ECU-R-Pro |ECU-C |ECU-3|
+|---|---|---|---|---|---|---|
+|switch	|ecu_{ECU-ID}_zero_export [^1]	|No |No |No |Yes |Yes |
+|switch	|inverter_{Inverter-ID}_on_off [^2]	|No |No |Yes |Yes |Yes |
+|button	|ecu_{ECU-ID}_reboot [^4]	|No |No	|Yes |Yes |Yes |
+|number	|inverter_{Inverter-ID}_maxpwr [^5]		|No |No |Yes |Yes |Yes |
 
 _Note that the switch/number effects only the specified ECU-ID or Inverter-ID_
 
