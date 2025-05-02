@@ -210,8 +210,8 @@ ECU-B 2024-12-30, V1.2.35
 ## FAQ
 - Why is my inverter going offline sometimes during the day?
 
-This is due to a lost Zigbee connection between the ECU and inverter and will not effect the power returned to the grid. There may be poor reception of the Zigbee signal (< -70dBm), causing the inverter to appear to be offline. Move the ECU to a better position or point the Zigbee antenna towards the inverter and keep a close eye on the Signal Strength sensors. Strength should be between -10dBm (best) and -70dBm (worst). Sometimes reception is temporarily poor due to weather conditions.
-Another reason can be overvoltage, this is caused by bad AC voltage wiring (wire diameter too small) or cable too long. As a result, the resistance increases and there is a voltage drop on the cable. The inverter thinks that the voltage is too high, because it measures its own output voltage which has been increased by the voltage drop in the cable, the inverter will then shut down. A grid over voltage can occur when there are many solarpanels producing at the same time. So always measure on the inverter side but also on the grid side to determen what the cause might be.
+1. This might be due to a lost Zigbee connection between the ECU and inverter and will not effect the power returned to the grid. There may be poor reception of the Zigbee signal (< -70dBm), causing the inverter to appear to be offline. Move the ECU to a better position or point the Zigbee antenna towards the inverter and keep a close eye on the Signal Strength sensors. Strength should be between -10dBm (best) and -70dBm (worst). Sometimes reception is temporarily poor due to weather conditions. Although Zigbee is a mesh protocol, it can be easily disrupted by other (smart) devices and WiFi because it also works on the 2.4Ghz band. A meter cupboard is a bad place for the ECU as well as reinforced concrete walls, large refrigerators - well everything in the line of sight.
+2. Another reason can be overvoltage, this is caused by bad AC voltage wiring (wire diameter too small) or cable too long. As a result, the resistance increases and there is a voltage drop on the cable. The inverter thinks that the voltage is too high, because it measures its own output voltage which has been increased by the voltage drop in the cable, the inverter will then shut down. A grid over voltage can occur when there are many solarpanels producing at the same time. So always measure on the inverter side but also on the grid side to determen what the cause might be.
 
 - Why do the ECU values ​​differ from the EMA values?
 
@@ -219,7 +219,7 @@ The ECU is not a continuous energy meter like the one from the electricity compa
 
 - Why doesn't this integration find my ECU?
 
-9.9 out of 10 cases it turns out that a wrong node or network configuration is applicable. Make sure that HA can reach the ECU and that you can ping the ECU
+9.99 out of 10 cases it turns out that a wrong node or network configuration is applicable. Make sure that HA can reach the ECU and that you can ping the ECU. Also make sure the ECU is running for at least 10 minutes before attempting to connect using this integration.
 
 ## Background & acknowledgement
 Realization in 2022 was a collaboration between checking12, ksheumaker, HAEdwin on the Home Assistant forum, and all the other people from this forum (https://gathering.tweakers.net/forum/list_messages/2032302/1). Thanks goes out to 12christiaan and ViperRNMC for providing an automated solution to restart the ECU-C and ECU-R (SunSpec logo/ECU-ID starting with 2162xxxxxxxx) models. Best for last all my sponsors who provide me with coffee! Thank you, it keeps me motivated!
