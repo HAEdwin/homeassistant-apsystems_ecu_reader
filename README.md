@@ -63,6 +63,11 @@ APS1100160001END <┘
 APS11009400012160000xxxxxxxz%10012ECU_R_1.2.22009Etc/GMT-8
 ```
 
+Your ECU uses the following ports. Make sure that they are accessible and not blocked by a firewall rule.
+![image](https://github.com/user-attachments/assets/2dfb520e-f3a2-4516-a427-d63788c6d1f7)
+
+
+
 ## Migrating from "APSystems PV solar ECU" to the "APsystems ECU Reader" integration
 > [!CAUTION]
 > ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's.
