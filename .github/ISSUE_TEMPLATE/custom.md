@@ -51,6 +51,11 @@ Providing context helps us come up with a solution that is most useful in the re
 - [ ] ECU-C
 - [ ] ECU-3
 
+## ECU is connected by
+- [ ] Ethernet cable
+- [ ] Wireless
+
+## Inverter type(s) used
 - [ ] DS3 series
 - [ ] QS series
 - [ ] QT series
@@ -59,4 +64,3 @@ Providing context helps us come up with a solution that is most useful in the re
 ```
 APsystems ECU Reader software currently installed
 ```
-
