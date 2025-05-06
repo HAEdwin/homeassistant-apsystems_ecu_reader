@@ -1,7 +1,7 @@
 ---
 name: Issue template
 about: Issue tracker is **ONLY** used for reporting bugs. New features, discussions
-  or questions should be posted in the discussion section.
+  or questions should be posted in the discussion section. Do not post you ECU-ID !
 title: ''
 labels: ''
 assignees: ''
