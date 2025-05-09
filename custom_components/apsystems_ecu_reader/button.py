@@ -15,7 +15,10 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, _, async_add_entities):
     """Set up the button platform."""
     ecu = hass.data[DOMAIN]["ecu"]
-    async_add_entities([RebootECUButton(ecu)])
+
+    # Add the button only if ecu_id starts with "2162" (ECU-R-Pro) or "215" (ECU-C)
+    if ecu.ecu.ecu_id.startswith(("215", "2162")):
+        async_add_entities([RebootECUButton(ecu)])
 
 
 class RebootECUButton(ButtonEntity):

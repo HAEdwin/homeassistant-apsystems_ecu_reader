@@ -15,34 +15,6 @@ from homeassistant.components.persistent_notification import (
 _LOGGER = logging.getLogger(__name__)
 
 
-async def set_all_inverters_state(ipaddr, state):
-    """Set the on/off state of all inverters. 1=on, 2=off"""
-    headers = {"X-Requested-With": "XMLHttpRequest"}
-    url = f"http://{ipaddr}/index.php/configuration/set_switch_all_{'on' if state else 'off'}"
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers=headers, timeout=15) as response:
-                status_code = response.status
-                _LOGGER.debug(
-                    "Response from ECU on switching the inverters %s: %s",
-                    "on" if state else "off",
-                    status_code,
-                )
-                return status_code
-    except (
-        aiohttp.ClientError,
-        aiohttp.ClientConnectionError,
-        asyncio.TimeoutError,
-    ) as err:
-        _LOGGER.warning(
-            "Attempt to switch inverters %s failed with error: %s "
-            "(This switch is only compatible with ECU-R pro and ECU-C type ECU's)",
-            "on" if state else "off",
-            err,
-        )
-        return None
-
-
 async def set_inverter_state(ipaddr, inverter_id, state):
     """Set the on/off state of an inverter. 1=on, 2=off"""
     action = {"ids[]": f"{inverter_id}1" if state else f"{inverter_id}2"}
@@ -184,7 +156,7 @@ async def get_power_meter_graph_data(ipaddr):
                             if data[f"power{index}"]
                             else None
                         )
-                        for index, prefix in enumerate(["production","grid"], start=1)
+                        for index, prefix in enumerate(["production", "grid"], start=1)
                         for phase in ["A", "B", "C"]
                     }
 

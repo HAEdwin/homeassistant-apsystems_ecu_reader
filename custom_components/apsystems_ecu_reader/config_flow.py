@@ -118,5 +118,7 @@ async def test_ecu_connection(input_data):
         return test_query.get("ecu_id", None)
     # collector of APsystemsInvalidData exceptions
     except APsystemsInvalidData as err:
-        _LOGGER.warning("APsystemsInvalidData exception: %s", err)
+        _LOGGER.warning(
+            "APsystems invalid data exception for ECU %s: %s", ecu.ecu_id, err
+        )
         return None

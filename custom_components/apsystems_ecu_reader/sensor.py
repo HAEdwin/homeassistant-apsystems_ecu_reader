@@ -114,109 +114,117 @@ async def async_setup_entry(hass, _, add_entities):
             icon=CACHE_COUNTER_ICON,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
-        # Add production CT sensors
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "production_ct_a",
-            label=f"{ecu.ecu.ecu_id} Production CT A",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=SOLAR_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "production_ct_b",
-            label=f"{ecu.ecu.ecu_id} Production CT B",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=SOLAR_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "production_ct_c",
-            label=f"{ecu.ecu.ecu_id} Production CT C",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=SOLAR_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
-        # Add grid CT sensors
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "grid_ct_a",
-            label=f"{ecu.ecu.ecu_id} Grid CT A",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=FROM_GRID_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "grid_ct_b",
-            label=f"{ecu.ecu.ecu_id} Grid CT B",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=FROM_GRID_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "grid_ct_c",
-            label=f"{ecu.ecu.ecu_id} Grid CT C",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=FROM_GRID_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
-        # Add consumed CT sensors
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "consumed_a",
-            label=f"{ecu.ecu.ecu_id} Consumed A",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=CONSUMED_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "consumed_b",
-            label=f"{ecu.ecu.ecu_id} Consumed B",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=CONSUMED_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
-        APsystemsECUSensor(
-            coordinator,
-            ecu,
-            "consumed_c",
-            label=f"{ecu.ecu.ecu_id} Consumed C",
-            unit=UnitOfPower.WATT,
-            devclass=SensorDeviceClass.POWER,
-            icon=CONSUMED_ICON,
-            stateclass=SensorStateClass.MEASUREMENT,
-            disabled_by="user" if not ecu.ecu.ecu_id.startswith("215") else None,
-        ),
     ]
+
+    # Add CT sensors for ECU-C only
+    if ecu.ecu.ecu_id.startswith("215"):
+        # Add production CT sensors
+        sensors.extend(
+            [
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "production_ct_a",
+                    label=f"{ecu.ecu.ecu_id} Production CT A",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=SOLAR_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "production_ct_b",
+                    label=f"{ecu.ecu.ecu_id} Production CT B",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=SOLAR_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "production_ct_c",
+                    label=f"{ecu.ecu.ecu_id} Production CT C",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=SOLAR_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+            ]
+        )
+
+        # Add grid CT sensors
+        sensors.extend(
+            [
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "grid_ct_a",
+                    label=f"{ecu.ecu.ecu_id} Grid CT A",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=FROM_GRID_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "grid_ct_b",
+                    label=f"{ecu.ecu.ecu_id} Grid CT B",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=FROM_GRID_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "grid_ct_c",
+                    label=f"{ecu.ecu.ecu_id} Grid CT C",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=FROM_GRID_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+            ]
+        )
+
+        # Add consumed CT sensors
+        sensors.extend(
+            [
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "consumed_a",
+                    label=f"{ecu.ecu.ecu_id} Consumed A",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=CONSUMED_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "consumed_b",
+                    label=f"{ecu.ecu.ecu_id} Consumed B",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=CONSUMED_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+                APsystemsECUSensor(
+                    coordinator,
+                    ecu,
+                    "consumed_c",
+                    label=f"{ecu.ecu.ecu_id} Consumed C",
+                    unit=UnitOfPower.WATT,
+                    devclass=SensorDeviceClass.POWER,
+                    icon=CONSUMED_ICON,
+                    stateclass=SensorStateClass.MEASUREMENT,
+                ),
+            ]
+        )
 
     # Add inverter binary sensors
     inverters = coordinator.data.get("inverters", {})
@@ -522,7 +530,7 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         devclass=None,
         stateclass=None,
         entity_category=None,
-        disabled_by=None,
+        #    disabled_by=None,
     ):
         super().__init__(coordinator)
         self.coordinator = coordinator
@@ -534,14 +542,14 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         self._devclass = devclass
         self._stateclass = stateclass
         self._entity_category = entity_category
-        self._disabled_by = disabled_by
+        #    self._disabled_by = disabled_by
         self._name = f"ECU {self._label}"
         self._state = None
 
-    @property
-    def entity_registry_enabled_default(self):
-        """Return whether the entity should be enabled by default."""
-        return self._disabled_by is None
+    # @property
+    # def entity_registry_enabled_default(self):
+    #    """Return whether the entity should be enabled by default."""
+    #    return self._disabled_by is None
 
     async def async_added_to_hass(self):
         """Handle entity that needs to be restored."""

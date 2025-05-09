@@ -12,7 +12,6 @@ from .const import DOMAIN, ECU_MODEL_MAP
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
 from .gui_helpers import (
     set_inverter_state,
-    set_all_inverters_state,
     set_zero_export,
     reboot_ecu,
     set_inverter_max_power,
@@ -45,15 +44,11 @@ class ECUREADER:
     # called from switch.py
     async def set_inverter_state(self, inverter_id, state):
         """Set the on/off state of an inverter. 1=on, 2=off"""
-        await set_inverter_state(self.ipaddr, inverter_id, state)
-
-    async def set_all_inverters_state(self, state):
-        """Set the on/off state of an inverter. 1=on, 2=off"""
-        await set_all_inverters_state(self.ipaddr, state)
+        return await set_inverter_state(self.ipaddr, inverter_id, state)
 
     async def set_zero_export(self, state):
         """Set the bridge state for zero export. 0=closed, 1=open"""
-        await set_zero_export(self.ipaddr, state)
+        return await set_zero_export(self.ipaddr, state)
 
     # called from button.py
     async def reboot_ecu(self):
@@ -69,14 +64,19 @@ class ECUREADER:
 
         # Reboot the ECU when the cache counter reaches the cache limit
         # This is a workaround for the ECU not responding to queries
-        if self.data_from_cache_count >= cache_reboot:
+        if self.data_from_cache_count >= cache_reboot and self.ecu.ecu_id.startswith(
+            ("215", "2162")
+        ):
             _LOGGER.warning(
-                "Restarting ECU after %s failed attempts to fetch data",
+                "Restarting ECU %s after %s failed attempts to fetch data",
+                self.ecu.ecu_id,
                 self.data_from_cache_count,
             )
             self.data_from_cache_count = 0
             response = await self.reboot_ecu()
-            _LOGGER.debug("Response from ECU on reboot: %s", response)
+            _LOGGER.debug(
+                "Response from ECU %s on reboot: %s", self.ecu.ecu_id, response
+            )
         else:
             try:
                 data = await self.ecu.query_ecu(port_retries, show_graphs)
@@ -86,7 +86,9 @@ class ECUREADER:
                     self.data_from_cache_count = 0
             # collector of APsystemsInvalidData exceptions
             except APsystemsInvalidData as err:
-                _LOGGER.warning("Using cached data: %s", err)
+                _LOGGER.warning(
+                    "Using cached data for ECU %s: %s", self.ecu.ecu_id, err
+                )
 
         # Set cache sensors
         self.cached_data["data_from_cache"] = self.data_from_cache
@@ -140,7 +142,6 @@ async def async_setup_entry(hass, config):
     )
 
     hass.data[DOMAIN] = {"ecu": ecu, "coordinator": coordinator}
-
 
     # First refresh the coordinator to make sure data is fetched.
     await coordinator.async_config_entry_first_refresh()

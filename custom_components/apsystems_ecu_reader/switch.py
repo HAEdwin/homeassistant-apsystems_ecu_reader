@@ -18,10 +18,16 @@ async def async_setup_entry(hass, _, async_add_entities):
     coordinator = hass.data[DOMAIN].get("coordinator")
     switches = []
     inverters = coordinator.data.get("inverters", {})
-    for uid, inv_data in inverters.items():
-        switches.append(APsystemsECUInverterSwitch(coordinator, ecu, uid, inv_data))
-    switches.append(APsystemsZeroExportSwitch(coordinator, ecu))
-    switches.append(APsystemsAllInvertersSwitch(coordinator, ecu))
+
+    # Add inverter switches only if ECU-R-Pro or ECU-C
+    if ecu.ecu.ecu_id.startswith(("215", "2162")):
+        for uid, inv_data in inverters.items():
+            switches.append(APsystemsECUInverterSwitch(coordinator, ecu, uid, inv_data))
+
+    # Add Zero Export switch only if ECU-C
+    if ecu.ecu.ecu_id.startswith("215"):
+        switches.append(APsystemsZeroExportSwitch(coordinator, ecu))
+
     async_add_entities(switches)
 
 
@@ -93,40 +99,6 @@ class APsystemsBaseSwitch(CoordinatorEntity, SwitchEntity, RestoreEntity):
         raise NotImplementedError("This method should be implemented by subclasses.")
 
 
-class APsystemsAllInvertersSwitch(APsystemsBaseSwitch):
-    """Switch to control all inverters."""
-
-    def __init__(self, coordinator, ecu):
-        super().__init__(
-            coordinator,
-            ecu,
-            name=f"ECU {ecu.ecu.ecu_id} All Inverters On/Off",
-            unique_id=f"ECU_{ecu.ecu.ecu_id}_all_inverters_switch",
-            icon=POWER_ICON,
-            entity_category=EntityCategory.CONFIG,
-        )
-
-    async def async_turn_on(self, **kwargs):
-        """Turn on all inverters."""
-        try:
-            await self._ecu.set_all_inverters_state(True)
-            self._state = True
-            self.async_write_ha_state()
-            _LOGGER.debug("All inverters turned on successfully.")
-        except Exception as e:
-            _LOGGER.error("Failed to turn on all inverters: %s", e)
-
-    async def async_turn_off(self, **kwargs):
-        """Turn off all inverters."""
-        try:
-            await self._ecu.set_all_inverters_state(False)
-            self._state = False
-            self.async_write_ha_state()
-            _LOGGER.debug("All inverters turned off successfully.")
-        except Exception as e:
-            _LOGGER.error("Failed to turn off all inverters: %s", e)
-
-
 class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
     """Representation of a switch for an individual inverter."""
 
@@ -142,6 +114,14 @@ class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
         self._ecu = ecu
         self._uid = uid
         self._inv_data = inv_data
+
+    def turn_on(self, **kwargs):
+        """Turn on the inverter switch."""
+        return self.async_turn_on(**kwargs)
+
+    def turn_off(self, **kwargs):
+        """Turn off the inverter switch."""
+        return self.async_turn_off(**kwargs)
 
     @property
     def device_info(self):
@@ -189,8 +169,10 @@ class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
             await self._ecu.set_zero_export(1)
             self._state = True
             self.async_write_ha_state()
-        except Exception as e:
-            _LOGGER.error("Failed to turn on zero export: %s", e)
+        except (ConnectionError, TimeoutError) as e:
+            _LOGGER.warning(
+                "Failed to turn on zero export for ECU %s: %s", self._ecu.ecu.ecu_id, e
+            )
 
     async def async_turn_off(self, **kwargs):
         """Turn off zero export."""
@@ -198,5 +180,15 @@ class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
             await self._ecu.set_zero_export(0)
             self._state = False
             self.async_write_ha_state()
-        except Exception as e:
-            _LOGGER.error("Failed to turn off zero export: %s", e)
+        except (ConnectionError, TimeoutError) as e:
+            _LOGGER.warning(
+                "Failed to turn off zero export for ECU %s: %s", self._ecu.ecu.ecu_id, e
+            )
+
+    def turn_on(self, **kwargs):
+        """Turn on zero export."""
+        return self.async_turn_on(**kwargs)
+
+    def turn_off(self, **kwargs):
+        """Turn off zero export."""
+        return self.async_turn_off(**kwargs)

@@ -149,7 +149,7 @@ class APsystemsSocket:
         _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
         if status or not self.inverter_raw_data or len(self.inverter_raw_data) < 40:
             raise APsystemsInvalidData(
-                f"{status or 'incomplete inverter data (possibly due to ECU reboot)'}"
+                f"{status or 'incomplete inverter data received'}"
             )
 
         # Signal query

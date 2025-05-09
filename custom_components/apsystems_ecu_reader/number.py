@@ -4,6 +4,7 @@ from homeassistant.components.number import RestoreNumber
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import EntityCategory
 
+
 from .const import DOMAIN, INVERTER_MODEL_MAP
 
 
@@ -12,13 +13,14 @@ async def async_setup_entry(hass, _, async_add_entities):
     coordinator = hass.data[DOMAIN]["coordinator"]
     ecu = hass.data[DOMAIN]["ecu"]
 
-    entities = []
-    for inverter_id, inverter_data in coordinator.data.get("inverters", {}).items():
-        entities.append(
-            InverterMaxPwrNumber(coordinator, ecu, inverter_id, inverter_data)
-        )
-
-    async_add_entities(entities, True)
+    # Only compatible with ECU-C and ECU-R-Pro
+    if ecu.ecu.ecu_id.startswith(("215", "2162")):
+        entities = []
+        for inverter_id, inverter_data in coordinator.data.get("inverters", {}).items():
+            entities.append(
+                InverterMaxPwrNumber(coordinator, ecu, inverter_id, inverter_data)
+            )
+        async_add_entities(entities, True)
 
 
 class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
@@ -35,9 +37,9 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
         self._attr_native_min_value = 20
         self._attr_native_max_value = 500
         self._attr_native_step = 1
-        self._attr_native_value = self._inv_data.get("number_value", 0)
-        self._attr_device_class = "power"  # Set device class
-        self._attr_mode = "slider"  # Set mode to slider
+        self._attr_native_value = self._inv_data.get("number_value", 500)
+        self._attr_device_class = "power"
+        self._attr_mode = "slider"
 
     @property
     def device_info(self):
@@ -68,4 +70,4 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
         """Handle entity which value will be restored."""
         await super().async_added_to_hass()
         if (last_state := await self.async_get_last_state()) is not None:
-            self._attr_native_value = last_state.state
+            self._attr_native_value = float(last_state.state)
