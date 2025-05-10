@@ -16,13 +16,12 @@ This custom integration for Home Assistant sends commands to the ECU to retreive
 - Better handling of communication errors
 - More efficient handling of queries that fail
 - Added L2 and L3 voltages for three-phased inverters
-- Added support for multiple ECU hubs [^0]
+- Added support for multiple ECU hubs
 - Added individual Inverter Online sensors for automations
 - Ability to enable Zero Export (ECU-C and ECU-3)
 - Limit maximum Power of each panel (ECU-R-Pro, ECU-C, ECU-3)
 - dBm expression for Zigbee Signal Strength, ideally between -10dBm (best signal) and -25dBm (worst signal).
 
-[^0]: When you restart Home Assistant, disable all hubs except for one. Then one minute after each other enable one hub at a time (fixed in v2.7.0).
 
 > [!CAUTION]
 > - ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's.
