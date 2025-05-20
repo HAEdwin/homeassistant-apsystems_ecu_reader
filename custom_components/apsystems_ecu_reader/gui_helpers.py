@@ -15,36 +15,50 @@ from homeassistant.components.persistent_notification import (
 _LOGGER = logging.getLogger(__name__)
 
 
-async def set_inverter_state(ipaddr, inverter_id, state):
+async def set_inverter_state(ipaddr, inverter_id, state) -> bool:
     """Set the on/off state of an inverter. 1=on, 2=off"""
     action = {"ids[]": f"{inverter_id}1" if state else f"{inverter_id}2"}
     headers = {"X-Requested-With": "XMLHttpRequest", "Connection": "keep-alive"}
     url = f"http://{ipaddr}/index.php/configuration/set_switch_state"
 
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                url, headers=headers, data=action, timeout=15
-            ) as response:
-                response_text = await response.text()
-                _LOGGER.debug(
-                    "Response from ECU on switching the inverter %s to state %s: %s",
-                    inverter_id,
-                    "on" if state else "off",
-                    re.search(r'"message":"([^"]+)"', response_text).group(1),
-                )
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    url, headers=headers, data=action, timeout=15
+                ) as response:
+                    response_text = await response.text()
+                    message_match = re.search(r'"message":"([^"]+)"', response_text)
+                    message = message_match.group(1) if message_match else ""
+                    _LOGGER.debug(
+                        "Response from ECU on switching the inverter %s to state %s: %s",
+                        inverter_id,
+                        "on" if state else "off",
+                        message,
+                    )
+                    if message == "See the results 5 minutes later !":
+                        return True
 
-    except (
-        aiohttp.ClientError,
-        aiohttp.ClientConnectionError,
-        asyncio.TimeoutError,
-    ) as err:
-        _LOGGER.debug(
-            "Attempt to switch inverter %s failed with error: %s\n\t"
-            "This switch is only compatible with ECU-ID 2162... series and ECU-C models",
-            inverter_id,
-            err,
-        )
+                    _LOGGER.debug(
+                        "Retrying inverter state change for %s (attempt %d/%d)",
+                        inverter_id,
+                        attempt + 1,
+                        max_retries,
+                    )
+                    await asyncio.sleep(2)
+        except (
+            aiohttp.ClientError,
+            aiohttp.ClientConnectionError,
+            asyncio.TimeoutError,
+        ) as err:
+            _LOGGER.debug(
+                "Attempt to switch inverter %s failed with error: %s\n\t"
+                "This switch is only compatible with ECU-ID 2162... series and ECU-C models",
+                inverter_id,
+                err,
+            )
+    return False
 
 
 async def set_zero_export(ipaddr, state):
@@ -107,28 +121,27 @@ async def set_inverter_max_power(ipaddr, inverter_uid, max_panel_power):
 async def reboot_ecu(ipaddr, wifi_ssid, wifi_password, cached_data):
     """Reboot the ECU (compatible with ECU-ID 2162... series and ECU-C models)"""
     ecu_id = cached_data.get("ecu_id", None)
-    if ecu_id.startswith(("215", "2162")):
-        action = {
-            "SSID": wifi_ssid,
-            "channel": 0,
-            "method": 2,
-            "psk_wep": "",
-            "psk_wpa": wifi_password,
-        }
-        headers = {"X-Requested-With": "XMLHttpRequest"}
-        url = "http://" + str(ipaddr) + "/index.php/management/set_wlan_ap"
+    action = {
+        "SSID": wifi_ssid,
+        "channel": 0,
+        "method": 2,
+        "psk_wep": "",
+        "psk_wpa": wifi_password,
+    }
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    url = "http://" + str(ipaddr) + "/index.php/management/set_wlan_ap"
 
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, headers=headers, data=action) as response:
-                    return await response.text()
-        except (
-            aiohttp.ClientError,
-            aiohttp.ClientConnectionError,
-            asyncio.TimeoutError,
-        ) as err:
-            _LOGGER.error("Error rebooting ECU: %s", err)
-            return err
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, data=action) as response:
+                return await response.text()
+    except (
+        aiohttp.ClientError,
+        aiohttp.ClientConnectionError,
+        asyncio.TimeoutError,
+    ) as err:
+        _LOGGER.error("Error rebooting ECU %s: %s", ecu_id, err)
+        return err
 
 
 async def get_power_meter_graph_data(ipaddr):

@@ -42,7 +42,7 @@ class ECUREADER:
         return await set_inverter_max_power(self.ipaddr, inverter_uid, max_panel_power)
 
     # called from switch.py
-    async def set_inverter_state(self, inverter_id, state):
+    async def set_inverter_state(self, inverter_id, state) -> bool:
         """Set the on/off state of an inverter. 1=on, 2=off"""
         return await set_inverter_state(self.ipaddr, inverter_id, state)
 

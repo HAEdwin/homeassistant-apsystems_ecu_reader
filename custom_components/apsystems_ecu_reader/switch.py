@@ -139,15 +139,15 @@ class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
 
     async def async_turn_off(self, **kwargs):
         """Turn off the inverter switch."""
-        await self._ecu.set_inverter_state(self._uid, False)
-        self._state = False
-        self.async_write_ha_state()
+        if await self._ecu.set_inverter_state(self._uid, False):
+            self._state = False
+            self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs):
         """Turn on the inverter switch."""
-        await self._ecu.set_inverter_state(self._uid, True)
-        self._state = True
-        self.async_write_ha_state()
+        if await self._ecu.set_inverter_state(self._uid, True):
+            self._state = True
+            self.async_write_ha_state()
 
 
 class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
