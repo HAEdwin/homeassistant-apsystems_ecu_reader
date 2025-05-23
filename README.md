@@ -34,7 +34,7 @@ Connection required | ECU Model | Automated Restart*
 --- | --- | ---
 Wireless | ECU-R (2160 series) and ECU-B | No
 Wireless/Wired | ECU-R (2162 series) | Yes
-Wired | ECU-C | Yes
+Wireless/Wired | ECU-C | Yes
 
 _ECU-3 owners might want to take a look at: https://github.com/jeeshofone/ha-apc-ecu-3_
 
