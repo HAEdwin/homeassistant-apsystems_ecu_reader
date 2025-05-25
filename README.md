@@ -72,10 +72,11 @@ Your ECU uses the following ports. Make sure that they are accessible and not bl
 > ECU entities are not migrated from the predecessor of this integration (https://github.com/ksheumaker) because the ECU-ID is now part of the ECU specific entities to enable the use of multiple ECU's.
 
 Go to [Settings] > [Devices & Services]. In the default integration tab you will find the "APSystems PV solar ECU" integration. Select the integration and choose the overflow menu. Delete the integration.
-You are prompted to restart Home Assistant, do so but note that this will not remove the integration files from the custom_components folder, you will have to go to HACS in order to remove the files entirely.
+You are prompted to restart Home Assistant, do so and note that this will not remove the integration files from the custom_components folder, it will also not remove the entities and history.
 ### Removing the old "APSystems PV solar ECU" integration files from Home Assistant
-Go to [HACS] and under "Downloaded" you will find the "APSystems ECU-R" integration with on the right the overflow menu. From that menu select [X Remove]. When prompted again select [REMOVE]. The integration files are now permanently removed.
-
+There are two options:
+1. Delete entities and history: Go to [HACS] and under "Downloaded" you will find the "APSystems ECU-R" integration with on the right the overflow menu. From that menu select [X Remove]. When prompted again select [REMOVE]. The integration files are now permanently removed.
+2. Remove the integration folder manually, this way the entities and history are being kept but you might have to manually remove the ECU related entities because they are replaced (caution part).
 
 
 ## Installing the "APsystems ECU Reader" integration
