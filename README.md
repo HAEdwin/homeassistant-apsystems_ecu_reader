@@ -129,6 +129,9 @@ If you own a ECU-R (2160xxxxx) or ECU-B a reboot will not take place, the ECU fi
 - switch.ecu_{ECU-ID}_zero_export
 - button.ecu_{ECU-ID}_reboot
 - sensor.ecu_{ECU-ID}_using_cache_counter
+- sensor.ecu_{ECU-ID}_production_ct_a..c (ECU-C only)
+- sensor.ecu_{ECU-ID}_grid_ct_a..c (ECU-C only)
+- sensor.ecu_{ECU-ID}_consumed_a..c (ECU-C only)
 
 ### New Inverter entities
 - switch.inverter_{UID}_on_off
