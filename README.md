@@ -7,7 +7,7 @@
 -->
 
 # APsystems ECU Reader
-📢 We have over 790 active installations! 🎉 Please leave a star ⭐ and concider donating if you like this integration! 👍 
+We have over 800 active installations! 🎉 Please leave a star ⭐ and concider donating if you like this integration! 👍 
 
 This custom integration for Home Assistant sends commands to the ECU to retreive data and is an extension/further development of ksheumaker's "homeassistant-apsystems_ecur" integration. It supports the following features:
 - Extensive data integrity checking
