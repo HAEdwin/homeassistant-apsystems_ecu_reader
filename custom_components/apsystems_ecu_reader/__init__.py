@@ -139,6 +139,7 @@ async def async_setup_entry(hass, config):
         name=DOMAIN,
         update_method=do_ecu_update,
         update_interval=interval,
+        config_entry=config,
     )
 
     hass.data[DOMAIN] = {"ecu": ecu, "coordinator": coordinator}
@@ -183,7 +184,7 @@ async def async_setup_entry(hass, config):
             model=inv_data.get("model"),
         )
 
-    # Forward all platforms at once.
+    # Forward all platforms at once
     await hass.config_entries.async_forward_entry_setups(config, PLATFORMS)
 
     config.async_on_unload(config.add_update_listener(update_listener))
@@ -192,20 +193,18 @@ async def async_setup_entry(hass, config):
 
 async def async_remove_config_entry_device(hass, _, device_entry) -> bool:
     """Handle device removal"""
-    if device_entry:
-        # Notify the user that the device has been removed
-        pers_gui_notification(hass, f"Device {device_entry.name} removed")
-        return True
-    return False
+    if not device_entry:
+        return False
+    # Notify user that the device will be removed - HA core handles the rest
+    pers_gui_notification(hass, f"Device {device_entry.name} removed")
+    return True
 
 
-async def async_unload_config_entry(hass, config):
+async def async_unload_config_entry(hass, config) -> bool:
     """Unload APsystems platform"""
-    ecu = hass.data[DOMAIN].get("ecu")
-    unload_ok, _ = await asyncio.gather(
-        hass.config_entries.async_unload_platforms(config, PLATFORMS),
-        ecu.set_querying_state(False),
-    )
-    if unload_ok:
+    unload_state = await hass.config_entries.async_unload_platforms(config, PLATFORMS)
+    if unload_state:
         hass.data[DOMAIN].pop(config.entry_id)
-    return unload_ok
+    else:
+        _LOGGER.error("Failed to unload platforms for config entry %s", config.entry_id)
+    return unload_state
