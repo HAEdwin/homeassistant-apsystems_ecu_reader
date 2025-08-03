@@ -37,7 +37,8 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
         self._attr_native_min_value = 20
         self._attr_native_max_value = 500
         self._attr_native_step = 1
-        self._attr_native_value = self._inv_data.get("number_value", 500)
+        default_value = self._inv_data.get("number_value") or 500
+        self._attr_native_value = max(default_value, 20)
         self._attr_device_class = "power"
         self._attr_mode = "slider"
 

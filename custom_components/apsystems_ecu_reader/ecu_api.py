@@ -146,22 +146,24 @@ class APsystemsSocket:
         await self.open_socket(port_retries)
         self.inverter_raw_data, status = await self.send_read_from_socket(inverter_cmd)
         await self.close_socket()
-        _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
+
         if status or not self.inverter_raw_data or len(self.inverter_raw_data) < 40:
             raise APsystemsInvalidData(
                 f"{status or 'incomplete inverter data received'}"
             )
+        _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
 
         # Signal query
         signal_cmd = self.signal_query_prefix + self.ecu_id + "END\n"
         await self.open_socket(port_retries)
         self.signal_raw_data, status = await self.send_read_from_socket(signal_cmd)
         await self.close_socket()
-        _LOGGER.debug("Signal raw data: %s", self.signal_raw_data.hex())
+
         if status or not self.signal_raw_data:
             raise APsystemsInvalidData(
                 f"an error occurred while querying signal, {status}"
             )
+        _LOGGER.debug("Signal raw data: %s", self.signal_raw_data.hex())
 
         # Add CT data to the dictionary for ECU-C models only
         if self.ecu_id.startswith("215"):
