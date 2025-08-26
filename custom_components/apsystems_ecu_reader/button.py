@@ -12,9 +12,9 @@ from .gui_helpers import pers_gui_notification
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, _, async_add_entities):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the button platform."""
-    ecu = hass.data[DOMAIN]["ecu"]
+    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
 
     # Add the button only if ecu_id starts with "2162" (ECU-R-Pro) or "215" (ECU-C)
     if ecu.ecu.ecu_id.startswith(("215", "2162")):

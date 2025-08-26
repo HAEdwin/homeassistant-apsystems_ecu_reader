@@ -11,10 +11,10 @@ from .const import DOMAIN, CACHE_ICON
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, _, add_entities):
+async def async_setup_entry(hass, config_entry, add_entities):
     """Set up the binary sensor for the APsystems ECU data cache."""
-    ecu = hass.data[DOMAIN].get("ecu")
-    coordinator = hass.data[DOMAIN].get("coordinator")
+    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
 
     add_entities(
         [

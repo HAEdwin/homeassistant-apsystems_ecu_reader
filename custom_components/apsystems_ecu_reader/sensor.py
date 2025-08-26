@@ -42,11 +42,11 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, _, add_entities):
+async def async_setup_entry(hass, config_entry, add_entities):
     """sensor.py async_setup_entry"""
 
-    ecu = hass.data[DOMAIN].get("ecu")
-    coordinator = hass.data[DOMAIN].get("coordinator")
+    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
 
     # Add ECU sensors
     sensors = [

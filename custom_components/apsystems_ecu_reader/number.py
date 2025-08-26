@@ -8,10 +8,10 @@ from homeassistant.helpers.entity import EntityCategory
 from .const import DOMAIN, INVERTER_MODEL_MAP
 
 
-async def async_setup_entry(hass, _, async_add_entities):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the number platform."""
-    coordinator = hass.data[DOMAIN]["coordinator"]
-    ecu = hass.data[DOMAIN]["ecu"]
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
 
     # Only compatible with ECU-C and ECU-R-Pro
     if ecu.ecu.ecu_id.startswith(("215", "2162")):

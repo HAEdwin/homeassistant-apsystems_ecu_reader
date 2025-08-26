@@ -12,12 +12,15 @@ from .const import DOMAIN, POWER_ICON, ECU_MODEL_MAP, INVERTER_MODEL_MAP
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, _, async_add_entities):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the switch platform."""
-    ecu = hass.data[DOMAIN]["ecu"]
-    coordinator = hass.data[DOMAIN].get("coordinator")
+    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     switches = []
     inverters = coordinator.data.get("inverters", {})
+
+    # Add ECU Query switch for all ECU types
+    switches.append(APsystemsECUQuerySwitch(coordinator, ecu))
 
     # Add inverter switches only if ECU-R-Pro or ECU-C
     if ecu.ecu.ecu_id.startswith(("215", "2162")):
@@ -197,4 +200,51 @@ class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
 
     def turn_off(self, **kwargs):
         """Turn off zero export."""
+        return self.async_turn_off(**kwargs)
+
+
+class APsystemsECUQuerySwitch(APsystemsBaseSwitch):
+    """Switch to control ECU querying on/off."""
+
+    def __init__(self, coordinator, ecu):
+        super().__init__(
+            coordinator,
+            ecu,
+            name=f"ECU {ecu.ecu.ecu_id} Query ECU",
+            unique_id=f"ECU_{ecu.ecu.ecu_id}_query_switch",
+            icon="mdi:access-point-network",
+            entity_category=EntityCategory.CONFIG,
+        )
+        self._state = True  # Default to on
+
+    async def async_added_to_hass(self):
+        """Restore the state of the switch when added to Home Assistant."""
+        await super().async_added_to_hass()
+        last_state = await self.async_get_last_state()
+        if last_state:
+            self._state = last_state.state == "on"
+        else:
+            self._state = True  # Default to on if no previous state
+        self._ecu.query_enabled = self._state
+
+    async def async_turn_on(self, **kwargs):
+        """Turn on ECU querying."""
+        self._ecu.query_enabled = True
+        self._state = True
+        self.async_write_ha_state()
+        # Trigger an immediate coordinator refresh to resume data collection
+        await self.coordinator.async_refresh()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn off ECU querying."""
+        self._ecu.query_enabled = False
+        self._state = False
+        self.async_write_ha_state()
+
+    def turn_on(self, **kwargs):
+        """Turn on ECU querying."""
+        return self.async_turn_on(**kwargs)
+
+    def turn_off(self, **kwargs):
+        """Turn off ECU querying."""
         return self.async_turn_off(**kwargs)

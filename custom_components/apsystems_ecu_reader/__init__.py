@@ -35,6 +35,7 @@ class ECUREADER:
         self.data_from_cache = False
         self.data_from_cache_count = 0
         self.cached_data = {}
+        self.query_enabled = True
 
     # called from number.py
     async def set_inverter_max_power(self, inverter_uid, max_panel_power):
@@ -59,6 +60,14 @@ class ECUREADER:
 
     async def update(self, port_retries, cache_reboot, show_graphs):
         """Fetch ECU data or use cached data if querying failed."""
+        # If querying is disabled, return cached data
+        if not self.query_enabled:
+            self.data_from_cache = True
+            self.cached_data["data_from_cache"] = self.data_from_cache
+            self.cached_data["data_from_cache_count"] = self.data_from_cache_count
+            _LOGGER.debug("ECU querying disabled, returning cached data")
+            return self.cached_data
+
         self.data_from_cache = True
         self.data_from_cache_count += 1
 
@@ -104,7 +113,7 @@ async def update_listener(hass, config):
     config_dict = config.as_dict()
     # Update the scan interval
     new_interval = timedelta(seconds=config_dict["data"]["scan_interval"])
-    coordinator = hass.data[DOMAIN]["coordinator"]
+    coordinator = hass.data[DOMAIN][config.entry_id]["coordinator"]
     coordinator.update_interval = new_interval
     await coordinator.async_refresh()
 
@@ -114,7 +123,7 @@ async def async_setup_entry(hass, config):
     hass.data.setdefault(DOMAIN, {})
 
     # delay the setup after the first and every following ECU hub
-    if len(hass.data.get(DOMAIN, {})) > 1:
+    if len(hass.data[DOMAIN]) > 1:
         await asyncio.sleep(10)
 
     interval = timedelta(seconds=config.data.get("scan_interval", 300))
@@ -139,10 +148,9 @@ async def async_setup_entry(hass, config):
         name=DOMAIN,
         update_method=do_ecu_update,
         update_interval=interval,
-        config_entry=config,
     )
 
-    hass.data[DOMAIN] = {"ecu": ecu, "coordinator": coordinator}
+    hass.data[DOMAIN][config.entry_id] = {"ecu": ecu, "coordinator": coordinator}
 
     # First refresh the coordinator to make sure data is fetched.
     await coordinator.async_config_entry_first_refresh()
@@ -200,11 +208,21 @@ async def async_remove_config_entry_device(hass, _, device_entry) -> bool:
     return True
 
 
-async def async_unload_config_entry(hass, config) -> bool:
-    """Unload APsystems platform"""
-    unload_state = await hass.config_entries.async_unload_platforms(config, PLATFORMS)
+async def async_unload_entry(hass, config_entry) -> bool:
+    """Unload APsystems platforms"""
+    unload_state = await hass.config_entries.async_unload_platforms(
+        config_entry, PLATFORMS
+    )
     if unload_state:
-        hass.data[DOMAIN].pop(config.entry_id)
+        hass.data[DOMAIN].pop(config_entry.entry_id)
     else:
-        _LOGGER.error("Failed to unload platforms for config entry %s", config.entry_id)
+        _LOGGER.error(
+            "Failed to unload platforms for config entry %s", config_entry.entry_id
+        )
     return unload_state
+
+
+async def async_reload_entry(hass, config_entry):
+    """Handle reload of a config entry."""
+    await async_unload_entry(hass, config_entry)
+    await async_setup_entry(hass, config_entry)
