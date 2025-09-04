@@ -70,9 +70,8 @@ class APsystemsSocket:
                 _LOGGER.debug("Connection successfully established")
                 return
             except (ConnectionRefusedError, OSError) as err:
-                # Clean up any partial connection
-                if self.writer is not None:
-                    await self.close_socket()
+                # Clean up any partial connection (though typically both are None on failure)
+                await self.close_socket()
                 _LOGGER.debug(
                     "Connection attempt %s/%s failed: %s", attempt, port_retries, err
                 )
@@ -131,43 +130,49 @@ class APsystemsSocket:
         """
         # First, we need to determine the ECU model by doing an initial query
         await self.open_socket(port_retries)
-        self.ecu_raw_data, status = await self.send_read_from_socket(self.ecu_cmd)
-
-        if status or not self.ecu_raw_data:
-            await self.close_socket()
-            raise APsystemsInvalidData(
-                f"{status}" if status else "received data is none"
-            )
-
-        # Extract ECU-ID to determine model
-        self.ecu_id = aps_str(self.ecu_raw_data, 13, 12)
-        is_ecu_2162 = self.ecu_id.startswith("2162")
-
-        if is_ecu_2162:
-            # Close connection for 2162 models (firmware limitation)
-            await self.close_socket()
-            _LOGGER.debug("ECU 2162 detected - using open/close pattern")
-        else:
-            _LOGGER.debug("ECU %s detected - using connection reuse", self.ecu_id[:4])
 
         try:
+            self.ecu_raw_data, status = await self.send_read_from_socket(self.ecu_cmd)
+
+            if status or not self.ecu_raw_data:
+                raise APsystemsInvalidData(
+                    f"{status}" if status else "received data is none"
+                )
+
+            # Extract ECU-ID to determine model
+            self.ecu_id = aps_str(self.ecu_raw_data, 13, 12)
+            is_ecu_2162 = self.ecu_id.startswith("2162")
+
+            if is_ecu_2162:
+                # Close connection for 2162 models (firmware limitation)
+                await self.close_socket()
+                _LOGGER.debug("ECU 2162 detected - using open/close pattern")
+            else:
+                _LOGGER.debug(
+                    "ECU %s detected - using connection reuse", self.ecu_id[:4]
+                )
+
             # Inverter query
             inverter_cmd = self.inverter_query_prefix + self.ecu_id + "END\n"
 
             if is_ecu_2162:
                 await self.open_socket(port_retries)
-
-            self.inverter_raw_data, status = await self.send_read_from_socket(
-                inverter_cmd
-            )
-
-            if is_ecu_2162:
-                await self.close_socket()
+                try:
+                    self.inverter_raw_data, status = await self.send_read_from_socket(
+                        inverter_cmd
+                    )
+                finally:
+                    await self.close_socket()
+            else:
+                self.inverter_raw_data, status = await self.send_read_from_socket(
+                    inverter_cmd
+                )
 
             if status or not self.inverter_raw_data or len(self.inverter_raw_data) < 40:
                 raise APsystemsInvalidData(
                     f"{status or 'incomplete inverter data received'}"
                 )
+
             _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
 
             # Small delay between queries for stability
@@ -179,11 +184,16 @@ class APsystemsSocket:
 
             if is_ecu_2162:
                 await self.open_socket(port_retries)
-
-            self.signal_raw_data, status = await self.send_read_from_socket(signal_cmd)
-
-            if is_ecu_2162:
-                await self.close_socket()
+                try:
+                    self.signal_raw_data, status = await self.send_read_from_socket(
+                        signal_cmd
+                    )
+                finally:
+                    await self.close_socket()
+            else:
+                self.signal_raw_data, status = await self.send_read_from_socket(
+                    signal_cmd
+                )
 
             if status or not self.signal_raw_data:
                 raise APsystemsInvalidData(
