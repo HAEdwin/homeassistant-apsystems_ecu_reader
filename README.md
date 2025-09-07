@@ -194,28 +194,6 @@ template:
 German: https://smart-home-assistant.de/ap-systems-ecu-b-einbinden
 Dutch: https://doe-duurzaam.nl/artikel/je-apsystems-micro-omvormers-slim-uitzetten-via-web-of-home-assistant/#teruglevering-beperken-per-micro-omvormer
 
-## Firmware updates
-ECU-C 2025-05-29, V1.2.19
-- Add dynamic electricity pricing
-- Add single-phase and three-phase grid standard settings
-- Support CT direction inversion for each phase
-- Optimize function
-
-ECU-R-Pro 2025-05-29, V2.1.25
-- Add dynamic electricity pricing
-- Add single-phase and three-phase grid standard settings
-- Optimize function
-
-ECU-R 2025-05-29, V1.3.18
-- Add dynamic electricity pricing
-- Add single-phase and three-phase grid standard settings
-- Optimize function
-
-ECU-B 2025-05-29, V1.2.36
-- Add dynamic electricity pricing
-- Add single-phase and three-phase grid standard settings
-- Optimize function
-
 ## FAQ
 - Why is my inverter going offline sometimes during the day?
 
