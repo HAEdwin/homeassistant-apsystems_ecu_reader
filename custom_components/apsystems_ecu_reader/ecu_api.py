@@ -62,24 +62,29 @@ class APsystemsSocket:
 
     async def open_socket(self, port_retries, delay=1):
         """Open a socket to the ECU."""
+        # Close any existing socket first to prevent resource leaks
+        if self.sock is not None:
+            await self.close_socket()
+
         for attempt in range(1, port_retries + 1):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(self.timeout)
             try:
                 sock.connect((self.ipaddr, 8899))
-                self.sock = sock  # Assign the successfully opened socket
+                self.sock = sock
                 _LOGGER.debug("Socket successfully claimed")
                 return
             except (socket.timeout, socket.gaierror, socket.error) as err:
                 _LOGGER.debug(
                     "Socket claim attempt %s/%s failed: %s", attempt, port_retries, err
                 )
+                sock.close()  # Close the local socket that failed to connect
                 await asyncio.sleep(delay)  # Wait before retrying
             except Exception as err:
-                await self.close_socket()
+                sock.close()  # Close the local socket
                 raise APsystemsInvalidData(str(err)) from err
         raise APsystemsInvalidData(
-            f"failed to claim socket after {port_retries} attempts"
+            f"an error occurred while opening socket, failed to claim socket after {port_retries} attempts"
         )
 
     async def send_read_from_socket(self, cmd):
@@ -116,11 +121,18 @@ class APsystemsSocket:
         if self.sock is not None:
             try:
                 self.sock.shutdown(socket.SHUT_RDWR)
+            except (OSError, socket.error):
+                # Ignore shutdown errors - socket may already be closed by remote
+                pass
+
+            try:
                 self.sock.close()
-                self.sock = None
-                _LOGGER.debug("Socket resources released")
             except (OSError, socket.error) as err:
-                raise APsystemsInvalidData(f"socket shutdown error {err}") from err
+                # Log but don't raise - we want to ensure cleanup continues
+                _LOGGER.warning("Error closing socket: %s", err)
+
+            self.sock = None
+            _LOGGER.debug("Socket resources released")
 
     async def query_ecu(self, port_retries, show_graphs):
         """
@@ -135,7 +147,9 @@ class APsystemsSocket:
         await self.close_socket()
         if status or not self.ecu_raw_data:
             raise APsystemsInvalidData(
-                f"{status}" if status else "received data is none"
+                f"an error occurred while querying ECU, {status}"
+                if status
+                else "an error occurred while querying ECU, received data is none"
             )
 
         # Extract ECU-ID needed for other queries
@@ -147,9 +161,9 @@ class APsystemsSocket:
         self.inverter_raw_data, status = await self.send_read_from_socket(inverter_cmd)
         await self.close_socket()
 
-        if status or not self.inverter_raw_data or len(self.inverter_raw_data) < 40:
+        if status or not self.inverter_raw_data:
             raise APsystemsInvalidData(
-                f"{status or 'incomplete inverter data received'}"
+                f"an error occurred while querying inverter, {status or 'incomplete inverter data received'}"
             )
         _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
 
@@ -179,7 +193,9 @@ class APsystemsSocket:
         if self.meter_data:
             self.data.update(self.meter_data)
         else:
-            raise APsystemsInvalidData("no meter data received")
+            raise APsystemsInvalidData(
+                "an error occurred while querying meter, no meter data received"
+            )
 
     def finalize_data(self, show_graphs):
         """Finalize the data and return it."""
