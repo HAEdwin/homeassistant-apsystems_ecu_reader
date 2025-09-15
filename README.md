@@ -155,6 +155,9 @@ _Note that the switch/number effects only the specified ECU-ID or Inverter-ID_
 [^4]: Momentairy button which will reboot the ECU (take recovery into account)
 [^5]: Number regulator to set the maximum amount of power on each individual inverter (per channel)
 
+> [!IMPORTANT]
+> If you find that the integration frequently needs to use the cache or seems to crash, check the home-assistant.log file for error messages and/or disable other integrations one by one to see if this helps the ECU Reader integration. Other integrations that frequently  poll or experience network errors can drain resources, causing crashes/conflicts.
+
 ## In case of ECU firmware issues
 In some cases the ECU firmware is not handling the Daily Energy or Lifetime Energy well. I recommend the utility meter integration to accommodate this. Below is an example of a Lifetime Energy Meter.
 Edit in configuration.yaml:
