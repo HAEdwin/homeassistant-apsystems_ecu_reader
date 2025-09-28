@@ -72,12 +72,12 @@ def validate_data(data: bytes, cmd: str) -> str:
     try:
         checksum = int(data[5:9])
     except ValueError:
-        return f"extracting checksum from '{cmd}': data={debugdata}"
+        return f"extracting checksum from '{cmd}' - data={debugdata}"
     # Validate checksum against data length
     if len(data) - 1 != checksum:
-        return f"checksum error on '{cmd}': checksum={checksum} datalen={datalen} data={debugdata}"
+        return f"checksum error on '{cmd}' - checksum={checksum} datalen={datalen} data={debugdata}"
     # Validate start and end signature
     if aps_str(data, 0, 3) != "APS" or aps_str(data, len(data) - 4, 3) != "END":
-        return f"signature error on '{cmd}': data={debugdata}"
+        return f"signature error on '{cmd}' - data={debugdata}"
 
     return ""

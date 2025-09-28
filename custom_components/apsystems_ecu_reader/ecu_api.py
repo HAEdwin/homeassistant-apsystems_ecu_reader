@@ -3,8 +3,8 @@
 """ecu_api.py"""
 
 import asyncio
-import socket
 import logging
+import errno
 
 from .ecu_helpers import (
     aps_datetimestamp,
@@ -19,6 +19,8 @@ from .const import INVERTER_MODEL_MAP
 from .gui_helpers import get_power_meter_graph_data
 
 _LOGGER = logging.getLogger(__name__)
+
+GLOBAL_ECU_LOCK = asyncio.Lock()
 
 
 class APsystemsInvalidData(Exception):
@@ -59,133 +61,163 @@ class APsystemsSocket:
         self.last_update = None
         self.read_buffer = None
         self.sock = None
+        self.reader = None
+        self.writer = None
+        self._lock = asyncio.Lock()
 
-    async def open_socket(self, port_retries, delay=1):
-        """Open a socket to the ECU."""
-        # Close any existing socket first to prevent resource leaks
-        if self.sock is not None:
+    async def open_socket(self, port_retries, delay=2):
+        """Open an asyncio stream to the ECU, with retries."""
+        if hasattr(self, "writer") and self.writer is not None:
             await self.close_socket()
 
         for attempt in range(1, port_retries + 1):
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(self.timeout)
             try:
-                sock.connect((self.ipaddr, 8899))
-                self.sock = sock
-                _LOGGER.debug("Socket successfully claimed")
-                return
-            except (socket.timeout, socket.gaierror, socket.error) as err:
-                _LOGGER.debug(
-                    "Socket claim attempt %s/%s failed: %s", attempt, port_retries, err
+                self.reader, self.writer = await asyncio.open_connection(
+                    self.ipaddr, 8899
                 )
-                sock.close()  # Close the local socket that failed to connect
-                await asyncio.sleep(delay)  # Wait before retrying
+                _LOGGER.debug(
+                    "ECU %s connection established on attempt %s/%s",
+                    self.ipaddr,
+                    attempt,
+                    port_retries,
+                )
+                return
+            except OSError as err:
+                if err.errno == errno.EADDRINUSE:
+                    _LOGGER.warning(
+                        "ECU %s connection attempt %s/%s failed - address already in use",
+                        self.ipaddr,
+                        attempt,
+                        port_retries,
+                    )
+                else:
+                    _LOGGER.debug(
+                        "ECU %s connection attempt %s/%s failed: %s",
+                        self.ipaddr,
+                        attempt,
+                        port_retries,
+                        err,
+                    )
+                await asyncio.sleep(delay)
             except Exception as err:
-                sock.close()  # Close the local socket
                 raise APsystemsInvalidData(str(err)) from err
-        raise APsystemsInvalidData(
-            f"an error occurred while opening socket, failed to claim socket after {port_retries} attempts"
-        )
+        raise APsystemsInvalidData(f"Failed to connect after {port_retries} attempts.")
 
     async def send_read_from_socket(self, cmd):
-        """Send command to the socket and read the response."""
+        """Send command to the ECU and read the response using asyncio streams."""
         try:
-            self.sock.settimeout(self.timeout)  # Set timeout once
-            self.sock.sendall(cmd.encode("utf-8"))  # Send command
-            # Read the response asynchronously to prevent blocking
-            self.read_buffer = await asyncio.to_thread(self.sock.recv, self.recv_size)
+            self.writer.write(cmd.encode("utf-8"))
+            await self.writer.drain()
+            # Read up to self.recv_size bytes
+            self.read_buffer = await asyncio.wait_for(
+                self.reader.read(self.recv_size), timeout=self.timeout
+            )
             return self.read_buffer, None
-        except socket.timeout:
-            # Handle timeout specifically
+        except (
+            asyncio.TimeoutError,
+            ConnectionResetError,
+            BrokenPipeError,
+            asyncio.CancelledError,
+            OSError,
+        ) as err:
             await self.close_socket()
-            return None, "timeout occurred while reading from socket"
-        except ConnectionResetError:
-            # Handle connection reset error
-            await self.close_socket()
-            return None, "connection reset by peer"
-        except BrokenPipeError:
-            # Handle broken pipe (connection closed by peer)
-            await self.close_socket()
-            return None, "connection closed by peer"
-        except asyncio.CancelledError:
-            # Handle the case when the task is cancelled
-            await self.close_socket()
-            return None, "operation was cancelled"
-        except OSError as err:
-            # Handle general socket errors
-            await self.close_socket()
-            return None, f"general OS error {err}"
+            messages = {
+                asyncio.TimeoutError: "timeout occurred while waiting for data",
+                ConnectionResetError: "connection reset by peer",
+                BrokenPipeError: "connection closed by peer",
+                asyncio.CancelledError: "operation was cancelled",
+                OSError: f"general OS error {err}",
+            }
+            return None, messages.get(type(err), str(err))
 
     async def close_socket(self):
-        """Ensure created and allocated resources are properly cleaned up."""
-        if self.sock is not None:
+        """Close the asyncio stream writer."""
+        if hasattr(self, "writer") and self.writer is not None:
             try:
-                self.sock.shutdown(socket.SHUT_RDWR)
-            except (OSError, socket.error):
-                # Ignore shutdown errors - socket may already be closed by remote
-                pass
+                self.writer.close()
+                await self.writer.wait_closed()
+            except (OSError, asyncio.CancelledError) as err:
+                _LOGGER.warning("Error closing socket on ECU %s: %s", self.ipaddr, err)
+            self.writer = None
+            self.reader = None
+            _LOGGER.debug("ECU %s connection resources released", self.ipaddr)
 
-            try:
-                self.sock.close()
-            except (OSError, socket.error) as err:
-                # Log but don't raise - we want to ensure cleanup continues
-                _LOGGER.warning("Error closing socket: %s", err)
-
-            self.sock = None
-            _LOGGER.debug("Socket resources released")
-
-    async def query_ecu(self, port_retries, show_graphs):
+    async def get_update(self, port_retries, show_graphs):
         """
         Query the ECU for data and return it.
         In contrast to ECU 2160 models, the 2162 models require an
         open and close on the port between the individual  queries.
         The best generic solution is to now do this for all models.
         """
-        # ECU base query
-        await self.open_socket(port_retries)
-        self.ecu_raw_data, status = await self.send_read_from_socket(self.ecu_cmd)
-        await self.close_socket()
-        if status or not self.ecu_raw_data:
-            raise APsystemsInvalidData(
-                f"an error occurred while querying ECU, {status}"
-                if status
-                else "an error occurred while querying ECU, received data is none"
-            )
+        async with GLOBAL_ECU_LOCK:  # <--- Only one hub at a time!
+            async with self._lock:
+                # ECU base query
+                await self.open_socket(port_retries)
+                try:
+                    self.ecu_raw_data, status = await self.send_read_from_socket(
+                        self.ecu_cmd
+                    )
+                finally:
+                    await self.close_socket()
 
-        # Extract ECU-ID needed for other queries
-        self.ecu_id = aps_str(self.ecu_raw_data, 13, 12)
+                if status or not self.ecu_raw_data:
+                    raise APsystemsInvalidData(
+                        f"Could not retrieve ECU base data - {status}"
+                    )
+                _LOGGER.debug(
+                    "ECU %s raw basic data: %s", self.ipaddr, self.ecu_raw_data.hex()
+                )
 
-        # Inverter query
-        inverter_cmd = self.inverter_query_prefix + self.ecu_id + "END\n"
-        await self.open_socket(port_retries)
-        self.inverter_raw_data, status = await self.send_read_from_socket(inverter_cmd)
-        await self.close_socket()
+                # Extract ECU-ID needed for other queries and carry on
+                self.ecu_id = aps_str(self.ecu_raw_data, 13, 12)
 
-        if status or not self.inverter_raw_data:
-            raise APsystemsInvalidData(
-                f"an error occurred while querying inverter, {status or 'incomplete inverter data received'}"
-            )
-        _LOGGER.debug("Inverter raw data: %s", self.inverter_raw_data.hex())
+                # Inverter query
+                inverter_cmd = self.inverter_query_prefix + self.ecu_id + "END\n"
+                await self.open_socket(port_retries)
+                try:
+                    self.inverter_raw_data, status = await self.send_read_from_socket(
+                        inverter_cmd
+                    )
+                finally:
+                    await self.close_socket()
 
-        # Signal query
-        signal_cmd = self.signal_query_prefix + self.ecu_id + "END\n"
-        await self.open_socket(port_retries)
-        self.signal_raw_data, status = await self.send_read_from_socket(signal_cmd)
-        await self.close_socket()
+                if status or not self.inverter_raw_data:
+                    raise APsystemsInvalidData(
+                        f"Could not retrieve inverter data - {status}"
+                    )
+                _LOGGER.debug(
+                    "ECU %s raw inverter data: %s",
+                    self.ipaddr,
+                    self.inverter_raw_data.hex(),
+                )
 
-        if status or not self.signal_raw_data:
-            raise APsystemsInvalidData(
-                f"an error occurred while querying signal, {status}"
-            )
-        _LOGGER.debug("Signal raw data: %s", self.signal_raw_data.hex())
+                # Signal query
+                signal_cmd = self.signal_query_prefix + self.ecu_id + "END\n"
+                await self.open_socket(port_retries)
+                try:
+                    self.signal_raw_data, status = await self.send_read_from_socket(
+                        signal_cmd
+                    )
+                finally:
+                    await self.close_socket()
 
-        # Add CT data to the dictionary for ECU-C models only
-        if self.ecu_id.startswith("215"):
-            await self.add_meter_data()
-        # Add ECU parameters to the dictionary
-        self.process_ecu_data()
-        # Finally all went right so call finalize and return it
-        return self.finalize_data(show_graphs)
+                if status or not self.signal_raw_data:
+                    raise APsystemsInvalidData(
+                        f"Could not retrieve signal data - {status}"
+                    )
+                _LOGGER.debug(
+                    "ECU %s raw signal data: %s",
+                    self.ipaddr,
+                    self.signal_raw_data.hex(),
+                )
+
+                # Add CT data to the dictionary for ECU-C models only
+                if self.ecu_id.startswith("215"):
+                    await self.add_meter_data()
+                # Add ECU parameters to the dictionary
+                self.process_ecu_data()
+                # Finally all went right so call finalize and return it
+                return self.finalize_data(show_graphs)
 
     async def add_meter_data(self):
         """Add the meter data to the dictionary."""
@@ -205,10 +237,10 @@ class APsystemsSocket:
             self.data["current_power"] = self.current_power
             self.data["qty_of_online_inverters"] = self.qty_of_online_inverters
 
-            # apply filters for ECU firmware bug where sometimes values are zero
+            # apply filters for ECU firmware bug where sometimes values are zero unexpectedly
             if self.qty_of_inverters:
                 self.data["qty_of_inverters"] = self.qty_of_inverters
-            if self.today_energy != 0 or (
+            if self.today_energy or (
                 self.today_energy == 0 and self.qty_of_online_inverters == 0
             ):
                 self.data["today_energy"] = self.today_energy
@@ -218,7 +250,7 @@ class APsystemsSocket:
             # Add inverter and signal data to the dictionary
             self.data.update(self.process_inverter_data(show_graphs))
             return self.data
-        except Exception as err:
+        except (KeyError, TypeError, ValueError) as err:
             raise APsystemsInvalidData(f"error during finalization ({err})") from err
 
     def process_ecu_data(self, data=None):
@@ -415,3 +447,4 @@ class APsystemsSocket:
                 self.inverters = inverters
                 output["inverters"] = inverters
                 return output
+        return output  # Always returns a dict, even if empty

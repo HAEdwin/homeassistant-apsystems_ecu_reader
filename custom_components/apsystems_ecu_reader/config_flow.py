@@ -114,7 +114,7 @@ async def test_ecu_connection(input_data):
     try:
         ecu = APsystemsSocket(input_data.get(KEYS[0]))
         retries = input_data.get(KEYS[2], 2)
-        test_query = await ecu.query_ecu(retries, True)
+        test_query = await ecu.get_update(retries, True)
         return test_query.get("ecu_id", None)
     # collector of APsystemsInvalidData exceptions
     except APsystemsInvalidData as err:

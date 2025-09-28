@@ -88,7 +88,7 @@ class ECUREADER:
             )
         else:
             try:
-                data = await self.ecu.query_ecu(port_retries, show_graphs)
+                data = await self.ecu.get_update(port_retries, show_graphs)
                 if data.get("ecu_id"):
                     self.cached_data = data
                     self.data_from_cache = False
@@ -103,7 +103,7 @@ class ECUREADER:
         self.cached_data["data_from_cache"] = self.data_from_cache
         self.cached_data["data_from_cache_count"] = self.data_from_cache_count
 
-        _LOGGER.debug("Returning data: %s", self.cached_data)
+        _LOGGER.debug("ECU %s returned data: %s", self.ipaddr, self.cached_data)
         return self.cached_data
 
 
