@@ -7,7 +7,7 @@
 
 > Over 800 active installations and growing — thank you!  
 > If you enjoy using this integration, please leave a ⭐ star to show your support.  
-> Consider making a donation to help us keep improving!
+> Consider making a donation to help me keep improving!
 
 ## Overview
 
