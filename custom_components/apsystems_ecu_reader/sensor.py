@@ -36,6 +36,7 @@ from .const import (
     CACHE_COUNTER_ICON,
     FROM_GRID_ICON,
     CONSUMED_ICON,
+    DOWNLOAD_ICON,
     INVERTER_MODEL_MAP,
 )
 
@@ -112,6 +113,14 @@ async def async_setup_entry(hass, config_entry, add_entities):
             "data_from_cache_count",
             label=f"{ecu.ecu.ecu_id} Using Cache Counter",
             icon=CACHE_COUNTER_ICON,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        ),
+        APsystemsECUFirmwareSensor(
+            coordinator,
+            ecu,
+            "firmware_version",
+            label="Firmware Version",
+            icon=DOWNLOAD_ICON,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
     ]
@@ -546,11 +555,6 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         self._name = f"ECU {self._label}"
         self._state = None
 
-    # @property
-    # def entity_registry_enabled_default(self):
-    #    """Return whether the entity should be enabled by default."""
-    #    return self._disabled_by is None
-
     async def async_added_to_hass(self):
         """Handle entity that needs to be restored."""
         await super().async_added_to_hass()
@@ -621,4 +625,82 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
 
     @property
     def entity_category(self):
+        return self._entity_category
+
+
+class APsystemsECUFirmwareSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
+    """Representation of the ECU firmware version sensor."""
+
+    def __init__(
+        self,
+        coordinator,
+        ecu,
+        field,
+        label=None,
+        icon=None,
+        entity_category=None,
+    ):
+        super().__init__(coordinator)
+        self.coordinator = coordinator
+        self._ecu = ecu
+        self._field = field
+        self._label = label or field
+        self._icon = icon
+        self._entity_category = entity_category
+        self._name = "Firmware Version"
+        self._attr_has_entity_name = True
+        self._state = None
+
+    async def async_added_to_hass(self):
+        """Handle entity that needs to be restored."""
+        await super().async_added_to_hass()
+        last_state = await self.async_get_last_state()
+        if last_state:
+            self._state = (
+                last_state.state
+                if last_state.state not in ["unknown", "unavailable"]
+                else None
+            )
+
+    @property
+    def unique_id(self):
+        """Return the unique ID for this sensor."""
+        return f"{self._ecu.ecu.ecu_id}_{self._field}"
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def native_value(self):
+        """Return the firmware version."""
+        return self._ecu.ecu.firmware
+
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return self._icon
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes of the entity."""
+        return {
+            "ecu_id": self._ecu.ecu.ecu_id,
+            "last_update": self._ecu.ecu.last_update,
+        }
+
+    @property
+    def device_info(self):
+        """Return device info."""
+        parent = f"ecu_{self._ecu.ecu.ecu_id}"
+        return {
+            "identifiers": {
+                (DOMAIN, parent),
+            }
+        }
+
+    @property
+    def entity_category(self):
+        """Return the category of the entity."""
         return self._entity_category

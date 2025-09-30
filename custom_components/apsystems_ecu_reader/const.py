@@ -12,6 +12,7 @@ CACHE_COUNTER_ICON = "mdi:counter"
 ECU_REBOOT_ICON = "mdi:restart"
 FROM_GRID_ICON = "mdi:transmission-tower-export"
 CONSUMED_ICON = "mdi:transmission-tower"
+DOWNLOAD_ICON = "mdi:download"
 
 
 # Config flow schema. These are also translated through json translations
