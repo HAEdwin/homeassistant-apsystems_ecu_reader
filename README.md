@@ -137,23 +137,6 @@ If you really can't figure it out, create an issue and remember that the more ti
 
 ---
 
-## ECU Firmware Issues
-
-For issues with Daily or Lifetime Energy defaulting to zero or negative values, use the utility meter integration:
-```yaml
-utility_meter:
-  lifetime_energy:
-    source: sensor.ecu_xxxxxxxxxxxx_current_power
-
-template:
-  - sensor:
-      - name: "Lifetime Energy (kWh)"
-        unit_of_measurement: "kWh"
-        state: "{{ states('sensor.lifetime_energy')|float(0) / 1000 }}"
-```
-
----
-
 ## Temperature Sensors
 
 If inverter temperature returns zero when offline, use a template to convert non-numeric values:
