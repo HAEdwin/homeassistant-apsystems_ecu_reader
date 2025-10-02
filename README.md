@@ -120,13 +120,16 @@ Assign a fixed IP address to your ECU.
 ## Troubleshooting
 
 - If frequent cache usage or crashes occur, check `home-assistant.log` for errors.
-- Disable other integrations one by one to isolate resource conflicts.
+- Disable integrations that are causing connection/communication errors.
+- Choose the best location for your ECU where it has the best reception for both Zigbee and WiFi.
+- Make sure that nothing is blocking the reception of the signals.
+- Check if the firmware has been changed.
 
 ---
 
 ## ECU Firmware Issues
 
-For issues with Daily or Lifetime Energy, use the utility meter integration:
+For issues with Daily or Lifetime Energy defaulting to zero or negative values, use the utility meter integration:
 ```yaml
 utility_meter:
   lifetime_energy:
