@@ -125,6 +125,16 @@ Assign a fixed IP address to your ECU.
 - Make sure that nothing is blocking the reception of the signals.
 - Check if the firmware has been changed.
 
+## Data cache is used if
+
+- The integration cannot connect to the ECU
+- Received data is incomplete
+- A timeout occurs
+- Another error occurs
+
+However, this does not prevent the integration from continuing to function normally.
+If you really can't figure it out, create an issue and remember that the more time you spend specifying the problem, the faster and more precise the answer can be.
+
 ---
 
 ## ECU Firmware Issues
@@ -162,6 +172,7 @@ template:
 
 ## Additional Resources
 
+- For in-depth information on available sensors, read the [Wiki](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki)
 - [German Guide](https://smart-home-assistant.de/ap-systems-ecu-b-einbinden)
 - [Dutch Guide](https://doe-duurzaam.nl/artikel/je-apsystems-micro-omvormers-slim-uitzetten-via-web-of-home-assistant/#teruglevering-beperken-per-micro-omvormer)
 
