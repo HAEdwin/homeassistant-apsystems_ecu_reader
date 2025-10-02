@@ -11,7 +11,7 @@
 
 ## Overview
 
-APsystems ECU Reader is a custom Home Assistant integration for communicating with APsystems ECU hubs. It is an extended and improved version of ksheumaker's "homeassistant-apsystems_ecur" integration.  
+APsystems ECU Reader is a custom Home Assistant integration project for communicating with APsystems ECU hubs. It is an extended and improved version of ksheumaker's "homeassistant-apsystems_ecur" integration.  
 Key features include:
 - Robust data integrity checks
 - Enhanced communication control with the ECU
@@ -25,7 +25,7 @@ Key features include:
 - Zigbee signal strength in dBm
 
 > **Note:**
-> For in-dept information about sensors etc. please read the Wiki on tis project page.
+> For in-dept information about sensors etc. please read the Wiki on this project page.
 
 ---
 
