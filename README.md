@@ -24,6 +24,8 @@ Key features include:
 - Per-panel maximum power limiting (ECU-R-Pro, ECU-C, ECU-3)
 - Zigbee signal strength in dBm
 
+For in-dept information about sensors etc. please read the Wiki on tis project page.
+
 ---
 
 ## Prerequisites
