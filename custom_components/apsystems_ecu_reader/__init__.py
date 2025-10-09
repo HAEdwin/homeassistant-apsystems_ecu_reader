@@ -4,11 +4,10 @@ import asyncio
 import logging
 from datetime import timedelta
 
-
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import DOMAIN, ECU_MODEL_MAP
+from .const import DOMAIN, ECU_MODEL_MAP, DEFAULT_SCAN_INTERVAL, DEFAULT_PORT_RETRIES, SETUP_DELAY_SECONDS, DEFAULT_CACHE_REBOOT
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
 from .gui_helpers import (
     set_inverter_state,
@@ -26,12 +25,15 @@ PLATFORMS = ["sensor", "binary_sensor", "switch", "number", "button"]
 class ECUREADER:
     """ECU Reader"""
 
-    def __init__(self, ipaddr, wifi_ssid, wifi_password, show_graphs):
+    def __init__(
+        self, ipaddr: str, wifi_ssid: str, wifi_password: str, show_graphs: bool
+    ) -> None:
+    
         self.ipaddr = ipaddr
         self.wifi_ssid = wifi_ssid
         self.wifi_password = wifi_password
         self.show_graphs = show_graphs
-        self.ecu = APsystemsSocket(ipaddr, self.show_graphs)
+        self.ecu = APsystemsSocket(ipaddr)
         self.data_from_cache = False
         self.data_from_cache_count = 0
         self.cached_data = {}
@@ -124,9 +126,9 @@ async def async_setup_entry(hass, config):
 
     # delay the setup after the first and every following ECU hub
     if len(hass.data[DOMAIN]) > 1:
-        await asyncio.sleep(10)
+        await asyncio.sleep(SETUP_DELAY_SECONDS)
 
-    interval = timedelta(seconds=config.data.get("scan_interval", 300))
+    interval = timedelta(seconds=config.data.get("scan_interval", DEFAULT_SCAN_INTERVAL))
     ecu = ECUREADER(
         config.data["ecu_host"],
         config.data.get("wifi_ssid", "ECU-local"),
@@ -137,8 +139,8 @@ async def async_setup_entry(hass, config):
     async def do_ecu_update():
         """Pass current port_retries value dynamically."""
         return await ecu.update(
-            config.data.get("port_retries", 2),
-            config.data.get("cache_reboot", 3),
+            config.data.get("port_retries", DEFAULT_PORT_RETRIES),
+            config.data.get("cache_reboot", DEFAULT_CACHE_REBOOT),
             config.data.get("show_graphs", True),
         )
 

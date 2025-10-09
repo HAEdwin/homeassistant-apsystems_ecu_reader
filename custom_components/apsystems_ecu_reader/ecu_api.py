@@ -14,7 +14,7 @@ from .ecu_helpers import (
     validate_data,
 )
 
-from .const import INVERTER_MODEL_MAP
+from .const import INVERTER_MODEL_MAP, PORT, DEFAULT_RECV_SIZE
 
 from .gui_helpers import get_power_meter_graph_data
 
@@ -37,7 +37,7 @@ class APsystemsSocket:
         # how long to wait for response on socket commands
         self.timeout = timeout
         # how big of a buffer to read at a time from the socket
-        self.recv_size = 1024
+        self.recv_size = DEFAULT_RECV_SIZE
 
         self.ecu_cmd = "APS1100160001END\n"
         self.inverter_query_prefix = "APS1100280002"
@@ -58,11 +58,9 @@ class APsystemsSocket:
         self.ecu_id = None
         self.firmware = None
         self.timezone = None
-        self.last_update = None
-        self.read_buffer = None
-        self.sock = None
         self.reader = None
         self.writer = None
+        self.last_update = None
         self._lock = asyncio.Lock()
 
     async def open_socket(self, port_retries, delay=2):
@@ -73,7 +71,7 @@ class APsystemsSocket:
         for attempt in range(1, port_retries + 1):
             try:
                 self.reader, self.writer = await asyncio.open_connection(
-                    self.ipaddr, 8899
+                    self.ipaddr, PORT
                 )
                 _LOGGER.debug(
                     "ECU %s connection established on attempt %s/%s",
@@ -323,7 +321,7 @@ class APsystemsSocket:
 
                 while cnt1 < inverter_qty:
                     inv = {}
-                    if aps_str(data, 15, 2) == "01":
+                    if aps_str(data, 15, 2) == "01": # 01 = Not replaced inverter
                         inverter_uid = aps_uid(data, cnt2)
                         inv["uid"] = inverter_uid
                         inv["online"] = bool(aps_int_from_bytes(data, cnt2 + 6, 1))
@@ -336,10 +334,9 @@ class APsystemsSocket:
 
                         # Distinguishes the different inverters from this point down
                         if istr in [
-                            "01",
-                            "04",
-                            "05",
-                        ]:  # 01 (=YC600/DS3) 04 (=DS3D-L) 05 (=DS3-H)
+                            "01",  # YC600/DS3
+                            "04",  # DS3D-L/DS3-H
+                        ]:  # 2-channel inverters
                             power = []
                             voltages = []
 
@@ -360,6 +357,7 @@ class APsystemsSocket:
                                 power.append(aps_int_from_bytes(data, cnt2 + 13, 2))
                                 voltages.append(aps_int_from_bytes(data, cnt2 + 15, 2))
                                 power.append(aps_int_from_bytes(data, cnt2 + 17, 2))
+                                voltages.append(aps_int_from_bytes(data, cnt2 + 19, 2))
 
                             inv_details = {
                                 "model": INVERTER_MODEL_MAP.get(
@@ -371,7 +369,10 @@ class APsystemsSocket:
                             }
                             inv.update(inv_details)
                             cnt2 = cnt2 + 21
-                        elif istr == "02":  # YC1000/QT2 3 phase inverters
+                        elif istr in [
+                            "02",  # YC1000
+                            "05",  # QT2
+                        ]:  # 4-channel inverters
                             power = []
                             voltages = []
 
@@ -407,7 +408,7 @@ class APsystemsSocket:
                             }
                             inv.update(inv_details)
                             cnt2 = cnt2 + 27
-                        elif istr == "03":
+                        elif istr == "03":  # QS1
                             power = []
                             voltages = []
 
@@ -440,9 +441,10 @@ class APsystemsSocket:
                             }
                             inv.update(inv_details)
                             cnt2 = cnt2 + 23
-                        else:
-                            cnt2 = cnt2 + 9
                         inverters[inverter_uid] = inv
+                    else:
+                        # Inverter was replaced, skip processing but advance counter
+                        cnt2 = cnt2 + 9  # Skip basic data for replaced inverter
                     cnt1 = cnt1 + 1
                 self.inverters = inverters
                 output["inverters"] = inverters

@@ -1,6 +1,7 @@
 """sensor.py"""
 
 import logging
+from datetime import datetime
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -26,6 +27,7 @@ from homeassistant.const import (
 
 
 from homeassistant.core import callback
+from homeassistant.util import dt as dt_util
 
 from .const import (
     DOMAIN,
@@ -401,9 +403,9 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
     def extra_state_attributes(self):
         """Return the extra state attributes."""
         return {
-            "ecu_id": self._ecu.ecu.ecu_id,
-            "inverter_uid": self._uid,
-            "last_update": self._ecu.ecu.last_update,
+            "Timezone": self._ecu.ecu.timezone,
+            "Last data update": self._ecu.ecu.last_update,
+            "Last UI update": dt_util.now().isoformat(),
         }
 
     @callback
@@ -500,9 +502,9 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         attrs = {
-            "ecu_id": self._ecu.ecu.ecu_id,
-            "inverter_uid": self._uid,
-            "last_update": self._ecu.ecu.last_update,
+            "Timezone": self._ecu.ecu.timezone,
+            "Last data update": self._ecu.ecu.last_update,
+            "Last UI update": dt_util.now().isoformat(),
         }
         return attrs
 
@@ -603,10 +605,9 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
     @property
     def extra_state_attributes(self):
         return {
-            "ecu_id": self._ecu.ecu.ecu_id,
-            "Firmware": self._ecu.ecu.firmware,
             "Timezone": self._ecu.ecu.timezone,
-            "last_update": self._ecu.ecu.last_update,
+            "Last data update": self._ecu.ecu.last_update,
+            "Last UI update": dt_util.now().isoformat(),
         }
 
     @property
@@ -686,8 +687,10 @@ class APsystemsECUFirmwareSensor(CoordinatorEntity, SensorEntity, RestoreEntity)
     def extra_state_attributes(self):
         """Return the state attributes of the entity."""
         return {
-            "ecu_id": self._ecu.ecu.ecu_id,
-            "last_update": self._ecu.ecu.last_update,
+            "IP-Address": self._ecu.ipaddr,
+            "Timezone": self._ecu.ecu.timezone,
+            "Last data update": self._ecu.ecu.last_update,
+            "Last UI update": dt_util.now().isoformat(),
         }
 
     @property
