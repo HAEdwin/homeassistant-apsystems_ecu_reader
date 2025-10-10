@@ -4,6 +4,5 @@
   "filename": "apsystems_ecu_reader",
   "country": [],
   "homeassistant": "2024.1.0",
-  "render_readme": true,
-  "domains": ["apsystems_ecu_reader"]
+  "render_readme": true
 }
