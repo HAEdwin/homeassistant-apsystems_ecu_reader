@@ -1,5 +1,9 @@
 {
   "name": "APsystems ECU Reader",
+  "content_in_root": false,
+  "filename": "apsystems_ecu_reader",
+  "country": [],
+  "homeassistant": "2024.1.0",
   "render_readme": true,
-  "homeassistant": "2024.1.0"
+  "domains": ["apsystems_ecu_reader"]
 }
