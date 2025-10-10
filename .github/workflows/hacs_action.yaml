@@ -1,0 +1,27 @@
+name: "HACS Action"
+description: "Repository validation action for HACS"
+branding:
+  icon: "terminal"
+  color: "gray-dark"
+inputs:
+  ignore:
+    description: "A space seperated list of ignored checks, for valid entries see README.md"
+    required: false
+    default: ""
+  category:
+    description: "The category of repository"
+    required: true
+  repository:
+    description: "The full name of repository"
+    required: false
+  comment:
+    description: "Post a comment to the PR with the result of the checks"
+    required: false
+    default: "true"
+  github_token:
+    description: "Personal access token (PAT)"
+    required: false
+    default: ${{ github.token }}
+runs:
+  using: "docker"
+  image: "docker://ghcr.io/hacs/action:main"
