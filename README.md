@@ -96,6 +96,8 @@ Assign a fixed IP address to your ECU.
 > **Note:**  
 > If you see "No ECU found at this IP-address or ECU is recovering from restart," ensure the ECU has been running for at least 10 minutes.
 
+If you need more guidance use [this manual](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki/Installation-using-HACS-(Recommended))
+
 ---
 
 ## Configuration Options
