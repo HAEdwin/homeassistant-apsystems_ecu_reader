@@ -25,7 +25,7 @@ Key features include:
 - Zigbee signal strength in dBm
 
 > **Note:**
-> For in-dept information about sensors etc. please read the Wiki on this project page.
+> For in-dept information about sensors etc. please read [the Wiki](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki) on this project page.
 
 ---
 
@@ -96,7 +96,7 @@ Assign a fixed IP address to your ECU.
 > **Note:**  
 > If you see "No ECU found at this IP-address or ECU is recovering from restart," ensure the ECU has been running for at least 10 minutes.
 
-If you need more guidance use [this manual](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki/Installation-using-HACS-(Recommended))
+If you need more guidance use [the wiki](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki)
 
 ---
 
