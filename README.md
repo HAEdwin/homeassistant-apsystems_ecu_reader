@@ -74,7 +74,7 @@ Assign a fixed IP address to your ECU.
 
 | Domain                | Ports                                      | Protocol |
 |-----------------------|--------------------------------------------|----------|
-| ecu.apsystemmsema.com | 8995, 8996, 8997, 8998, 9227, 9228, 9001-9004 | TCP      |
+| ecu.apsystemsema.com  | 8995, 8996, 8997, 8998, 9227, 9228, 9001-9004 | TCP      |
 | ecu2.apsema.com       | 9220, 9222                                 | TCP      |
 | ecu2.apsema.com       | 9219, 21                                   | FTP      |
 | ecuna.apsema.com      | 9220, 9222                                 | TCP      |
