@@ -5,7 +5,6 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/haedwin/homeassistant-apsystems_ecu_reader",
-  "homeassistant": "2022.2.0",
   "integration_type": "hub",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/haedwin/homeassistant-apsystems_ecu_reader/issues",
@@ -13,3 +12,4 @@
   "requirements": [],
   "version": "2.13.0"
 }
+
