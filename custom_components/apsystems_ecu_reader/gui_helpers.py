@@ -61,9 +61,13 @@ async def set_inverter_state(ipaddr, inverter_id, state) -> bool:
     return False
 
 
-async def set_zero_export(ipaddr, state):
+async def set_zero_export(ipaddr, state, power_limit=0):
     """Set the bridge state for zero export. 0=closed, 1=open"""
-    action = {"meter_func": "1" if state else "0", "this_func": "1", "power_limit": "0"}
+    action = {
+        "meter_func": "1" if state else "0",
+        "this_func": "1",
+        "power_limit": str(power_limit),
+    }
     headers = {"X-Requested-With": "XMLHttpRequest", "Connection": "keep-alive"}
     url = f"http://{ipaddr}/index.php/meter/set_meter_display_funcs"
 

@@ -7,7 +7,14 @@ from datetime import timedelta
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import DOMAIN, ECU_MODEL_MAP, DEFAULT_SCAN_INTERVAL, DEFAULT_PORT_RETRIES, SETUP_DELAY_SECONDS, DEFAULT_CACHE_REBOOT
+from .const import (
+    DOMAIN,
+    ECU_MODEL_MAP,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_PORT_RETRIES,
+    SETUP_DELAY_SECONDS,
+    DEFAULT_CACHE_REBOOT,
+)
 from .ecu_api import APsystemsSocket, APsystemsInvalidData
 from .gui_helpers import (
     set_inverter_state,
@@ -28,7 +35,7 @@ class ECUREADER:
     def __init__(
         self, ipaddr: str, wifi_ssid: str, wifi_password: str, show_graphs: bool
     ) -> None:
-    
+
         self.ipaddr = ipaddr
         self.wifi_ssid = wifi_ssid
         self.wifi_password = wifi_password
@@ -49,9 +56,14 @@ class ECUREADER:
         """Set the on/off state of an inverter. 1=on, 2=off"""
         return await set_inverter_state(self.ipaddr, inverter_id, state)
 
-    async def set_zero_export(self, state):
+    async def set_zero_export(self, state, power_limit):
         """Set the bridge state for zero export. 0=closed, 1=open"""
-        return await set_zero_export(self.ipaddr, state)
+        return await set_zero_export(self.ipaddr, state, power_limit)
+
+    # called from number.py
+    async def set_power_limit(self, power_limit):
+        """Set the power limit for zero export"""
+        return await set_zero_export(self.ipaddr, 1, power_limit)
 
     # called from button.py
     async def reboot_ecu(self):
@@ -128,7 +140,9 @@ async def async_setup_entry(hass, config):
     if len(hass.data[DOMAIN]) > 1:
         await asyncio.sleep(SETUP_DELAY_SECONDS)
 
-    interval = timedelta(seconds=config.data.get("scan_interval", DEFAULT_SCAN_INTERVAL))
+    interval = timedelta(
+        seconds=config.data.get("scan_interval", DEFAULT_SCAN_INTERVAL)
+    )
     ecu = ECUREADER(
         config.data["ecu_host"],
         config.data.get("wifi_ssid", "ECU-local"),

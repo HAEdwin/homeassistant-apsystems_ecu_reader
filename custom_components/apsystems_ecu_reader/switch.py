@@ -175,7 +175,18 @@ class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
     async def async_turn_on(self, **kwargs):
         """Turn on zero export."""
         try:
-            await self._ecu.set_zero_export(1)
+            # Get the current power limit from the number entity
+            power_limit_entity_id = f"number.ecu_{self._ecu.ecu.ecu_id}_power_limit"
+            power_limit_state = self.hass.states.get(power_limit_entity_id)
+            power_limit = 0
+            if power_limit_state and power_limit_state.state not in (
+                "unknown",
+                "unavailable",
+            ):
+                # Convert from kW display value to watts
+                power_limit = int(float(power_limit_state.state) * 1000)
+
+            await self._ecu.set_zero_export(1, power_limit)
             self._state = True
             self.async_write_ha_state()
         except (ConnectionError, TimeoutError) as e:
