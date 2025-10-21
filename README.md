@@ -120,12 +120,13 @@ If you need more guidance use [the wiki](https://github.com/HAEdwin/homeassistan
 
 ## Feature Compatibility
 
-| Type    | Entity                        | ECU-B | ECU-R | ECU-R-Pro | ECU-C | ECU-3 |
-|---------|-------------------------------|-------|-------|-----------|-------|-------|
-| switch  | ecu_{ECU-ID}_zero_export      | No    | No    | No        | Yes   | Yes   |
-| switch  | inverter_{Inverter-ID}_on_off | No    | No    | Yes       | Yes   | Yes   |
-| button  | ecu_{ECU-ID}_reboot           | No    | No    | Yes       | Yes   | Yes   |
-| number  | inverter_{Inverter-ID}_maxpwr | No    | No    | Yes       | Yes   | Yes   |
+| Type    | Entity                        | ECU-B | ECU-R | ECU-R-Pro | ECU-C |
+|---------|-------------------------------|-------|-------|-----------|-------|
+| switch  | ecu_{ECU-ID}_zero_export      | No    | No    | No        | Yes   |
+| switch  | inverter_{Inverter-ID}_on_off | No    | No    | Yes       | Yes   |
+| button  | ecu_{ECU-ID}_reboot           | No    | No    | Yes       | Yes   |
+| number  | inverter_{Inverter-ID}_maxpwr | No    | No    | Yes       | Yes   |
+| number  | ecu_{ECU-ID}_power_limit      | No    | No    | No        | Yes   | 
 
 ---
 
