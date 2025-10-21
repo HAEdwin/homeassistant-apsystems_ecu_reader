@@ -197,7 +197,7 @@ class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
     async def async_turn_off(self, **kwargs):
         """Turn off zero export."""
         try:
-            await self._ecu.set_zero_export(0)
+            await self._ecu.set_zero_export(0, 0)
             self._state = False
             self.async_write_ha_state()
         except (ConnectionError, TimeoutError) as e:
