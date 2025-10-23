@@ -38,6 +38,8 @@ class APsystemsSocket:
         self.timeout = timeout
         # how big of a buffer to read at a time from the socket
         self.recv_size = DEFAULT_RECV_SIZE
+        # buffer used to store the latest socket read
+        self.read_buffer = b""
 
         self.ecu_cmd = "APS1100160001END\n"
         self.inverter_query_prefix = "APS1100280002"
@@ -321,7 +323,7 @@ class APsystemsSocket:
 
                 while cnt1 < inverter_qty:
                     inv = {}
-                    if aps_str(data, 15, 2) == "01": # 01 = Not replaced inverter
+                    if aps_str(data, 15, 2) == "01":  # 01 = Not replaced inverter
                         inverter_uid = aps_uid(data, cnt2)
                         inv["uid"] = inverter_uid
                         inv["online"] = bool(aps_int_from_bytes(data, cnt2 + 6, 1))

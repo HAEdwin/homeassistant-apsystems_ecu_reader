@@ -10,5 +10,5 @@
   "issue_tracker": "https://github.com/haedwin/homeassistant-apsystems_ecu_reader/issues",
   "loggers": ["custom_components.apsystems_ecu_reader"],
   "requirements": [],
-  "version": "2.13.1"
+  "version": "2.13.2"
 }

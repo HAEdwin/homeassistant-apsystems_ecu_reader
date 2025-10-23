@@ -1,7 +1,6 @@
 """binary_sensor.py"""
 
 import logging
-from homeassistant.util import dt as dt_util
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.entity import EntityCategory
@@ -64,8 +63,7 @@ class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
         """Return the state attributes of the sensor."""
         return {
             "timezone": self._ecu.ecu.timezone,
-            "Last data update": self._ecu.ecu.last_update,
-            "Last UI update": dt_util.now().isoformat(),
+            "last_data_update": self._ecu.ecu.last_update,
         }
 
     @property
