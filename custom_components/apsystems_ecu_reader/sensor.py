@@ -350,6 +350,19 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._inv_data = inv_data
         self._name = f"Inverter {uid} Online"
         self._state = inv_data.get("online", False)
+        self._attr_name = f"Inverter {uid} Online"
+
+        # Set custom state attributes for activity log
+        self._attr_device_class = None
+        self._attr_should_poll = False
+
+        # Override default state values to show true/false in activity log
+        self._attr_extra_state_attributes = {}
+
+    @property
+    def state(self):
+        """Return custom state for activity log."""
+        return "true" if self.is_on else "false"
 
     async def async_added_to_hass(self):
         """Handle entity which will be added."""
@@ -398,11 +411,17 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
         return self._inv_data.get("online", False)
 
     @property
+    def device_class(self):
+        """Return the device class of the binary sensor."""
+        return None  # No device class to avoid default "turned on/off" messages
+
+    @property
     def extra_state_attributes(self):
         """Return the extra state attributes."""
         return {
             "timezone": self._ecu.ecu.timezone,
             "last_data_update": self._ecu.ecu.last_update,
+            "state_display": "true" if self.is_on else "false",
         }
 
     @callback

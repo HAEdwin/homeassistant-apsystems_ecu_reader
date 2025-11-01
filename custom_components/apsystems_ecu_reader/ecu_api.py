@@ -443,10 +443,9 @@ class APsystemsSocket:
                             }
                             inv.update(inv_details)
                             cnt2 = cnt2 + 23
+                        else:
+                            cnt2 = cnt2 + 9
                         inverters[inverter_uid] = inv
-                    else:
-                        # Inverter was replaced, skip processing but advance counter
-                        cnt2 = cnt2 + 9  # Skip basic data for replaced inverter
                     cnt1 = cnt1 + 1
                 self.inverters = inverters
                 output["inverters"] = inverters
