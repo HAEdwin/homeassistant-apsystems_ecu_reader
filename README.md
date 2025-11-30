@@ -131,7 +131,7 @@ If you need more guidance use [the wiki](https://github.com/HAEdwin/homeassistan
 
 ## Troubleshooting
 
-- If frequent cache usage or crashes occur, check `home-assistant.log` for errors.
+- If frequent cache usage or crashes occur, check [Settings] > [System] > [Logs] for errors.
 - Disable integrations that are causing connection/communication errors.
 - Choose the best location for your ECU where it has the best reception for both Zigbee and WiFi.
 - Make sure that nothing is blocking the reception of the signals.
