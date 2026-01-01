@@ -32,6 +32,7 @@ Key features include:
 
 > **Note:**
 > For in-dept information about sensors etc. please read [the Wiki](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki) on this project page.
+> This integration is not compatible with any ECU-C mounted in the APsystems storage solutions.
 
 ---
 
