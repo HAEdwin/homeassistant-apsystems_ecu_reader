@@ -93,17 +93,19 @@ Assign a fixed IP address to your ECU.
 
 ## Installation
 
+
 1. **Download via HACS**:
-   - In HACS search for "APsystems ECU Reader"
-   - Download and restart Home Assistant.
-2. **Integrate**:
-   - Go to [Settings] > [Devices & Services] > [+ ADD INTEGRATION]
-   - Search for "APsystems ECU Reader" and configure with your ECU's IP address.
+   When HACS is installed, you should be able to find this integration by default in the HA Community Store.
+   - Search for "APsystems ECU Reader".
+   - Click on the integration and choose [Download]-button in the lower right corner.
+   - After downloading a message appears reminding you to restart HA - Restart HA.
+   - After restart go to [Devices & Services] and choose the [+ Add integration]- button on the lower right corner.
+   - In "Search for a brand name" enter "APsystems ECU Reader" and select the integration.
+   - Now follow the Configuration Options guide below.
 
 > **Note:**  
-> If you see "No ECU found at this IP-address or ECU is recovering from restart," ensure the ECU has been running for at least 10 minutes.
-
-If you need more guidance use [the wiki](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki)
+> If you are not able to connect to the ECU, read this manual and prerequisites. 
+> For more guidance use [the wiki](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki).
 
 ---
 
