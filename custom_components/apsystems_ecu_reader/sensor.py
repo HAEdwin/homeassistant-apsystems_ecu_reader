@@ -665,16 +665,28 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
             if (
                 self._last_update_time is not None
                 and self._last_power_value is not None
-                and self._last_power_value < 0
-            ):  # Only accumulate when exporting (negative power)
-
+                and current_power
+                != self._last_power_value  # Only calculate when power changed (new ECU data)
+                and self._last_power_value
+                < 0  # Only accumulate when previously exporting
+            ):
                 time_delta_hours = (
                     current_time - self._last_update_time
                 ).total_seconds() / 3600
-                # Use absolute value of negative power for export energy calculation
-                energy_increment_kwh = (
-                    abs(self._last_power_value) * time_delta_hours / 1000
-                )
+
+                # Use trapezoidal integration if both values are exporting (negative)
+                if current_power < 0:
+                    # Both exporting - use trapezoidal (average of both values)
+                    avg_export_power = (
+                        abs(self._last_power_value) + abs(current_power)
+                    ) / 2
+                    energy_increment_kwh = avg_export_power * time_delta_hours / 1000
+                else:
+                    # Transition from export to import/zero - use rectangular with last value
+                    energy_increment_kwh = (
+                        abs(self._last_power_value) * time_delta_hours / 1000
+                    )
+
                 self._state += energy_increment_kwh
 
             # Update tracking variables
