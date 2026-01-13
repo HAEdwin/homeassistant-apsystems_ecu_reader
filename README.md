@@ -17,7 +17,15 @@
 
 ## Overview
 
-APsystems ECU Reader is a custom Home Assistant integration project for communicating with APsystems ECU hubs for solar installations only (not the APsystems APstorage systems like the ELS or ELT series). (For EZ1 microinverters use the integration at: https://www.home-assistant.io/integrations/apsystems/). The APsystems ECU Reader is an extended and improved version of ksheumaker's "homeassistant-apsystems_ecur" integration.
+APsystems ECU Reader is a custom Home Assistant integration project for communicating with APsystems ECU hubs.
+> [!IMPORTANT]
+> for solar installations only (not the APsystems APstorage systems like the ELS or ELT series)
+
+> [!TIP]
+> For EZ1 microinverters use the integration at: https://www.home-assistant.io/integrations/apsystems/.
+
+The APsystems ECU Reader is an extended and improved version of ksheumaker's "homeassistant-apsystems_ecur" integration.
+
 Key features include:
 - Robust data integrity checks
 - Enhanced communication control with the ECU
