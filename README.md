@@ -15,6 +15,8 @@
 > If you enjoy using this integration, please leave a ⭐ star to show your support.  
 > Consider making a donation to help me keep improving!
 
+![alt text](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/blob/main/APsystems_ECU_Reader.PNG?raw=true)
+
 ## Overview
 
 APsystems ECU Reader is a custom Home Assistant integration project for communicating with APsystems ECU hubs.
