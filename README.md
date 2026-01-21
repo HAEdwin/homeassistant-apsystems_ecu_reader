@@ -31,12 +31,12 @@ The APsystems ECU Reader is an extended and improved version of ksheumaker's "ho
 Key features include:
 - Robust data integrity checks
 - Enhanced communication control with the ECU
-- Individual inverter on/off switching (ECU-R-Pro 2162 and ECU-C only)
+- Individual inverter on/off switching (ECU-R-Pro series starting with 2162 and ECU-C only)
 - Improved error handling and query efficiency
 - Support for L2 and L3 voltages (three-phase inverters)
 - Multiple ECU hub support
 - Individual inverter online sensors for automations
-- Zero Export capability (ECU-C and ECU-3)
+- Near zero Export capability (ECU-R-Pro series starting with 2162 and ECU-C only). See Wiki for script.
 - Per-panel maximum power limiting (ECU-R-Pro, ECU-C, ECU-3)
 - Zigbee signal strength in dBm
 
