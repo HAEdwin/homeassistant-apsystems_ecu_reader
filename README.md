@@ -13,7 +13,7 @@
 
 > Over 950 active installations and growing — thank you!  
 > If you enjoy using this integration, please leave a ⭐ star to show your support.  
-> Your donation directly supports ongoing improvements and future projects. Every contribution makes a difference—thank you for helping me grow!
+> Enjoying this? Support my work on Buy Me a Coffee and help me keep improving. ☕
 
 ![alt text](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/blob/main/APsystems_ECU_Reader.PNG?raw=true)
 
