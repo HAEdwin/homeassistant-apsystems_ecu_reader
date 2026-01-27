@@ -83,7 +83,7 @@ nc -v <ECU_IP> 8899
 APS1100160001END
 APS11009400012160000xxxxxxxz%10012ECU_R_1.2.22009Etc/GMT-8
 ```
-Assign a fixed IP address to your ECU.
+Preferably assign a fixed IP address to the ECU. Make sure you have the correct ECU.
 
 ---
 
