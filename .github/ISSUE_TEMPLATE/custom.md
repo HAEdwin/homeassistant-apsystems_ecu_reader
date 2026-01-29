@@ -1,17 +1,12 @@
 ---
-name: Issue template
+name: Issue tracker
 about: Issue tracker is **ONLY** used for reporting bugs. New features, discussions
   or questions should be posted in the discussion section. Do not post you ECU-ID !
-Before submitting, read this important info: https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki/Debug-Mode-Guide
-
-title: ''
-labels: ''
-assignees: ''
-
 ---
 
 ## Requirements for submitting a bug
-Help us by sharing us the relevant home-assistant.log part. 
+Help us by sharing us the relevant home-assistant.log part.
+But before submitting, read this important info: https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki/Debug-Mode-Guide
 ```
 If relevant, paste the log in here
 ```
@@ -64,5 +59,5 @@ Providing context helps us come up with a solution that is most useful in the re
 - [ ] YC series
 
 ```
-APsystems ECU Reader software currently installed
+APsystems ECU Reader software version and ECU firmware version currently installed
 ```
