@@ -2,6 +2,8 @@
 name: Issue template
 about: Issue tracker is **ONLY** used for reporting bugs. New features, discussions
   or questions should be posted in the discussion section. Do not post you ECU-ID !
+Before submitting, read this important info: https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki/Debug-Mode-Guide
+
 title: ''
 labels: ''
 assignees: ''
