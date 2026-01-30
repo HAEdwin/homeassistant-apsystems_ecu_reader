@@ -36,7 +36,7 @@ Key features include:
 - Support for L2 and L3 voltages (three-phase inverters)
 - Multiple ECU hub support
 - Individual inverter online sensors for automations
-- Near zero Export capability (ECU-R-Pro series starting with 2162 and ECU-C only). See Wiki for script.
+- Near zero Export capability (ECU-R-Pro series starting with 2162 and ECU-C only). Read [the Wiki](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki/Automation-examples#grid-zero-control) for script.
 - Per-panel maximum power limiting (ECU-R-Pro, ECU-C, ECU-3)
 - Zigbee signal strength in dBm
 
