@@ -11,9 +11,9 @@
 
 # APsystems ECU Reader
 
-> Over 950 active installations and growing!  
-> If this integration has been helpful, please consider leaving a ⭐ star—it really helps support the project.
-> Want to support ongoing improvements? You can also buy me a coffee ☕. Thank you!
+> Over 1000 active installations and growing!  
+> If this integration’s been helpful, I’d truly appreciate a ⭐ star—it means a lot and helps others discover the project too!
+> And if you’d like to support future updates and improvements, you can always buy me a coffee ☕. Thanks so much for your support!
 
 ![alt text](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/blob/main/APsystems_ECU_Reader.PNG?raw=true)
 
