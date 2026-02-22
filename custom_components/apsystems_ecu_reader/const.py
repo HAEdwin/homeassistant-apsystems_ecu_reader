@@ -11,6 +11,7 @@ SOLAR_PANEL_ICON = "mdi:solar-panel"
 CACHE_COUNTER_ICON = "mdi:counter"
 ECU_REBOOT_ICON = "mdi:restart"
 FROM_GRID_ICON = "mdi:transmission-tower-export"
+TO_GRID_ICON = "mdi:transmission-tower-import"
 CONSUMED_ICON = "mdi:transmission-tower"
 DOWNLOAD_ICON = "mdi:download"
 
