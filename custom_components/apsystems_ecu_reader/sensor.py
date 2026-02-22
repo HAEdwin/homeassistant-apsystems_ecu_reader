@@ -1,7 +1,6 @@
 """sensor.py"""
 
 import logging
-from datetime import datetime
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -36,7 +35,6 @@ from .const import (
     SOLAR_PANEL_ICON,
     CACHE_COUNTER_ICON,
     FROM_GRID_ICON,
-    TO_GRID_ICON,
     CONSUMED_ICON,
     DOWNLOAD_ICON,
     INVERTER_MODEL_MAP,
@@ -233,42 +231,6 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     devclass=SensorDeviceClass.POWER,
                     icon=CONSUMED_ICON,
                     stateclass=SensorStateClass.MEASUREMENT,
-                ),
-            ]
-        )
-
-        # Add lifetime energy export sensors
-        sensors.extend(
-            [
-                APsystemsECUSensor(
-                    coordinator,
-                    ecu,
-                    "lifetime_energy_export_a",
-                    label=f"{ecu.ecu.ecu_id} Lifetime Energy Export A",
-                    unit=UnitOfEnergy.KILO_WATT_HOUR,
-                    devclass=SensorDeviceClass.ENERGY,
-                    icon=TO_GRID_ICON,
-                    stateclass=SensorStateClass.TOTAL_INCREASING,
-                ),
-                APsystemsECUSensor(
-                    coordinator,
-                    ecu,
-                    "lifetime_energy_export_b",
-                    label=f"{ecu.ecu.ecu_id} Lifetime Energy Export B",
-                    unit=UnitOfEnergy.KILO_WATT_HOUR,
-                    devclass=SensorDeviceClass.ENERGY,
-                    icon=TO_GRID_ICON,
-                    stateclass=SensorStateClass.TOTAL_INCREASING,
-                ),
-                APsystemsECUSensor(
-                    coordinator,
-                    ecu,
-                    "lifetime_energy_export_c",
-                    label=f"{ecu.ecu.ecu_id} Lifetime Energy Export C",
-                    unit=UnitOfEnergy.KILO_WATT_HOUR,
-                    devclass=SensorDeviceClass.ENERGY,
-                    icon=TO_GRID_ICON,
-                    stateclass=SensorStateClass.TOTAL_INCREASING,
                 ),
             ]
         )
@@ -608,17 +570,12 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         #    self._disabled_by = disabled_by
         self._name = f"ECU {self._label}"
         self._state = None
-        self._last_update_time = None
-        self._last_power_value = None
 
     async def async_added_to_hass(self):
         """Handle entity that needs to be restored."""
         await super().async_added_to_hass()
         last_state = await self.async_get_last_state()
-        if last_state and (
-            self._field == "lifetime_maximum_power"
-            or self._field.startswith("lifetime_energy_export")
-        ):
+        if last_state and self._field == "lifetime_maximum_power":
             try:
                 self._state = (
                     0
@@ -648,52 +605,6 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
             current_power = self.coordinator.data.get("current_power", 0) or 0
             self._state = max(self._state or 0, current_power)
             return round(self._state)
-        elif self._field.startswith("lifetime_energy_export"):
-            # Extract the phase (a, b, or c) from the field name
-            phase = self._field.split("_")[-1]  # Gets 'a', 'b', or 'c'
-            grid_field = f"grid_ct_{phase}"
-
-            # Get current power and time
-            current_power = self.coordinator.data.get(grid_field, 0) or 0
-            current_time = datetime.now()
-
-            # Initialize state if None
-            if self._state is None:
-                self._state = 0.0
-
-            # Calculate energy increment if we have a previous timestamp
-            if (
-                self._last_update_time is not None
-                and self._last_power_value is not None
-                and current_power
-                != self._last_power_value  # Only calculate when power changed (new ECU data)
-                and self._last_power_value
-                < 0  # Only accumulate when previously exporting
-            ):
-                time_delta_hours = (
-                    current_time - self._last_update_time
-                ).total_seconds() / 3600
-
-                # Use trapezoidal integration if both values are exporting (negative)
-                if current_power < 0:
-                    # Both exporting - use trapezoidal (average of both values)
-                    avg_export_power = (
-                        abs(self._last_power_value) + abs(current_power)
-                    ) / 2
-                    energy_increment_kwh = avg_export_power * time_delta_hours / 1000
-                else:
-                    # Transition from export to import/zero - use rectangular with last value
-                    energy_increment_kwh = (
-                        abs(self._last_power_value) * time_delta_hours / 1000
-                    )
-
-                self._state += energy_increment_kwh
-
-            # Update tracking variables
-            self._last_update_time = current_time
-            self._last_power_value = current_power
-
-            return round(self._state, 3)
         else:
             return self.coordinator.data.get(self._field, 0)
 
