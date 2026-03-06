@@ -31,7 +31,7 @@
 > - Reboot ECU
 > - Get power meter graph data
 >
-> I will try to do my best to find a workaround that fits the architecture of the ECUs.
+> I will do my best to find a solution that fits the architecture of the ECUs.
 > Given my in-depth knowledge of the ECUs, I understand and respect APsystems' decision to make this change.
 > 
 > (I am not an affiliated employee of APsystems, this is just one of my hobbies)
