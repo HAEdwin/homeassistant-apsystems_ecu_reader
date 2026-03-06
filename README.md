@@ -20,7 +20,7 @@
 ## News
 
 > [!IMPORTANT]
-> APsystems will drop support on the webinterface of the ECU's. Since the app continues to work, my assumption is that this will also continue to apply to the integration.
+> APsystems will drop support on the webinterface of the ECU's.
 > 
 > ![alt text](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/blob/main/APsystemsNotice.PNG?raw=true)
 >
