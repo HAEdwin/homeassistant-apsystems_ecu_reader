@@ -9,7 +9,7 @@
 
 
 
-# APsystems ECU Reader
+# <img src="https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/blob/main/apsystemslogo.png?raw=true" width="5%">APsystems ECU Reader
 
 > Over 1000 active installations and growing!  
 > If this integration’s been helpful, I’d truly appreciate a ⭐ star—it means a lot and helps others discover the project too!
