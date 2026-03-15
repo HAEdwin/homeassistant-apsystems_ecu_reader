@@ -107,7 +107,7 @@ Preferably assign a fixed IP address to the ECU. Make sure you have the correct 
 
 ---
 
-## Required Ports
+## Required Ports for proper EMA upload and firmware updates 
 
 | Domain                | Ports                                      | Protocol |
 |-----------------------|--------------------------------------------|----------|
