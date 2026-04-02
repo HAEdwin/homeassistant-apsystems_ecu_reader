@@ -177,7 +177,10 @@ Preferably assign a fixed IP address to the ECU. Make sure you have the correct 
 - A timeout occurs
 - Another error occurs
 
-However, this does not prevent the integration from continuing to function normally.
+However, this does not prevent the integration from continuing to function normally unless the ECU hangs then use the "Using Cache Counter" entity.
+The idea behind this entity is that you can use it to decide when to reset the ECU because it has apparently frozen. During the configuration of the hub/ECU, you can set when the 2162 and the ECU-C reset via software. You will need to reset the ECU-B and the standard ECU-R using automation and a smart plug.
+
+Work is underway on a structural solution.
 If you really can't figure it out, create an issue and remember that the more time you spend specifying the problem, the faster and more precise the answer can be.
 
 ---
