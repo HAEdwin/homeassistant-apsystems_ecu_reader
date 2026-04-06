@@ -11,7 +11,7 @@
 
 # <img src="https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/blob/main/apsystemslogo.png?raw=true" width="3%">APsystems ECU Reader
 
-> Over 1000 active installations and growing!  
+> Over 1000 (measured) active installations and growing!  
 > If this integration’s been helpful, I’d truly appreciate a ⭐ star—it means a lot and helps others discover the project too!
 > And if you’d like to support future updates and improvements, you can always buy me a coffee ☕. Thanks so much for your support!
 
