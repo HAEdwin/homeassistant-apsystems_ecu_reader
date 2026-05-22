@@ -33,7 +33,7 @@
 >
 > In collaboration with APsystems, work is being done on a new control method. Until then, the current functionality will remain in place.
 > 
-> (I am not an affiliated employee of APsystems, this is just one of my hobbies)
+> (I am not an affiliated employee of APsystems, maintaining this integration is just one of my hobbies)
 
 
 ## Overview
