@@ -17,25 +17,6 @@
 
 ![alt text](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/blob/main/APsystems_ECU_Reader.PNG?raw=true)
 
-## News
-
-> [!IMPORTANT]
-> APsystems will drop support on the webinterface of the ECU's.
-> 
-> ![alt text](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/blob/main/APsystemsNotice.PNG?raw=true)
->
-> This change will impact the following:
-> - Set inverter state On/Off
-> - Set zero export
-> - Set inverter max power
-> - Reboot ECU
-> - Get power meter graph data
->
-> In collaboration with APsystems, work is being done on a new control method. Until then, the current functionality will remain in place.
-> 
-> (I am not an affiliated employee of APsystems, maintaining this integration is just one of my hobbies)
-
-
 ## Overview
 
 APsystems ECU Reader is a custom Home Assistant integration project for communicating with APsystems ECU hubs.
