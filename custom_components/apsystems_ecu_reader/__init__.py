@@ -186,7 +186,7 @@ async def async_setup_entry(hass, config):
 
     # Register the ECU device.
     device_registry = dr.async_get(hass)
-    device_registry.async_get_or_create(
+    ecu_device = device_registry.async_get_or_create(
         config_entry_id=config.entry_id,
         identifiers={(DOMAIN, f"ecu_{ecu.ecu.ecu_id}")},
         manufacturer="APsystems",
@@ -206,6 +206,7 @@ async def async_setup_entry(hass, config):
             suggested_area="Roof",
             name=f"Inverter {uid}",
             model=inv_data.get("model"),
+            via_device_id=ecu_device.id,
         )
 
     # Forward all platforms at once
