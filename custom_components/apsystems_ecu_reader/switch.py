@@ -143,7 +143,6 @@ class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
             "name": f"Inverter {self._uid}",
             "manufacturer": "APsystems",
             "model": INVERTER_MODEL_MAP.get(self._uid[:2], "Unknown Model"),
-            "via_device": (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
         }
 
     async def async_turn_off(self, **kwargs):
