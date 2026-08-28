@@ -1,6 +1,5 @@
 {
   "domain": "apsystems_ecu_reader",
-  "homeassistant": "2026.8.0",
   "name": "APsystems ECU Reader",
   "codeowners": ["@haedwin"],
   "config_flow": true,
