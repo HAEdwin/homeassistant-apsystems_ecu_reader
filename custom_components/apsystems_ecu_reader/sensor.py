@@ -659,8 +659,7 @@ class APsystemsECUFirmwareSensor(CoordinatorEntity, SensorEntity, RestoreEntity)
         self._label = label or field
         self._icon = icon
         self._entity_category = entity_category
-        self._name = "Firmware Version"
-        self._attr_has_entity_name = True
+        self._name = f"ECU {ecu.ecu.ecu_id} Firmware Version"
         self._state = None
 
     async def async_added_to_hass(self):
