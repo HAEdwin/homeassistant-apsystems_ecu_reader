@@ -243,7 +243,6 @@ async def async_setup_entry(hass, config_entry, add_entities):
         )
 
     # Add Inverter sensors
-    inverters = coordinator.data.get("inverters", {})
     for uid, inv_data in inverters.items():
 
         # if statement for configured but not yet connected inverters
