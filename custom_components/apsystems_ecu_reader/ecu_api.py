@@ -213,7 +213,7 @@ class APsystemsSocket:
 
                 # Add CT data to the dictionary for ECU-C models only
                 if self.ecu_id.startswith("215"):
-                   await self.add_meter_data()
+                    await self.add_meter_data()
                 # Add ECU parameters to the dictionary
                 self.process_ecu_data()
                 # Finally all went right so call finalize and return it
