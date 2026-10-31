@@ -1,6 +1,7 @@
 """Number platform for APsystems ECU Reader."""
 
 from homeassistant.components.number import RestoreNumber
+from homeassistant.const import UnitOfPower
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import EntityCategory
 
@@ -47,6 +48,7 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
         default_value = self._inv_data.get("number_value") or 500
         self._attr_native_value = max(default_value, 20)
         self._attr_device_class = "power"
+        self._attr_native_unit_of_measurement = UnitOfPower.WATT
         self._attr_mode = "slider"
 
     @property
