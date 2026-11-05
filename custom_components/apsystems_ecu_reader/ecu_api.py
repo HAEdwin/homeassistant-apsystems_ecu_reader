@@ -6,6 +6,8 @@ import asyncio
 import logging
 import errno
 
+from homeassistant.util import dt as dt_util
+
 from .ecu_helpers import (
     aps_datetimestamp,
     aps_str,
@@ -52,6 +54,7 @@ class APsystemsSocket:
         self.lifetime_energy = 0
         self.current_power = 0
         self.today_energy = 0
+        self._today_energy_date = None
         self.vsl = 0
         self.tsl = 0
         self.inverters = {}
@@ -240,10 +243,21 @@ class APsystemsSocket:
             # apply filters for ECU firmware bug where sometimes values are zero unexpectedly
             if self.qty_of_inverters:
                 self.data["qty_of_inverters"] = self.qty_of_inverters
+            # A zero with all inverters offline is the nightly reset, but the
+            # firmware also reports spurious zeros at night. Only accept the
+            # zero once the day has changed, otherwise HA's total_increasing
+            # statistics treat it as a meter reset and count the day twice.
+            today = dt_util.now().date()
             if self.today_energy or (
-                self.today_energy == 0 and self.qty_of_online_inverters == 0
+                self.today_energy == 0
+                and self.qty_of_online_inverters == 0
+                and (
+                    not self.data.get("today_energy")
+                    or self._today_energy_date != today
+                )
             ):
                 self.data["today_energy"] = self.today_energy
+                self._today_energy_date = today
             if self.lifetime_energy:
                 self.data["lifetime_energy"] = self.lifetime_energy
 
