@@ -243,10 +243,7 @@ class APsystemsSocket:
             # apply filters for ECU firmware bug where sometimes values are zero unexpectedly
             if self.qty_of_inverters:
                 self.data["qty_of_inverters"] = self.qty_of_inverters
-            # A zero with all inverters offline is the nightly reset, but the
-            # firmware also reports spurious zeros at night. Only accept the
-            # zero once the day has changed, otherwise HA's total_increasing
-            # statistics treat it as a meter reset and count the day twice.
+            # Only accept a zero as the daily reset once the date has changed
             today = dt_util.now().date()
             if self.today_energy or (
                 self.today_energy == 0
