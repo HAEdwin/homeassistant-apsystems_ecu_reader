@@ -241,7 +241,8 @@ class APsystemsSocket:
             if self.lifetime_energy:
                 self.data["lifetime_energy"] = self.lifetime_energy
             # filter: Only accept a zero for today_energy as the daily reset once the date has changed
-            today = dt_util.now().date()
+            # Use the ECU's clock: it resets at its own midnight, which can lag HA's
+            today = self.ecu_date() or dt_util.now().date().isoformat()
             if self.today_energy or self._today_energy_date != today:
                 self.data["today_energy"] = self.today_energy
                 self._today_energy_date = today
@@ -257,6 +258,13 @@ class APsystemsSocket:
             return self.data
         except (KeyError, TypeError, ValueError) as err:
             raise APsystemsInvalidData(f"error during finalization ({err})") from err
+
+    def ecu_date(self):
+        """Return the ECU's current date (YYYY-MM-DD) from the inverter data timestamp."""
+        data = self.inverter_raw_data
+        if data and aps_str(data, 9, 4) == "0002" and aps_str(data, 14, 2) == "00":
+            return aps_datetimestamp(data, 19, 14)[:10]
+        return None
 
     def process_ecu_data(self, data=None):
         """interpret raw ecu data and return it."""
