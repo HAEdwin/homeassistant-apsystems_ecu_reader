@@ -235,29 +235,23 @@ class APsystemsSocket:
     def finalize_data(self, show_graphs):
         """Finalize the data and return it."""
         try:
+            # filter: applied for ECU data firmware bugs where sometimes values are zero unexpectedly
+            if self.qty_of_inverters:
+                self.data["qty_of_inverters"] = self.qty_of_inverters
+            if self.lifetime_energy:
+                self.data["lifetime_energy"] = self.lifetime_energy
+            # filter: Only accept a zero for today_energy as the daily reset once the date has changed
+            today = dt_util.now().date()
+            if self.today_energy or self._today_energy_date != today:
+                self.data["today_energy"] = self.today_energy
+                self._today_energy_date = today
+            
+            # Add rest of the ecu data to the dictionary
             self.data["ecu_id"] = self.ecu_id
             self.data["last_update"] = self.last_update
             self.data["current_power"] = self.current_power
             self.data["qty_of_online_inverters"] = self.qty_of_online_inverters
-
-            # apply filters for ECU firmware bug where sometimes values are zero unexpectedly
-            if self.qty_of_inverters:
-                self.data["qty_of_inverters"] = self.qty_of_inverters
-            # Only accept a zero as the daily reset once the date has changed
-            today = dt_util.now().date()
-            if self.today_energy or (
-                self.today_energy == 0
-                and self.qty_of_online_inverters == 0
-                and (
-                    not self.data.get("today_energy")
-                    or self._today_energy_date != today
-                )
-            ):
-                self.data["today_energy"] = self.today_energy
-                self._today_energy_date = today
-            if self.lifetime_energy:
-                self.data["lifetime_energy"] = self.lifetime_energy
-
+            
             # Add inverter and signal data to the dictionary
             self.data.update(self.process_inverter_data(show_graphs))
             return self.data
