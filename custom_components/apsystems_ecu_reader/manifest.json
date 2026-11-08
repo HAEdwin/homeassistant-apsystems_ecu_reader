@@ -2,7 +2,7 @@
   "domain": "apsystems_ecu_reader",
   "name": "APsystems ECU Reader",
   "categories": [
-    energy.solar_batteries
+    "energy.solar_batteries"
   ],
   "codeowners": ["@haedwin"],
   "config_flow": true,
