@@ -54,7 +54,6 @@ class APsystemsSocket:
         self.lifetime_energy = 0
         self.current_power = 0
         self.today_energy = 0
-        self._today_energy_date = None
         self.vsl = 0
         self.tsl = 0
         self.inverters = {}
@@ -240,11 +239,14 @@ class APsystemsSocket:
                 self.data["qty_of_inverters"] = self.qty_of_inverters
             if self.lifetime_energy:
                 self.data["lifetime_energy"] = self.lifetime_energy
-            # filter: Only accept a zero for today_energy as the daily reset once the date has changed
-            today = dt_util.now().date()
-            if self.today_energy or self._today_energy_date != today:
-                self.data["today_energy"] = self.today_energy
-                self._today_energy_date = today
+            # filter: Ensures yesterday’s accumulated energy is cleared at midnight,
+            #         preventing it from carrying over into the new day.Because the 
+            #         ECU may still be lagging behind with a value for today_energy
+            now = dt_util.now()
+            self.data["today_energy"] = (
+                0 if now.hour == 0 and now.minute < 15
+                else self.today_energy
+            )
             
             # Add rest of the ecu data to the dictionary
             self.data["ecu_id"] = self.ecu_id
