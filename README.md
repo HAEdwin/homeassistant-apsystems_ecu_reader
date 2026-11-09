@@ -52,7 +52,7 @@ Key features include:
 - Supported ECU models: ECU-B, ECU-R, ECU-C (with YC600, YC1000/QT2, DS3, QS1 series inverters).
 - ECU must be connected to your LAN with a fixed IP address.
 - Home Assistant must have network access to the ECU.
-- HACS must be installed in Home Assistant.
+- Home Assistant 2026.11 or later (built-in **Marketplace**), or HACS installed if you run an older Home Assistant version.
 - Home Assistant log should not show repetitive errors that could cause resource exhaustion.
 
 | Connection Required | ECU Model                  | Automated Restart* |
@@ -104,19 +104,47 @@ Preferably assign a fixed IP address to the ECU. Make sure you have the correct 
 
 ## Installation
 
+As of Home Assistant 2026.11, the **Marketplace** (built into Home Assistant) replaces HACS as the way to discover and install community integrations. If you are still on an older Home Assistant version, use HACS instead.
 
-1. **Download via HACS**:
-   When HACS is installed, you should be able to find this integration by default in the HA Community Store.
-   - Search for "APsystems ECU Reader".
-   - Click on the integration and choose [Download]-button in the lower right corner.
-   - After downloading a message appears reminding you to restart HA - Restart HA.
-   - After restart go to [Devices & Services] and choose the [+ Add integration]- button on the lower right corner.
+1. **Via the Home Assistant Marketplace** (Home Assistant 2026.11 or later):
+   - Go to **Settings** > **Marketplace**.
+   - Use **Search** for "APsystems ECU Reader". If it does not show up in the catalog yet, select the **⋮** menu in the upper-right corner, choose **Add from link**, and enter `https://github.com/haedwin/homeassistant-apsystems_ecu_reader`.
+   - Open the repository page and select **Install**, then confirm.
+   - If prompted, restart Home Assistant.
+   - Go to **Settings** > **Devices & services** > **+ Add integration**, search for "APsystems ECU Reader" and select it.
+   - Now follow the Configuration Options guide below.
+
+2. **Via HACS** (Home Assistant versions before 2026.11):
+   - Search for "APsystems ECU Reader" in HACS.
+   - Click on the integration and choose the [Download]-button in the lower right corner.
+   - After downloading, a message appears reminding you to restart HA - restart HA.
+   - After restart go to [Devices & Services] and choose the [+ Add integration]-button in the lower right corner.
    - In "Search for a brand name" enter "APsystems ECU Reader" and select the integration.
    - Now follow the Configuration Options guide below.
 
 > **Note:**  
 > If you are not able to connect to the ECU, read this manual and prerequisites. 
 > For more guidance use [the wiki](https://github.com/HAEdwin/homeassistant-apsystems_ecu_reader/wiki).
+
+---
+
+## Removal / Uninstalling the integration
+
+To fully remove APsystems ECU Reader:
+
+1. **Remove the integration entries**:
+   - Go to **Settings** > **Devices & services**.
+   - Select the **APsystems ECU Reader** integration and remove each configured entry (⋮ menu > **Delete**) for every ECU hub you added. This also removes its devices and entities.
+
+2. **Uninstall the integration files**:
+   - **Via the Marketplace** (Home Assistant 2026.11 or later): Go to **Settings** > **Marketplace**, open the **APsystems ECU Reader** repository page, select the **⋮** menu, then **Uninstall**, and confirm. If the integration still has a configured entry, the Marketplace asks you to remove it first or offers **Delete and uninstall** to do both in one step.
+   - **Via HACS** (Home Assistant versions before 2026.11): Open HACS, find **APsystems ECU Reader**, select the **⋮** menu, then **Remove**, and confirm.
+   - **Manually** (if installed without the Marketplace or HACS): Stop Home Assistant and delete the `apsystems_ecu_reader` folder from your `custom_components` directory.
+
+3. **Restart Home Assistant** so it no longer loads the removed integration.
+
+> **Note:**  
+> No additional `configuration.yaml` entries, helpers, or long-term statistics are created by this integration outside of what is managed by the config entry above, so no extra cleanup is required.
 
 ---
 
