@@ -8,8 +8,7 @@
 
 
 
-
-# <img src="https://github.com/HAEdwin//homeassistant-apsystems_ecu_reader/blob/main/custom_components/apsystems_ecu_reader/brand/icon.png?raw=true" width="3%">APsystems ECU Reader
+# <img src="custom_components/apsystems_ecu_reader/brand/icon@2x.png" alt="APsystems" width="40" align="top">APsystems ECU Reader
 
 > Over 1000 (measured) active installations, the estimated total number of users is 4,000+.
 > If this integration’s been helpful, I’d truly appreciate a ⭐ star—it means a lot and helps others discover the project too!
