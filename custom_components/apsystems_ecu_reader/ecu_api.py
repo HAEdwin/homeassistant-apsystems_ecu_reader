@@ -6,8 +6,6 @@ import asyncio
 import logging
 import errno
 
-from homeassistant.util import dt as dt_util
-
 from .ecu_helpers import (
     aps_datetimestamp,
     aps_str,
@@ -239,15 +237,12 @@ class APsystemsSocket:
                 self.data["qty_of_inverters"] = self.qty_of_inverters
             if self.lifetime_energy:
                 self.data["lifetime_energy"] = self.lifetime_energy
-            # filter: Ensures yesterday’s accumulated energy is cleared at midnight,
-            #         preventing it from carrying over into the new day.Because the 
-            #         ECU may still be lagging behind with a value for today_energy
-            now = dt_util.now()
-            self.data["today_energy"] = (
-                0 if now.hour == 0 and now.minute < 15
-                else self.today_energy
-            )
-            
+            # The ECU's own today_energy field is not a reliable daily total on
+            # all firmwares (e.g. ECU_R_1.3.24 reports a small, fluctuating
+            # value). Expose it untouched under its own key; the Today Energy
+            # sensor derives the daily total from lifetime_energy instead.
+            self.data["today_energy_ecu"] = self.today_energy
+
             # Add rest of the ecu data to the dictionary
             self.data["ecu_id"] = self.ecu_id
             self.data["last_update"] = self.last_update
