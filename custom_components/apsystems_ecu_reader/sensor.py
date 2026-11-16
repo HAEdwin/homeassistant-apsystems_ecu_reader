@@ -26,6 +26,7 @@ from homeassistant.const import (
 
 
 from homeassistant.core import callback
+from homeassistant.util import dt as dt_util
 
 from .const import (
     DOMAIN,
@@ -569,11 +570,30 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         #    self._disabled_by = disabled_by
         self._name = f"ECU {self._label}"
         self._state = None
+        # today_energy: lifetime_energy reading at the start of the local day
+        self._day = None
+        self._day_start_lifetime = None
 
     async def async_added_to_hass(self):
         """Handle entity that needs to be restored."""
         await super().async_added_to_hass()
         last_state = await self.async_get_last_state()
+        if last_state and self._field == "today_energy":
+            # Rebuild the day's baseline so a restart does not lose the energy
+            # produced earlier today.
+            lifetime = (self.coordinator.data or {}).get("lifetime_energy")
+            try:
+                today = float(last_state.state)
+            except (TypeError, ValueError):
+                today = None
+            if (
+                lifetime is not None
+                and today is not None
+                and dt_util.as_local(last_state.last_updated).date()
+                == dt_util.now().date()
+            ):
+                self._day = dt_util.now().date()
+                self._day_start_lifetime = lifetime - today
         if last_state and self._field == "lifetime_maximum_power":
             try:
                 self._state = (
@@ -604,8 +624,30 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
             current_power = self.coordinator.data.get("current_power", 0) or 0
             self._state = max(self._state or 0, current_power)
             return round(self._state)
+        if self._field == "today_energy":
+            return self._today_energy()
         else:
             return self.coordinator.data.get(self._field, 0)
+
+    def _today_energy(self):
+        """Energy produced since local midnight, derived from lifetime_energy.
+
+        Monotonic during the day (as required by total_increasing) and
+        independent of the ECU clock/timezone and of its today_energy field.
+        """
+        lifetime = self.coordinator.data.get("lifetime_energy")
+        if lifetime is None:
+            return self._state
+        today = dt_util.now().date()
+        if (
+            self._day != today
+            or self._day_start_lifetime is None
+            or lifetime < self._day_start_lifetime
+        ):
+            self._day = today
+            self._day_start_lifetime = lifetime
+        self._state = round(lifetime - self._day_start_lifetime, 1)
+        return self._state
 
     @property
     def icon(self):
