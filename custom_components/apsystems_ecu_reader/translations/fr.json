@@ -3,6 +3,15 @@
     "step": {
       "init": {
         "data": {
+          "ecu_host": "Adresse IP",
+          "scan_interval": "Intervalle de requête",
+          "port_retries": "Tentatives",
+          "cache_reboot": "Seuil de cache pour redémarrage",
+          "show_graphs": "Mettre à jour les graphiques hors ligne",
+          "wifi_ssid": "SSID Wi-Fi",
+          "wifi_password": "Mot de passe Wi-Fi"
+        },
+        "data_description": {
           "ecu_host": "Adresse IP de l'ECU (suivez le tableau de méthode de connexion dans le fichier readme)",
           "scan_interval": "Intervalle de requête de l'ECU en secondes (minimum de 300 recommandé)",
           "port_retries": "Tentatives de reconnexion lorsque l'ECU ne répond pas",
@@ -19,13 +28,22 @@
       "unknown": "Erreur inconnue, consultez le journal pour plus de détails."
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Cette ECU est déjà configurée."
     }
   },
   "config": {
     "step": {
       "user": {
         "data": {
+          "ecu_host": "Adresse IP",
+          "scan_interval": "Intervalle de requête",
+          "port_retries": "Tentatives",
+          "cache_reboot": "Seuil de cache pour redémarrage",
+          "show_graphs": "Mettre à jour les graphiques hors ligne",
+          "wifi_ssid": "SSID Wi-Fi",
+          "wifi_password": "Mot de passe Wi-Fi"
+        },
+        "data_description": {
           "ecu_host": "Adresse IP de l'ECU (suivez le tableau de méthode de connexion dans le fichier readme)",
           "scan_interval": "Intervalle de requête de l'ECU en secondes (minimum de 300 recommandé)",
           "port_retries": "Tentatives de reconnexion lorsque l'ECU ne répond pas",
@@ -42,7 +60,7 @@
       "unknown": "Erreur inconnue, consultez le journal pour plus de détails"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Cette ECU est déjà configurée. Retrouvez la configuration existante dans Paramètres > Appareils et services."
     }
   }
 }

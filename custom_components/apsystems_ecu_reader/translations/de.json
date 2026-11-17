@@ -3,9 +3,18 @@
     "step": {
       "init": {
         "data": {
+          "ecu_host": "IP-Adresse",
+          "scan_interval": "Abfrageintervall",
+          "port_retries": "Wiederholungen",
+          "cache_reboot": "Cache-Schwelle für Neustart",
+          "show_graphs": "Diagramme bei Offline aktualisieren",
+          "wifi_ssid": "WLAN-SSID",
+          "wifi_password": "WLAN-Passwort"
+        },
+        "data_description": {
           "ecu_host": "ECU-IP-Adresse (folgen Sie der Verbindungsmethode in der README-Tabelle)",
           "scan_interval": "ECU-Abfrageintervall in Sekunden (mindestens 300 empfohlen)",
-          "port_retries": "Wiederholungen, wenn die ECU nicht antwortet",
+          "port_retries": "Anzahl der Wiederholungen, wenn die ECU nicht antwortet",
           "cache_reboot": "Anzahl der Caches vor einem automatischen ECU-Neustart (ECU-R-Pro- und ECU-C-Modelle)",
           "show_graphs": "Diagramme aktualisieren, wenn Wechselrichter offline sind",
           "wifi_ssid": "SSID angeben (nur für ECU-R-Pro und ECU-C-Modelle)",
@@ -19,16 +28,25 @@
       "unknown": "Unbekannter Fehler, siehe Protokoll für Details."
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Diese ECU ist bereits konfiguriert."
     }
   },
   "config": {
     "step": {
       "user": {
         "data": {
+          "ecu_host": "IP-Adresse",
+          "scan_interval": "Abfrageintervall",
+          "port_retries": "Wiederholungen",
+          "cache_reboot": "Cache-Schwelle für Neustart",
+          "show_graphs": "Diagramme bei Offline aktualisieren",
+          "wifi_ssid": "WLAN-SSID",
+          "wifi_password": "WLAN-Passwort"
+        },
+        "data_description": {
           "ecu_host": "ECU-IP-Adresse (folgen Sie der Verbindungsmethode in der README-Tabelle)",
           "scan_interval": "ECU-Abfrageintervall in Sekunden (mindestens 300 empfohlen)",
-          "port_retries": "Wiederholungen, wenn die ECU nicht antwortet",
+          "port_retries": "Anzahl der Wiederholungen, wenn die ECU nicht antwortet",
           "cache_reboot": "Anzahl der Caches vor einem automatischen ECU-Neustart (ECU-R-Pro- und ECU-C-Modelle)",
           "show_graphs": "Diagramme aktualisieren, wenn Wechselrichter offline sind",
           "wifi_ssid": "SSID angeben (nur für ECU-R-Pro und ECU-C-Modelle)",
@@ -42,7 +60,7 @@
       "unknown": "Unbekannter Fehler, siehe Protokoll für Details"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Diese ECU ist bereits konfiguriert. Die bestehende Konfiguration befindet sich unter Einstellungen > Geräte & Dienste."
     }
   }
 }

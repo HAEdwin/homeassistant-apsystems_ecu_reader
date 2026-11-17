@@ -3,6 +3,15 @@
       "step": {
         "init": {
           "data": {
+            "ecu_host": "IP address",
+            "scan_interval": "Scan interval",
+            "port_retries": "Port retries",
+            "cache_reboot": "Cache reboot threshold",
+            "show_graphs": "Update graphs when offline",
+            "wifi_ssid": "Wi-Fi SSID",
+            "wifi_password": "Wi-Fi password"
+          },
+          "data_description": {
             "ecu_host": "ECU IP address (follow connection method table in readme)",
             "scan_interval": "ECU query interval in seconds (minimum 300 recommended)",
             "port_retries": "Retries when ECU fails to respond",
@@ -19,16 +28,25 @@
         "unknown": "Unknown error, see log for details."
       },
       "abort": {
-        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+        "already_configured": "This ECU is already configured."
       }
     },
     "config": {
       "step": {
         "user": {
           "data": {
+            "ecu_host": "IP address",
+            "scan_interval": "Scan interval",
+            "port_retries": "Port retries",
+            "cache_reboot": "Cache reboot threshold",
+            "show_graphs": "Update graphs when offline",
+            "wifi_ssid": "Wi-Fi SSID",
+            "wifi_password": "Wi-Fi password"
+          },
+          "data_description": {
             "ecu_host": "ECU IP address (follow connection method table in readme)",
             "scan_interval": "ECU query interval in seconds (minimum 300 recommended)",
-            "port_retries": "Retries when ECU fails to repond",
+            "port_retries": "Retries when ECU fails to respond",
             "cache_reboot": "Cache count before auto ECU reboot (ECU-R-Pro and ECU-C models)",
             "show_graphs": "Update graphs when inverters are offline",
             "wifi_ssid": "Specify SSID (ECU-R-Pro and ECU-C models only)",
@@ -42,7 +60,7 @@
         "unknown": "Unknown error, see log for details"
       },
       "abort": {
-        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+        "already_configured": "This ECU is already configured. Find the existing entry under Settings > Devices & services."
       }
     }
   }

@@ -3,6 +3,15 @@
     "step": {
       "init": {
         "data": {
+          "ecu_host": "IP-adres",
+          "scan_interval": "Query-interval",
+          "port_retries": "Pogingen",
+          "cache_reboot": "Cache-drempel voor herstart",
+          "show_graphs": "Grafieken bijwerken bij offline",
+          "wifi_ssid": "Wifi-SSID",
+          "wifi_password": "Wifi-wachtwoord"
+        },
+        "data_description": {
           "ecu_host": "ECU IP-adres (volg de verbindingsmethode in de readme-tabel)",
           "scan_interval": "ECU-queryinterval in seconden (minimaal 300 aanbevolen)",
           "port_retries": "Aantal pogingen wanneer de ECU niet reageert",
@@ -19,13 +28,22 @@
       "unknown": "Onbekende fout, zie logboek voor details."
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Deze ECU is al geconfigureerd."
     }
   },
   "config": {
     "step": {
       "user": {
         "data": {
+          "ecu_host": "IP-adres",
+          "scan_interval": "Query-interval",
+          "port_retries": "Pogingen",
+          "cache_reboot": "Cache-drempel voor herstart",
+          "show_graphs": "Grafieken bijwerken bij offline",
+          "wifi_ssid": "Wifi-SSID",
+          "wifi_password": "Wifi-wachtwoord"
+        },
+        "data_description": {
           "ecu_host": "ECU IP-adres (volg de verbindingsmethode in de readme-tabel)",
           "scan_interval": "ECU-queryinterval in seconden (minimaal 300 aanbevolen)",
           "port_retries": "Aantal pogingen wanneer de ECU niet reageert",
@@ -42,7 +60,7 @@
       "unknown": "Onbekende fout, zie logboek voor details"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Deze ECU is al geconfigureerd. Zoek de bestaande configuratie onder Instellingen > Apparaten en diensten."
     }
   }
 }

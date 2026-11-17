@@ -42,7 +42,7 @@ def aps_int_from_bytes(codec: bytes, start: int, length: int) -> int:
     """Extract an integer from a binary string"""
     try:
         return int.from_bytes(codec[start : start + length], byteorder="big")
-    except (IndexError, ValueError, Exception) as e:
+    except Exception as e:
         # Handle invalid slice or conversion
         debugdata = codec[start : start + length]
         error = (
@@ -57,7 +57,7 @@ def aps_uid(codec: bytes, start: int, length: int = 12) -> str:
     """Extract a UID from a binary	string"""
     try:
         return codec[start : start + length].hex()[:12]
-    except (IndexError, ValueError, Exception) as e:
+    except Exception as e:
         error = (
             f"Invalid slice: start={start}, length={length}, codec_length={len(codec)}"
         )

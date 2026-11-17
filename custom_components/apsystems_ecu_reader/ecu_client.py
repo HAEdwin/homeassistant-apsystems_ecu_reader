@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
-"""ecu_api.py"""
+"""Client for communicating with the APsystems ECU API."""
 
 import asyncio
 import logging
 import errno
 
+from astral import now
 from homeassistant.util import dt as dt_util
 
 from .ecu_helpers import (
+    APsystemsInvalidData,
     aps_datetimestamp,
     aps_str,
     aps_int_from_bytes,
@@ -25,14 +27,10 @@ _LOGGER = logging.getLogger(__name__)
 GLOBAL_ECU_LOCK = asyncio.Lock()
 
 
-class APsystemsInvalidData(Exception):
-    """Exception for invalid data from the APsystems ECU."""
-
-
 class APsystemsSocket:
     """Class to handle the socket connection to the APsystems ECU."""
 
-    def __init__(self, ipaddr, raw_ecu=None, raw_inverter=None, timeout=5):
+    def __init__(self, ipaddr, timeout=5):
 
         self.ipaddr = ipaddr
 
@@ -46,8 +44,8 @@ class APsystemsSocket:
         self.ecu_cmd = "APS1100160001END\n"
         self.inverter_query_prefix = "APS1100280002"
         self.signal_query_prefix = "APS1100280030"
-        self.ecu_raw_data = raw_ecu
-        self.inverter_raw_data = raw_inverter
+        self.ecu_raw_data = None
+        self.inverter_raw_data = None
         self.signal_raw_data = None
         self.qty_of_inverters = 0
         self.qty_of_online_inverters = 0
@@ -74,8 +72,8 @@ class APsystemsSocket:
 
         for attempt in range(1, port_retries + 1):
             try:
-                self.reader, self.writer = await asyncio.open_connection(
-                    self.ipaddr, PORT
+                self.reader, self.writer = await asyncio.wait_for(
+                    asyncio.open_connection(self.ipaddr, PORT), timeout=self.timeout
                 )
                 _LOGGER.debug(
                     "ECU %s connection established on attempt %s/%s",
@@ -84,6 +82,15 @@ class APsystemsSocket:
                     port_retries,
                 )
                 return
+            except asyncio.TimeoutError:
+                _LOGGER.debug(
+                    "ECU %s connection attempt %s/%s timed out after %ss",
+                    self.ipaddr,
+                    attempt,
+                    port_retries,
+                    self.timeout,
+                )
+                await asyncio.sleep(delay)
             except OSError as err:
                 if err.errno == errno.EADDRINUSE:
                     _LOGGER.warning(
@@ -215,7 +222,7 @@ class APsystemsSocket:
 
                 # Add CT data to the dictionary for ECU-C models only
                 if self.ecu_id.startswith("215"):
-                   await self.add_meter_data()
+                    await self.add_meter_data()
                 # Add ECU parameters to the dictionary
                 self.process_ecu_data()
                 # Finally all went right so call finalize and return it
@@ -240,12 +247,12 @@ class APsystemsSocket:
             if self.lifetime_energy:
                 self.data["lifetime_energy"] = self.lifetime_energy
             # filter: Ensures yesterday’s accumulated energy is cleared at midnight,
-            #         preventing it from carrying over into the new day.Because the 
-            #         ECU may still be lagging behind with a value for today_energy
+            #         preventing it from carrying over into the new day and preventing 
+            #         an unexpected zero value for today_energy over the course of the day.
             now = dt_util.now()
             self.data["today_energy"] = (
                 0 if now.hour == 0 and now.minute < 15
-                else self.today_energy
+                else self.today_energy or self.data["today_energy"]
             )
             
             # Add rest of the ecu data to the dictionary
@@ -260,7 +267,7 @@ class APsystemsSocket:
         except (KeyError, TypeError, ValueError) as err:
             raise APsystemsInvalidData(f"error during finalization ({err})") from err
 
-    def process_ecu_data(self, data=None):
+    def process_ecu_data(self):
         """interpret raw ecu data and return it."""
         if self.ecu_raw_data and (aps_str(self.ecu_raw_data, 9, 4)) == "0001":
             data = self.ecu_raw_data
@@ -285,7 +292,7 @@ class APsystemsSocket:
                 self.vsl = int(aps_str(data, 49, 3))
                 self.firmware = aps_str(data, 52, self.vsl)
 
-    def process_signal_data(self, data=None):
+    def process_signal_data(self):
         """interpret raw signal data and return it."""
         signal_data = {}
         if self.signal_raw_data and (aps_str(self.signal_raw_data, 9, 4)) == "0030":
@@ -305,7 +312,7 @@ class APsystemsSocket:
                 signal_data[inverter_uid] = signal_strength
         return signal_data
 
-    def process_inverter_data(self, show_graphs, data=None):
+    def process_inverter_data(self, show_graphs):
         """interpret raw inverter data and return it."""
         output = {}
         if (
@@ -316,7 +323,6 @@ class APsystemsSocket:
             error = validate_data(data, "Inverter Query")
             if error:
                 raise APsystemsInvalidData(error)
-            istr = ""
             cnt1 = 0
             cnt2 = 26
             if aps_str(data, 14, 2) == "00":

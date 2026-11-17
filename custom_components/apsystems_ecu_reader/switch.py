@@ -5,17 +5,17 @@ import logging
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, POWER_ICON, ECU_MODEL_MAP, INVERTER_MODEL_MAP
+from .const import POWER_ICON
+from .entity import APsystemsEcuEntity, inverter_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the switch platform."""
-    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    ecu = config_entry.runtime_data.ecu
+    coordinator = config_entry.runtime_data.coordinator
     switches = []
     inverters = coordinator.data.get("inverters", {})
 
@@ -34,14 +34,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(switches)
 
 
-class APsystemsBaseSwitch(CoordinatorEntity, SwitchEntity, RestoreEntity):
+class APsystemsBaseSwitch(APsystemsEcuEntity, SwitchEntity, RestoreEntity):
     """Base class for APsystems switches."""
 
     def __init__(self, coordinator, ecu, name, unique_id, icon, entity_category=None):
         """Initialize the base switch."""
-        super().__init__(coordinator)
-        self.coordinator = coordinator
-        self._ecu = ecu
+        super().__init__(coordinator, ecu)
         self._name = name
         self._unique_id = unique_id
         self._icon = icon
@@ -62,19 +60,6 @@ class APsystemsBaseSwitch(CoordinatorEntity, SwitchEntity, RestoreEntity):
     def icon(self):
         """Return the icon to use in the UI."""
         return self._icon
-
-    @property
-    def device_info(self):
-        """Return the device info."""
-        return {
-            "identifiers": {
-                (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
-            },
-            "name": f"ECU {self._ecu.ecu.ecu_id}",
-            "manufacturer": "APsystems",
-            "model": ECU_MODEL_MAP.get(self._ecu.ecu.ecu_id[:4], "Unknown Model"),
-            "sw_version": self._ecu.ecu.firmware,
-        }
 
     @property
     def entity_category(self):
@@ -115,7 +100,7 @@ class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
         super().__init__(
             coordinator,
             ecu,
-            name=f"Inverter {uid} On/Off",
+            name="On/Off",
             unique_id=f"{ecu.ecu.ecu_id}_inverter_{uid}",
             icon=POWER_ICON,
             entity_category=EntityCategory.CONFIG,
@@ -124,26 +109,10 @@ class APsystemsECUInverterSwitch(APsystemsBaseSwitch):
         self._uid = uid
         self._inv_data = inv_data
 
-    def turn_on(self, **kwargs):
-        """Turn on the inverter switch."""
-        return self.async_turn_on(**kwargs)
-
-    def turn_off(self, **kwargs):
-        """Turn off the inverter switch."""
-        return self.async_turn_off(**kwargs)
-
     @property
     def device_info(self):
         """Return the device info."""
-        parent = f"inverter_{self._uid}"
-        return {
-            "identifiers": {
-                (DOMAIN, parent),
-            },
-            "name": f"Inverter {self._uid}",
-            "manufacturer": "APsystems",
-            "model": INVERTER_MODEL_MAP.get(self._uid[:2], "Unknown Model"),
-        }
+        return inverter_device_info(self._uid)
 
     async def async_turn_off(self, **kwargs):
         """Turn off the inverter switch."""
@@ -165,7 +134,7 @@ class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
         super().__init__(
             coordinator,
             ecu,
-            name=f"ECU {ecu.ecu.ecu_id} Zero Export",
+            name="Zero Export",
             unique_id=f"ECU_{ecu.ecu.ecu_id}_zero_export_switch",
             icon=POWER_ICON,
             entity_category=EntityCategory.CONFIG,
@@ -204,14 +173,6 @@ class APsystemsZeroExportSwitch(APsystemsBaseSwitch):
                 "Failed to turn off zero export for ECU %s: %s", self._ecu.ecu.ecu_id, e
             )
 
-    def turn_on(self, **kwargs):
-        """Turn on zero export."""
-        return self.async_turn_on(**kwargs)
-
-    def turn_off(self, **kwargs):
-        """Turn off zero export."""
-        return self.async_turn_off(**kwargs)
-
 
 class APsystemsECUQuerySwitch(APsystemsBaseSwitch):
     """Switch to control ECU querying on/off."""
@@ -220,7 +181,7 @@ class APsystemsECUQuerySwitch(APsystemsBaseSwitch):
         super().__init__(
             coordinator,
             ecu,
-            name=f"ECU {ecu.ecu.ecu_id} Query ECU",
+            name="Query ECU",
             unique_id=f"ECU_{ecu.ecu.ecu_id}_query_switch",
             icon="mdi:access-point-network",
             entity_category=EntityCategory.CONFIG,
@@ -250,11 +211,3 @@ class APsystemsECUQuerySwitch(APsystemsBaseSwitch):
         self._ecu.query_enabled = False
         self._state = False
         self.async_write_ha_state()
-
-    def turn_on(self, **kwargs):
-        """Turn on ECU querying."""
-        return self.async_turn_on(**kwargs)
-
-    def turn_off(self, **kwargs):
-        """Turn off ECU querying."""
-        return self.async_turn_off(**kwargs)

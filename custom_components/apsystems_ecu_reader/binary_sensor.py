@@ -4,17 +4,17 @@ import logging
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, CACHE_ICON
+from .const import CACHE_ICON
+from .entity import APsystemsEcuEntity
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, config_entry, add_entities):
     """Set up the binary sensor for the APsystems ECU data cache."""
-    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    ecu = config_entry.runtime_data.ecu
+    coordinator = config_entry.runtime_data.coordinator
 
     add_entities(
         [
@@ -22,25 +22,22 @@ async def async_setup_entry(hass, config_entry, add_entities):
                 coordinator,
                 ecu,
                 "data_from_cache",
-                label=f"{ecu.ecu.ecu_id} Using Cached Data",
+                label="Using Cached Data",
                 icon=CACHE_ICON,
             )
         ]
     )
 
 
-class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
+class APsystemsECUBinarySensor(APsystemsEcuEntity, BinarySensorEntity):
     """Representation of a binary sensor for APsystems ECU."""
 
     def __init__(self, coordinator, ecu, field, label=None, icon=None):
-        super().__init__(coordinator)
-        self.coordinator = coordinator
-        self._ecu = ecu
+        super().__init__(coordinator, ecu)
         self._field = field
         self._label = label or field
         self._icon = icon
-        self._name = f"ECU {self._label}"
-        self._state = None
+        self._name = self._label
 
     @property
     def unique_id(self):
@@ -69,12 +66,3 @@ class APsystemsECUBinarySensor(CoordinatorEntity, BinarySensorEntity):
     @property
     def entity_category(self):
         return EntityCategory.DIAGNOSTIC
-
-    @property
-    def device_info(self):
-        parent = f"ecu_{self._ecu.ecu.ecu_id}"
-        return {
-            "identifiers": {
-                (DOMAIN, parent),
-            }
-        }

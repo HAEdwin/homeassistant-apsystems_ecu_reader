@@ -2,17 +2,17 @@
 
 from homeassistant.components.number import RestoreNumber
 from homeassistant.const import UnitOfPower
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import EntityCategory
 
 
-from .const import DOMAIN, INVERTER_MODEL_MAP, ECU_MODEL_MAP
+from .const import DOMAIN
+from .entity import APsystemsEcuEntity, APsystemsInverterEntity
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the number platform."""
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
-    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
+    coordinator = config_entry.runtime_data.coordinator
+    ecu = config_entry.runtime_data.ecu
 
     entities = []
 
@@ -31,16 +31,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         async_add_entities(entities, True)
 
 
-class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
+class InverterMaxPwrNumber(APsystemsInverterEntity, RestoreNumber):
     """Representation of an Inverter_MaxPwr Number entity."""
 
     def __init__(self, coordinator, ecu, inverter_id, inverter_data):
         """Initialize the number entity."""
-        super().__init__(coordinator)
-        self._ecu = ecu
-        self._uid = inverter_id
+        super().__init__(coordinator, ecu, inverter_id)
         self._inv_data = inverter_data
-        self._attr_name = f"Inverter {inverter_id} Maxpwr"
+        self._attr_name = "Max Power"
         self._attr_unique_id = f"{DOMAIN}_inverter_{inverter_id}_maxpwr"
         self._attr_native_min_value = 20
         self._attr_native_max_value = 500
@@ -50,19 +48,6 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
         self._attr_device_class = "power"
         self._attr_native_unit_of_measurement = UnitOfPower.WATT
         self._attr_mode = "slider"
-
-    @property
-    def device_info(self):
-        """Return the device info."""
-        parent = f"inverter_{self._uid}"
-        return {
-            "identifiers": {
-                (DOMAIN, parent),
-            },
-            "name": f"Inverter {self._uid}",
-            "manufacturer": "APsystems",
-            "model": INVERTER_MODEL_MAP.get(self._uid[:2], "Unknown Model"),
-        }
 
     @property
     def entity_category(self):
@@ -75,11 +60,6 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
         self._attr_native_value = value
         self.async_write_ha_state()
 
-    def set_native_value(self, value: float):
-        """Set the value synchronously (required by NumberEntity)."""
-        # This is called by Home Assistant framework, but we use async version
-        self._attr_native_value = value
-
     async def async_added_to_hass(self):
         """Handle entity which value will be restored."""
         await super().async_added_to_hass()
@@ -87,14 +67,13 @@ class InverterMaxPwrNumber(CoordinatorEntity, RestoreNumber):
             self._attr_native_value = float(last_state.state)
 
 
-class ECUPowerLimitNumber(CoordinatorEntity, RestoreNumber):
+class ECUPowerLimitNumber(APsystemsEcuEntity, RestoreNumber):
     """Representation of an ECU Power Limit Number entity."""
 
     def __init__(self, coordinator, ecu):
         """Initialize the number entity."""
-        super().__init__(coordinator)
-        self._ecu = ecu
-        self._attr_name = f"ECU {ecu.ecu.ecu_id} Power Limit"
+        super().__init__(coordinator, ecu)
+        self._attr_name = "Power Limit"
         self._attr_unique_id = f"{ecu.ecu.ecu_id}_power_limit"
         self._attr_native_min_value = 0
         self._attr_native_max_value = 3
@@ -103,18 +82,6 @@ class ECUPowerLimitNumber(CoordinatorEntity, RestoreNumber):
         self._attr_device_class = "power"
         self._attr_native_unit_of_measurement = "kW"
         self._attr_mode = "slider"
-
-    @property
-    def device_info(self):
-        """Return the device info."""
-        return {
-            "identifiers": {
-                (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
-            },
-            "name": f"ECU {self._ecu.ecu.ecu_id}",
-            "manufacturer": "APsystems",
-            "model": ECU_MODEL_MAP.get(self._ecu.ecu.ecu_id[:4], "Unknown Model"),
-        }
 
     @property
     def entity_category(self):
@@ -133,11 +100,6 @@ class ECUPowerLimitNumber(CoordinatorEntity, RestoreNumber):
         await self._ecu.set_power_limit(power_limit_watts)
         self._attr_native_value = value
         self.async_write_ha_state()
-
-    def set_native_value(self, value: float):
-        """Set the value synchronously (required by NumberEntity)."""
-        # This is called by Home Assistant framework, but we use async version
-        self._attr_native_value = value
 
     async def async_added_to_hass(self):
         """Handle entity which value will be restored."""

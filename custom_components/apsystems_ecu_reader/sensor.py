@@ -5,9 +5,6 @@ import logging
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from homeassistant.components.sensor import (
@@ -28,7 +25,6 @@ from homeassistant.const import (
 from homeassistant.core import callback
 
 from .const import (
-    DOMAIN,
     SOLAR_ICON,
     FREQ_ICON,
     SIGNAL_ICON,
@@ -37,8 +33,8 @@ from .const import (
     FROM_GRID_ICON,
     CONSUMED_ICON,
     DOWNLOAD_ICON,
-    INVERTER_MODEL_MAP,
 )
+from .entity import APsystemsEcuEntity, APsystemsInverterEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,8 +42,8 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config_entry, add_entities):
     """sensor.py async_setup_entry"""
 
-    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    ecu = config_entry.runtime_data.ecu
+    coordinator = config_entry.runtime_data.coordinator
 
     # Add ECU sensors
     sensors = [
@@ -55,7 +51,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
             coordinator,
             ecu,
             "current_power",
-            label=f"{ecu.ecu.ecu_id} Current Power",
+            label="Current Power",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=SOLAR_ICON,
@@ -65,7 +61,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
             coordinator,
             ecu,
             "today_energy",
-            label=f"{ecu.ecu.ecu_id} Today Energy",
+            label="Today Energy",
             unit=UnitOfEnergy.KILO_WATT_HOUR,
             devclass=SensorDeviceClass.ENERGY,
             icon=SOLAR_ICON,
@@ -75,7 +71,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
             coordinator,
             ecu,
             "lifetime_energy",
-            label=f"{ecu.ecu.ecu_id} Lifetime Energy",
+            label="Lifetime Energy",
             unit=UnitOfEnergy.KILO_WATT_HOUR,
             devclass=SensorDeviceClass.ENERGY,
             icon=SOLAR_ICON,
@@ -85,7 +81,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
             coordinator,
             ecu,
             "lifetime_maximum_power",
-            label=f"{ecu.ecu.ecu_id} Lifetime Maximum Power",
+            label="Lifetime Maximum Power",
             unit=UnitOfPower.WATT,
             devclass=SensorDeviceClass.POWER,
             icon=SOLAR_ICON,
@@ -95,7 +91,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
             coordinator,
             ecu,
             "qty_of_inverters",
-            label=f"{ecu.ecu.ecu_id} Inverters",
+            label="Inverters",
             icon=SOLAR_ICON,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
@@ -103,7 +99,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
             coordinator,
             ecu,
             "qty_of_online_inverters",
-            label=f"{ecu.ecu.ecu_id} Inverters Online",
+            label="Inverters Online",
             icon=SOLAR_ICON,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
@@ -111,7 +107,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
             coordinator,
             ecu,
             "data_from_cache_count",
-            label=f"{ecu.ecu.ecu_id} Using Cache Counter",
+            label="Using Cache Counter",
             icon=CACHE_COUNTER_ICON,
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
@@ -134,7 +130,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "production_ct_a",
-                    label=f"{ecu.ecu.ecu_id} Production CT A",
+                    label="Production CT A",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=SOLAR_ICON,
@@ -144,7 +140,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "production_ct_b",
-                    label=f"{ecu.ecu.ecu_id} Production CT B",
+                    label="Production CT B",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=SOLAR_ICON,
@@ -154,7 +150,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "production_ct_c",
-                    label=f"{ecu.ecu.ecu_id} Production CT C",
+                    label="Production CT C",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=SOLAR_ICON,
@@ -170,7 +166,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "grid_ct_a",
-                    label=f"{ecu.ecu.ecu_id} Grid CT A",
+                    label="Grid CT A",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=FROM_GRID_ICON,
@@ -180,7 +176,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "grid_ct_b",
-                    label=f"{ecu.ecu.ecu_id} Grid CT B",
+                    label="Grid CT B",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=FROM_GRID_ICON,
@@ -190,7 +186,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "grid_ct_c",
-                    label=f"{ecu.ecu.ecu_id} Grid CT C",
+                    label="Grid CT C",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=FROM_GRID_ICON,
@@ -206,7 +202,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "consumed_a",
-                    label=f"{ecu.ecu.ecu_id} Consumed A",
+                    label="Consumed A",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=CONSUMED_ICON,
@@ -216,7 +212,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "consumed_b",
-                    label=f"{ecu.ecu.ecu_id} Consumed B",
+                    label="Consumed B",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=CONSUMED_ICON,
@@ -226,7 +222,7 @@ async def async_setup_entry(hass, config_entry, add_entities):
                     coordinator,
                     ecu,
                     "consumed_c",
-                    label=f"{ecu.ecu.ecu_id} Consumed C",
+                    label="Consumed C",
                     unit=UnitOfPower.WATT,
                     devclass=SensorDeviceClass.POWER,
                     icon=CONSUMED_ICON,
@@ -338,19 +334,14 @@ async def async_setup_entry(hass, config_entry, add_entities):
     add_entities(sensors)
 
 
-class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
+class APsystemsECUInverterBinarySensor(APsystemsInverterEntity, BinarySensorEntity):
     """Representation of a binary sensor for an individual inverter being Online/Offline."""
 
     def __init__(self, coordinator, ecu, uid, inv_data):
 
-        super().__init__(coordinator)
-        self.coordinator = coordinator
-        self._ecu = ecu
-        self._uid = uid
+        super().__init__(coordinator, ecu, uid)
         self._inv_data = inv_data
-        self._name = f"Inverter {uid} Online"
-        self._state = inv_data.get("online", False)
-        self._attr_name = f"Inverter {uid} Online"
+        self._name = "Online"
 
         # Set custom state attributes for activity log
         self._attr_device_class = None
@@ -387,19 +378,6 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
         return SOLAR_PANEL_ICON
 
     @property
-    def device_info(self):
-        """Return the device info."""
-        parent = f"inverter_{self._uid}"
-        return {
-            "identifiers": {
-                (DOMAIN, parent),
-            },
-            "name": f"Inverter {self._uid}",
-            "manufacturer": "APsystems",
-            "model": INVERTER_MODEL_MAP.get(self._uid[:2], "Unknown Model"),
-        }
-
-    @property
     def entity_category(self):
         """Return the category of the entity."""
         return EntityCategory.DIAGNOSTIC
@@ -432,7 +410,7 @@ class APsystemsECUInverterBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self.async_write_ha_state()
 
 
-class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
+class APsystemsECUInverterSensor(APsystemsInverterEntity, SensorEntity):
     """sensor.py APsystemsECUInverterSensor"""
 
     def __init__(
@@ -450,21 +428,16 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
         entity_category=None,
     ):
 
-        super().__init__(coordinator)
-        self.coordinator = coordinator
+        super().__init__(coordinator, ecu, uid)
         self._index = index
-        self._uid = uid
-        self._ecu = ecu
         self._field = field
         self._devclass = devclass
-        self._label = label
         self._label = label or field
         self._icon = icon
         self._unit = unit
         self._stateclass = stateclass
         self._entity_category = entity_category
-        self._name = f"Inverter {self._uid} {self._label}"
-        self._state = None
+        self._name = self._label
 
     @property
     def unique_id(self):
@@ -527,20 +500,11 @@ class APsystemsECUInverterSensor(CoordinatorEntity, SensorEntity):
         return self._stateclass
 
     @property
-    def device_info(self):
-        parent = f"inverter_{self._uid}"
-        return {
-            "identifiers": {
-                (DOMAIN, parent),
-            }
-        }
-
-    @property
     def entity_category(self):
         return self._entity_category
 
 
-class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
+class APsystemsECUSensor(APsystemsEcuEntity, SensorEntity, RestoreEntity):
     """sensor.py APsystemsECUSensor"""
 
     def __init__(
@@ -556,9 +520,7 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         entity_category=None,
         #    disabled_by=None,
     ):
-        super().__init__(coordinator)
-        self.coordinator = coordinator
-        self._ecu = ecu
+        super().__init__(coordinator, ecu)
         self._field = field
         self._label = label or field
         self._icon = icon
@@ -567,7 +529,7 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         self._stateclass = stateclass
         self._entity_category = entity_category
         #    self._disabled_by = disabled_by
-        self._name = f"ECU {self._label}"
+        self._name = self._label
         self._state = None
 
     async def async_added_to_hass(self):
@@ -628,20 +590,11 @@ class APsystemsECUSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
         return self._stateclass
 
     @property
-    def device_info(self):
-        parent = f"ecu_{self._ecu.ecu.ecu_id}"
-        return {
-            "identifiers": {
-                (DOMAIN, parent),
-            }
-        }
-
-    @property
     def entity_category(self):
         return self._entity_category
 
 
-class APsystemsECUFirmwareSensor(CoordinatorEntity, SensorEntity, RestoreEntity):
+class APsystemsECUFirmwareSensor(APsystemsEcuEntity, SensorEntity):
     """Representation of the ECU firmware version sensor."""
 
     def __init__(
@@ -653,27 +606,12 @@ class APsystemsECUFirmwareSensor(CoordinatorEntity, SensorEntity, RestoreEntity)
         icon=None,
         entity_category=None,
     ):
-        super().__init__(coordinator)
-        self.coordinator = coordinator
-        self._ecu = ecu
+        super().__init__(coordinator, ecu)
         self._field = field
         self._label = label or field
         self._icon = icon
         self._entity_category = entity_category
         self._name = "Firmware Version"
-        self._attr_has_entity_name = True
-        self._state = None
-
-    async def async_added_to_hass(self):
-        """Handle entity that needs to be restored."""
-        await super().async_added_to_hass()
-        last_state = await self.async_get_last_state()
-        if last_state:
-            self._state = (
-                last_state.state
-                if last_state.state not in ["unknown", "unavailable"]
-                else None
-            )
 
     @property
     def unique_id(self):
@@ -702,16 +640,6 @@ class APsystemsECUFirmwareSensor(CoordinatorEntity, SensorEntity, RestoreEntity)
             "ip_address": self._ecu.ipaddr,
             "timezone": self._ecu.ecu.timezone,
             "last_data_update": self._ecu.ecu.last_update,
-        }
-
-    @property
-    def device_info(self):
-        """Return device info."""
-        parent = f"ecu_{self._ecu.ecu.ecu_id}"
-        return {
-            "identifiers": {
-                (DOMAIN, parent),
-            }
         }
 
     @property

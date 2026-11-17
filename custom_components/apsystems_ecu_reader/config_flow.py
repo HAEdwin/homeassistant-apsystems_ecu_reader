@@ -5,8 +5,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from .const import DOMAIN, KEYS
-from .ecu_api import APsystemsSocket, APsystemsInvalidData
-
+from .ecu_client import APsystemsSocket, APsystemsInvalidData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,8 +77,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         """Manage the options."""
         errors = {}
-        # Get current options
-        _config = {**self.entry.data}
+        # Current values: options (set via this flow) take precedence over
+        # the original data (set during initial setup).
+        _config = {**self.entry.data, **self.entry.options}
         alter_schema = vol.Schema(
             {
                 vol.Required(KEYS[0], default=_config.get(KEYS[0], ECU_HOST)): str,
@@ -99,10 +99,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input:
             ecu_id = await test_ecu_connection(user_input)
             if ecu_id:
-                self.hass.config_entries.async_update_entry(
-                    self.entry, data={**self.entry.data, **user_input}
-                )
-                return self.async_create_entry(title="APsystems", data={})
+                # Returning the submitted data to store it as entry.options
+                return self.async_create_entry(title="", data=user_input)
             errors["ecu_host"] = "no_ecu_found"
         return self.async_show_form(
             step_id="init", data_schema=alter_schema, errors=errors
@@ -113,7 +111,7 @@ async def test_ecu_connection(input_data):
     """Test the connection to the ECU and return the ECU ID if successful."""
     try:
         ecu = APsystemsSocket(input_data.get(KEYS[0]))
-        retries = input_data.get(KEYS[2], 2)
+        retries = input_data.get(KEYS[2], PORT_RETRIES)
         test_query = await ecu.get_update(retries, True)
         return test_query.get("ecu_id", None)
     # collector of APsystemsInvalidData exceptions

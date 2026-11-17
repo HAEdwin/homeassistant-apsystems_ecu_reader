@@ -5,7 +5,8 @@ from homeassistant.components.button import ButtonEntity, ButtonDeviceClass
 from homeassistant.helpers.entity import EntityCategory
 
 
-from .const import DOMAIN, ECU_REBOOT_ICON, ECU_MODEL_MAP
+from .const import ECU_REBOOT_ICON
+from .entity import APsystemsEcuEntity
 from .gui_helpers import pers_gui_notification
 
 
@@ -14,40 +15,24 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the button platform."""
-    ecu = hass.data[DOMAIN][config_entry.entry_id]["ecu"]
+    ecu = config_entry.runtime_data.ecu
+    coordinator = config_entry.runtime_data.coordinator
 
     # Add the button only if ecu_id starts with "2162" (ECU-R-Pro) or "215" (ECU-C)
     if ecu.ecu.ecu_id.startswith(("215", "2162")):
-        async_add_entities([RebootECUButton(ecu)])
+        async_add_entities([RebootECUButton(coordinator, ecu)])
 
 
-class RebootECUButton(ButtonEntity):
+class RebootECUButton(APsystemsEcuEntity, ButtonEntity):
     """Representation of a button to reboot the ECU."""
 
-    def press(self):
-        """Handle the synchronous button press."""
-        self.hass.async_create_task(self.async_press())
-
-    def __init__(self, ecu):
+    def __init__(self, coordinator, ecu):
         """Initialize the button."""
-        self._ecu = ecu
+        super().__init__(coordinator, ecu)
         self._attr_icon = ECU_REBOOT_ICON
-        self._attr_name = f"ECU {ecu.ecu.ecu_id} Reboot"
+        self._attr_name = "Reboot"
         self._attr_unique_id = f"ECU_{ecu.ecu.ecu_id}_reboot_button"
         self._attr_device_class = ButtonDeviceClass.RESTART
-
-    @property
-    def device_info(self):
-        """Return the device info for the ECU."""
-        return {
-            "identifiers": {
-                (DOMAIN, f"ecu_{self._ecu.ecu.ecu_id}"),
-            },
-            "name": f"ECU {self._ecu.ecu.ecu_id}",
-            "manufacturer": "APsystems",
-            "model": ECU_MODEL_MAP.get(self._ecu.ecu.ecu_id[:4], "Unknown Model"),
-            "sw_version": self._ecu.ecu.firmware,
-        }
 
     @property
     def entity_category(self):
