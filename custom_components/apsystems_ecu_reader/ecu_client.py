@@ -252,7 +252,7 @@ class APsystemsSocket:
             now = dt_util.now()
             self.data["today_energy"] = (
                 0 if now.hour == 0 and now.minute < 15
-                else self.today_energy or self.data["today_energy"]
+                else self.today_energy or self.data.get("today_energy", 0)
             )
             
             # Add rest of the ecu data to the dictionary
