@@ -70,7 +70,7 @@ async def async_get_config_entry_diagnostics(
         },
         "coordinator": {
             "last_update_success": coordinator.last_update_success,
-            "last_exception": repr(coordinator.last_exception)
+            "last_exception": type(coordinator.last_exception).__name__
             if coordinator.last_exception
             else None,
             "update_interval": coordinator.update_interval.total_seconds()
