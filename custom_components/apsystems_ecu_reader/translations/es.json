@@ -3,6 +3,15 @@
     "step": {
       "init": {
         "data": {
+          "ecu_host": "Dirección IP",
+          "scan_interval": "Intervalo de consulta",
+          "port_retries": "Reintentos",
+          "cache_reboot": "Umbral de caché para reinicio",
+          "show_graphs": "Actualizar gráficos sin conexión",
+          "wifi_ssid": "SSID de Wi-Fi",
+          "wifi_password": "Contraseña de Wi-Fi"
+        },
+        "data_description": {
           "ecu_host": "Dirección IP de la ECU (siga la tabla del método de conexión en el archivo readme)",
           "scan_interval": "Intervalo de consulta de la ECU en segundos (se recomienda un mínimo de 300)",
           "port_retries": "Reintentos cuando la ECU no responde",
@@ -19,13 +28,22 @@
       "unknown": "Error desconocido, consulte el registro para detalles."
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Esta ECU ya está configurada."
     }
   },
   "config": {
     "step": {
       "user": {
         "data": {
+          "ecu_host": "Dirección IP",
+          "scan_interval": "Intervalo de consulta",
+          "port_retries": "Reintentos",
+          "cache_reboot": "Umbral de caché para reinicio",
+          "show_graphs": "Actualizar gráficos sin conexión",
+          "wifi_ssid": "SSID de Wi-Fi",
+          "wifi_password": "Contraseña de Wi-Fi"
+        },
+        "data_description": {
           "ecu_host": "Dirección IP de la ECU (siga la tabla del método de conexión en el archivo readme)",
           "scan_interval": "Intervalo de consulta de la ECU en segundos (se recomienda un mínimo de 300)",
           "port_retries": "Reintentos cuando la ECU no responde",
@@ -42,7 +60,7 @@
       "unknown": "Error desconocido, consulte el registro para detalles"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      "already_configured": "Esta ECU ya está configurada. Busque la configuración existente en Ajustes > Dispositivos y servicios."
     }
   }
 }
